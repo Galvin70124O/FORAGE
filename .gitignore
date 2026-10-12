@@ -1,0 +1,26 @@
+# Local application secrets
+.streamlit/secrets.toml
+.env
+.env.*
+!.env.example
+
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.venv/
+
+# Local-only personal records, raw public downloads, and derived public extracts
+# are intentionally not versioned. See README for setup instructions.
+data/my_food_data.csv
+data/real/
+dataset/
+
+# Reproducible generated artefacts and local runtime logs
+outputs/
+*.log
+
+# Editor and operating-system noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
