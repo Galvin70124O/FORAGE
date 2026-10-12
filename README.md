@@ -119,7 +119,15 @@ Raw public downloads, derived public extracts, personal records, logs, and gener
 
 ## Deployment
 
-The entry point for Streamlit Community Cloud is `app.py`. Commit the source code, `requirements.txt`, `.streamlit/config.toml` (if added), and the explicitly labelled demo data only if it is appropriate for the repository. Do not commit `dataset/`, `data/real/`, `data/my_food_data.csv`, `.streamlit/secrets.toml`, or any credentials. Configure the repository and deploy from the Community Cloud UI; no secrets are required for the current auth-disabled dashboard.
+FORAGE is a Streamlit application, not a Vercel Python serverless function. Keep `app.py` as the Streamlit entry point; do not add a fake top-level `app`, `application`, or `handler` variable for Vercel.
+
+Deploy it in Streamlit Community Cloud with these settings:
+
+- Repository: `Galvin70124O/FORAGE`
+- Branch: `main`
+- Main file path: `app.py`
+
+Community Cloud installs the dependencies in `requirements.txt` and reads the optional theme/server settings in `.streamlit/config.toml`. No secrets are required while the current auth-disabled dashboard is in use. Do not commit `dataset/`, `data/real/`, `data/my_food_data.csv`, `.streamlit/secrets.toml`, `.venv/`, or any credentials.
 
 ## Future scope
 
