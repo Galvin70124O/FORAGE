@@ -333,13 +333,13 @@ def demo_plan_with_risk() -> pd.DataFrame:
 def data_as_of(source: str) -> str:
     """Footer text: the last date covered by the selected source."""
     if source == "demo":
-        return fmt_date(load_demo()["Date"].max())
+        return f"Data as of {fmt_date(load_demo()['Date'].max())}"
     if source == "m5":
-        return fmt_date(load_m5()["Date"].max()) if M5_PATH.exists() else "local version only"
+        return f"Data as of {fmt_date(load_m5()['Date'].max())}" if M5_PATH.exists() else "Local version only"
     if source == "instacart":
-        return "no calendar dates" if INSTACART_PATH.exists() else "local version only"
+        return "No calendar dates" if INSTACART_PATH.exists() else "Local version only"
     from services.personal import personal_data
     data = personal_data()
     if not data or (data[0].empty and data[1].empty):
-        return "no entries yet"
-    return fmt_date(pd.concat([data[0]["date"], data[1]["date"]]).max())
+        return "No entries yet"
+    return f"Data as of {fmt_date(pd.concat([data[0]['date'], data[1]['date']]).max())}"

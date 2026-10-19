@@ -27,9 +27,13 @@ def month_rate(df: pd.DataFrame, month: pd.Period) -> float:
 
 
 def _delta(now: float, before: float, fmt: str) -> str | None:
+    """Signed change for st.metric; a leading "₹" in `fmt` goes after the sign ("+₹2,233")."""
     if pd.isna(now) or pd.isna(before):
         return None
-    return fmt.format(now - before)
+    change = now - before
+    if fmt.startswith("₹"):
+        return ("+" if change >= 0 else "-") + "₹" + fmt[1:].replace("{:+", "{:").format(abs(change))
+    return fmt.format(change)
 
 
 def _month_label(period: pd.Period) -> str:

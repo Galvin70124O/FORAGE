@@ -80,7 +80,7 @@ kpi_row([
     ("₹ wasted this month", f"₹{month_value:,.0f}" if waste_shown else "–",
      "Thrown away at pantry checks this month × what you paid per unit."),
     ("Waste rate", f"{waste_rate:.1f}%" if waste_rate is not None else "–", "Thrown away ÷ food available, all periods."),
-    ("Expiring in 3 days", f"{soon['Food'].nunique()} foods"),
+    ("Expiring in 3 days", f"{soon['Food'].nunique()} food" + ("" if soon['Food'].nunique() == 1 else "s")),
     ("Spent this month", f"₹{buys.loc[buys['date'] >= today.replace(day=1), 'total_price'].sum():,.0f}"),
 ])
 st.caption(waste_note)
@@ -124,6 +124,7 @@ else:
     if to_buy.empty:
         st.write("You have enough of everything for the next 7 days.")
     else:
+        to_buy = to_buy[["Food", "Buy", "Unit", "Need", "Usable_Stock"]]
         table(to_buy, {"Need": number("Need (7 days)"), "Usable_Stock": number("Good stock"), "Buy": number("Buy")},
               max_rows=10)
     (st.caption if reliable else st.warning)(note)

@@ -29,12 +29,12 @@ CLEANING_STEPS = [
     ("rows_read", "Rows read from the file", "–"),
     ("names_fixed", "Food or category name with odd case or spacing", "Fixed (tidied)"),
     ("duplicates_removed", "Exact duplicate row (after tidying names)", "Removed"),
-    ("missing_or_unparseable_removed", "Missing or unreadable date or number", "Removed, not imputed"),
-    ("invalid_values_removed", "Impossible value (negative quantity or price, purchase of 0, flag not 0/1)", "Removed"),
+    ("missing_or_unparseable_removed", "Missing or unreadable date or number", "Removed"),
+    ("invalid_values_removed", "Impossible value (negative, zero purchase, bad flag)", "Removed"),
     ("expiry_before_purchase_removed", "Expiry date before the purchase date", "Removed"),
-    ("unbalanced_removed", "Purchased ≠ consumed + wasted + remaining (beyond ±0.011 rounding)", "Removed"),
-    ("inconsistent_expiry_removed", "Expiry date ≠ purchase date + shelf-life days", "Removed"),
-    ("outliers_flagged", "IQR outlier in purchased, consumed, wasted or price", "Flagged, kept"),
+    ("unbalanced_removed", "Stock does not balance (beyond ±0.011)", "Removed"),
+    ("inconsistent_expiry_removed", "Expiry ≠ purchase date + shelf life", "Removed"),
+    ("outliers_flagged", "IQR outlier (quantities or price)", "Flagged, kept"),
     ("rows_kept", "Rows kept for analysis", "–"),
 ]
 STEP_COLUMNS = {"Check": text("Check", "large"), "Rows": number("Rows", "%d"), "Action": text("Action", "small")}
@@ -119,7 +119,7 @@ elif df is not None:
             with left:
                 section("Cleaning steps", "Each removed row is counted once, under the first rule it fails.")
                 table(steps_table(summary), STEP_COLUMNS, max_rows=None)
-                st.caption("No values are filled in. Blank text fields become the label “Unknown”. The demo file "
+                st.caption("No values are filled in: rows with missing values are removed. Blank text fields become the label “Unknown”. The demo file "
                            "is generated, so it has no problems to remove; the next tab runs the same pipeline on a "
                            "deliberately messy sample.")
             with right:

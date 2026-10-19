@@ -27,13 +27,11 @@ from views import backtest_section
 from views.common import begin
 
 PLAN_COLUMNS = {
-    "Food": text("Food", "small"), "Quantity_Unit": text("Unit", "small"),
+    "Food": text("Food", "small"), "Recommended_Purchase_Quantity": number("Buy", "%.2f"),
+    "Quantity_Unit": text("Unit", "small"),
     "Predicted_Demand": number("Predicted demand", "%.2f", "Next-day forecast, in the food's unit."),
-    "Current_Remaining_Quantity": number("In stock", "%.2f"),
     "Historical_Waste_Percentage": percent_bar("Waste rate"),
     "Usable_Remaining_Stock": number("Usable stock", "%.2f", "In stock × (1 − waste rate)."),
-    "Recommended_Purchase_Quantity": number("Buy", "%.2f"),
-    "Days_Until_Expiry": number("Days to expiry", "%d"),
     "Waste_Risk": st.column_config.ProgressColumn("Waste risk", format="%.0f%%", min_value=0, max_value=100,
                                                   help="Classifier probability that this purchase ends up high waste."),
     "Alerts": text("Alerts", "medium"),
@@ -86,12 +84,15 @@ if df is not None:
             week = demo_week()
             records = load_demo()
             weekly = weekly_plan(plan, week["latest"], records.groupby("Food")["Expiry_Days"].median())
+            weekly["Shop_Again_In_Days"] = weekly["Shop_Again_In_Days"].map(
+                lambda d: f"in {d:.0f} days" if pd.notna(d) else "")
+            weekly = weekly[["Food", "Buy_Now"] + [c for c in weekly.columns if c not in ("Food", "Buy_Now")]]
             section("Weekly plan: one shop for the next 7 days",
                     f"From the 7-day forecast ({week['best']}, chosen on the Forecasting page)")
             formula("buy now = max(0, 7-day forecast × days it keeps (up to 7) ÷ 7 − usable stock)")
             table(weekly, {"Quantity_Unit": "Unit", "Week_Forecast": number("7-day forecast"),
                            "Usable_Remaining_Stock": number("Usable stock"), "Covers_Days": number("Covers (days)", "%d"),
-                           "Buy_Now": number("Buy now"), "Shop_Again_In_Days": number("Shop again in (days)", "%d")},
+                           "Buy_Now": number("Buy now"), "Shop_Again_In_Days": "Shop again"},
                   max_rows=None)
             st.caption("Foods that keep fewer than 7 days are bought for as long as they last, with a reminder to "
                        "shop again; this is the weekly policy simulated in the Backtest tab.")
@@ -116,7 +117,8 @@ if df is not None:
             formula("need = your usual daily use (last 4 pantry-check periods) × 7 days")
             formula("buy = max(0, need − stock that will still be good during the week)")
             (st.caption if reliable else st.warning)(note)
-            table(plan, {"Need": number("Need (7 days)"), "Usable_Stock": number("Good stock"), "Buy": number("Buy")},
+            table(plan[["Food", "Buy", "Unit", "Need", "Usable_Stock"]],
+                  {"Need": number("Need (7 days)"), "Usable_Stock": number("Good stock"), "Buy": number("Buy")},
                   max_rows=15)
 
         with backtest_tab:

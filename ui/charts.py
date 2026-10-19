@@ -86,7 +86,7 @@ def line(data: pd.DataFrame, x: str, y: str, *, y_title: str, x_title: str | Non
     if x_type == "O":
         x_axis = alt.Axis(labelAngle=0, labelOverlap=True)
     encoding = dict(x=alt.X(f"{x}:{x_type}", title=x_title, axis=x_axis),
-                    y=alt.Y(f"{y}:Q", title=y_title, scale=alt.Scale(zero=zero, nice=True, padding=8)))
+                    y=alt.Y(f"{y}:Q", title=y_title, scale=alt.Scale(zero=zero, nice=True)))
     legend = alt.Legend(orient="top", direction="horizontal", labelLimit=320, title=None)
     if series:
         domain = order or sorted(data[series].unique())

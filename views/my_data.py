@@ -44,6 +44,8 @@ def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: 
         st.write(f"No {kind} yet.")
         return
     view = frame.sort_values(["date", "id"], ascending=False).reset_index(drop=True)
+    if "category" in view:
+        view["category"] = view["category"].fillna("Not set")
     view.insert(0, "Select", False)
     disabled = [c for c in view.columns if c not in editable + ["Select"]]
     edited = st.data_editor(view, hide_index=True, width="stretch", num_rows="fixed", key=f"edit_{kind}",

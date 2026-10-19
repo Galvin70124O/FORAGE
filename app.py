@@ -51,7 +51,7 @@ def render_sidebar(signed_in: bool) -> None:
         st.caption("Demo data is synthetic and for illustration only. M5 and Instacart are public datasets.")
         st.divider()
         render_account()
-        st.markdown(f'<div class="fg-footer">Data as of {data_as_of(st.session_state["source"])}<br>'
+        st.markdown(f'<div class="fg-footer">{data_as_of(st.session_state["source"])}<br>'
                     f'FORAGE {VERSION}</div>', unsafe_allow_html=True)
 
 

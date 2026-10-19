@@ -70,17 +70,19 @@ elif df is not None:
 
     rupees = rupee_summary(df)
     illustrative = source == "demo"
-    rupee_label = "₹ wasted" + (" · illustrative (synthetic prices)" if illustrative else "")
+    rupee_label = "₹ wasted (illustrative)" if illustrative else "₹ wasted"
     kpi_row([
         (rupee_label, f"₹{rupees['total']:,.0f}",
-         "Wasted quantity × the food's median price per unit (total price ÷ quantity bought)."),
+         "Wasted quantity × the food's median price per unit (total price ÷ quantity bought)."
+         + (" Illustrative: the demo prices are synthetic." if illustrative else "")),
         ("Waste rate", fmt_pct(headline["rate"]), "Mean of the food-level rates (wasted ÷ purchased). "
          f"Pooled across all units: {fmt_pct(headline['pooled_rate'])}."),
         ("Highest-waste food", f"{top['Food']}", f"{fmt_pct(top['Waste_Rate'])} of purchases wasted."),
         ("Highest-waste category", categories.index[0], f"{fmt_pct(categories.iloc[0]['Waste_Rate'])} on average."),
         ("Expiring in 7 days", f"{len(soon_7)} foods", f"Foods with stock that expires by {fmt_date(as_of + pd.Timedelta(days=7))}."),
     ])
-    formula("waste rate = wasted ÷ purchased × 100     ₹ wasted = wasted × (price paid ÷ quantity bought)")
+    formula("waste rate = wasted ÷ purchased × 100")
+    formula("₹ wasted = wasted × (price paid ÷ quantity bought)")
     st.caption("Waste is the recorded quantity wasted, never purchased − consumed (that would count stock still "
                "on hand). " + UNIT_NOTE + (" In the demo data, Price is the total paid for each purchase, so the "
                "price per unit is Price ÷ quantity purchased; prices are synthetic, so ₹ figures are illustrative."
@@ -103,7 +105,7 @@ elif df is not None:
             by_category = rupees["by_category"]
             charts.bar(by_category.rename_axis("Category").reset_index(), "Category", "Rupees",
                        value_title="₹ wasted", value_format=",.0f",
-                       title=f"{by_category.index[0]} costs the most: "
+                       title=f"{by_category.index[0]} is the costliest category: "
                              f"{by_category.iloc[0] / by_category.sum() * 100:.0f}% of ₹ wasted",
                        subtitle=f"₹ wasted by category · {note}")
         left, right = st.columns(2, gap="large")
@@ -117,7 +119,7 @@ elif df is not None:
             section("Waste by food", "Top 3: " + "; ".join(f"{row.Food} {fmt_pct(row.Waste_Rate)}"
                                                          for row in top3.itertuples()))
             by_food = foods.assign(Rupees=foods["Food"].map(rupees["by_food"]))
-            table(by_food[[c for c in ["Food", "Category", "Quantity_Unit", "Waste_Rate", "Wasted", "Rupees"]
+            table(by_food[[c for c in ["Food", "Quantity_Unit", "Waste_Rate", "Wasted", "Rupees"]
                            if c in by_food]], {
                 "Quantity_Unit": "Unit", "Waste_Rate": percent_bar("Waste rate"),
                 "Wasted": number("Wasted (unit)", "%.1f"), "Rupees": rupees_column("₹ wasted")}, max_rows=9)

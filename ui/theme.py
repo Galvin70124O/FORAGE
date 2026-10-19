@@ -107,6 +107,8 @@ hr { margin: 0.5rem 0 !important; }
   .fg-pill { float: none; margin: 0.5rem 0 0 0; }
   [data-testid="stMetricValue"] { font-size: 1.35rem; }
   h1 { font-size: 1.5rem !important; }
+  /* The table toolbar would sit on top of the section subtitle on a phone. */
+  [data-testid="stElementToolbar"] { display: none; }
 }
 </style>
 """

@@ -17,6 +17,8 @@ from playwright.sync_api import sync_playwright
 INSIGHTS = ["Overview", "Data Quality", "EDA", "Waste & Expiry", "Forecasting", "Recommendations"]
 PERSONAL = ["Home", "I bought", "Pantry check", "My data"]
 SOURCES = ["Demo data", "My data", "M5 (Walmart)", "Instacart"]
+PHONE_UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) "
+            "Version/17.0 Mobile/15E148 Safari/604.1")
 
 
 def settle(page, extra_ms=1500):
@@ -106,12 +108,16 @@ def main() -> None:
         for mode in args.modes:
             for width in args.widths:
                 height = 2600 if args.full_page else (900 if width > 600 else 844)
-                context = browser.new_context(viewport={"width": width, "height": height}, color_scheme=mode)
+                phone = width < 600  # present as a phone so the navigation behaves as on a real device
+                context = browser.new_context(
+                    viewport={"width": width, "height": height}, color_scheme=mode, is_mobile=phone, has_touch=phone,
+                    device_scale_factor=2 if phone else 1,
+                    user_agent=PHONE_UA if phone else None)
                 page = context.new_page()
                 console = []
-                page.on("console", lambda m: console.append(f"{m.type}: {m.text}")
+                page.on("console", lambda m, console=console: console.append(f"{m.type}: {m.text}")
                         if m.type == "error" or (m.type == "warning" and "WARN" in m.text) else None)
-                page.on("pageerror", lambda e: console.append(f"pageerror: {e}"))
+                page.on("pageerror", lambda e, console=console: console.append(f"pageerror: {e}"))
                 page.goto(args.url)
                 # a cold start (fresh environment) can take a while before anything renders
                 page.wait_for_selector('[data-testid="stSidebar"] a', timeout=240_000)

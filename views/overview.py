@@ -36,8 +36,8 @@ def rupee_charts(monthly: pd.Series, by_food: pd.Series, *, illustrative: bool) 
     with left:
         if len(monthly) >= 2:
             change = (monthly.iloc[-1] - monthly.iloc[-2]) / monthly.iloc[-2] * 100 if monthly.iloc[-2] else 0
-            title = (f"₹{monthly.iloc[-1]:,.0f} wasted in {monthly.index[-1]:%B}, "
-                     f"{abs(change):.0f}% {'less' if change < 0 else 'more'} than {monthly.index[-2]:%B}")
+            title = (f"₹{monthly.iloc[-1]:,.0f} wasted in {monthly.index[-1]:%b}, "
+                     f"{abs(change):.0f}% {'less' if change < 0 else 'more'} than {monthly.index[-2]:%b}")
         else:
             title = f"₹{monthly.sum():,.0f} wasted so far"
         charts.line(monthly.rename_axis("Month").reset_index(), "Month", "Rupees", x_title=None, y_title="₹ wasted",
@@ -124,7 +124,7 @@ elif df is not None:
         products = df.groupby("Product_Name", observed=True).agg(Lines=("Order_ID", "size"), Rate=("Reordered", "mean"))
         products = products[products["Lines"] >= 50].sort_values("Rate", ascending=False).head(5)
         action_list([{"tag": "Regular list", "title": f"Keep {name} on the regular list",
-                      "why": f"Reordered {row.Rate * 100:.0f}% of the time across {row.Lines:,} order lines."}
+                      "why": f"Reordered {row.Rate * 100:.0f}% of the time across {int(row.Lines):,} order lines."}
                      for name, row in products.iterrows()], "")
 
     with st.expander("What each data source supports"):
