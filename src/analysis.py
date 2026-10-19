@@ -1,4 +1,4 @@
-"""Exploratory data analysis for the Food Demand and Supply (FDS) dataset.
+"""Exploratory data analysis for the FORAGE demo dataset (command-line version of the EDA page).
 
 Run from the project root with:
     python src/analysis.py
@@ -52,7 +52,7 @@ def load_data():
 
 def dataset_overview(df):
     """Print dataset structure, quality checks, and general numeric summaries."""
-    print("FDS EXPLORATORY DATA ANALYSIS")
+    print("FORAGE EXPLORATORY DATA ANALYSIS")
     print(f"Dataset shape: {df.shape[0]:,} rows x {df.shape[1]} columns")
     print(f"Date range: {df['Date'].min():%Y-%m-%d} to {df['Date'].max():%Y-%m-%d}")
     print(f"Unique foods: {df['Food'].nunique()} | Categories: {df['Category'].nunique()}")
@@ -165,14 +165,14 @@ def time_based_analysis(df):
 
 
 def correlation_analysis(df):
-    """Calculate correlations among the numeric FDS measures."""
+    """Calculate correlations among the numeric FORAGE measures."""
     correlation = df[NUMERIC_COLUMNS].corr()
     print_table("NUMERIC CORRELATION MATRIX", correlation.round(2))
     return correlation
 
 
 def create_visualizations(df, consumption_by_food, waste_by_food, monthly, correlation):
-    """Save six targeted charts that support FDS purchasing and waste decisions."""
+    """Save six targeted charts that support FORAGE purchasing and waste decisions."""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     plt.style.use("seaborn-v0_8-whitegrid")
 
@@ -219,7 +219,7 @@ def create_visualizations(df, consumption_by_food, waste_by_food, monthly, corre
         for column in range(len(correlation.columns)):
             ax.text(column, row, f"{correlation.iloc[row, column]:.2f}", ha="center", va="center", fontsize=8)
     fig.colorbar(image, ax=ax, label="Correlation")
-    ax.set_title("Correlation of FDS Numeric Measures")
+    ax.set_title("Correlation of FORAGE Numeric Measures")
     save_current_plot("numeric_correlations.png")
 
     category_waste = df.groupby("Category").apply(

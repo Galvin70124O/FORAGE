@@ -1,4 +1,4 @@
-"""Explainable purchase recommendations based on FDS demand forecasts.
+"""Explainable purchase recommendations based on FORAGE demand forecasts.
 
 Run from the project root with:
     python src/recommendations.py
@@ -216,7 +216,7 @@ def main():
     output_path = OUTPUT_DIR / "purchase_recommendations.csv"
     recommendations.to_csv(output_path, index=False, date_format="%Y-%m-%d")
 
-    print("FDS EXPLAINABLE PURCHASE RECOMMENDATIONS")
+    print("FORAGE EXPLAINABLE PURCHASE RECOMMENDATIONS")
     print(f"Forecast date: {recommendations['Forecast_Date'].iloc[0]:%Y-%m-%d}")
     print(f"High-waste alert threshold (75th percentile): {high_waste_threshold:.2f}%")
     print(f"Short shelf-life alert threshold (25th percentile): {short_life_threshold:.0f} days")

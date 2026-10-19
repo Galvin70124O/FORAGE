@@ -1,4 +1,4 @@
-"""Data-quality checks and safe cleaning for mapped external FDS datasets."""
+"""Data-quality checks and safe cleaning for mapped external FORAGE datasets."""
 
 import pandas as pd
 
