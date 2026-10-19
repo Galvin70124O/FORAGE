@@ -105,7 +105,7 @@ elif df is not None:
             by_category = rupees["by_category"]
             charts.bar(by_category.rename_axis("Category").reset_index(), "Category", "Rupees",
                        value_title="₹ wasted", value_format=",.0f",
-                       title=f"{by_category.index[0]} is the costliest category: "
+                       title=f"{by_category.index[0]} cost the most: "
                              f"{by_category.iloc[0] / by_category.sum() * 100:.0f}% of ₹ wasted",
                        subtitle=f"₹ wasted by category · {note}")
         left, right = st.columns(2, gap="large")
