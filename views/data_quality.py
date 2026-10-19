@@ -1,112 +1,115 @@
-"""Data-quality reports and generic CSV import."""
-
-from pathlib import Path
-import tempfile
-import json
+"""Data Quality: what was checked, what was removed and why, and what is flagged but kept."""
 
 import pandas as pd
 import streamlit as st
 
+from data_quality import column_profile, iqr_outliers
+from services.data import demo_cleaning_summary, quality_report, raw_demo
+from ui.components import fmt_num, formula, kpi_row, number, section, table, text
+from views.common import begin
+from waste import balance_check
 
-from dataset_loader import process_external_csv
-from personal_data import (
-    append_personal_records,
-)
+CLEANING_STEPS = [
+    ("rows_read", "Rows read from raw file", "–"),
+    ("duplicates_removed", "Exact duplicate rows", "Removed"),
+    ("missing_or_unparseable_removed", "Missing or unparseable date / number", "Removed, not imputed"),
+    ("invalid_values_removed", "Impossible values (negative quantity or price, purchase of 0, flag not 0/1)", "Removed"),
+    ("unbalanced_removed", "Purchased ≠ consumed + wasted + remaining (beyond ±0.011 rounding)", "Removed"),
+    ("inconsistent_expiry_removed", "Expiry date ≠ purchase date + shelf-life days", "Removed"),
+    ("rows_kept", "Rows kept for analysis", "–"),
+]
+HOUSEHOLD_NUMERIC = ["Quantity_Purchased", "Quantity_Consumed", "Quantity_Wasted", "Remaining_Quantity",
+                     "Price", "Expiry_Days"]
 
-from services.data import INSTACART_QUALITY_PATH, M5_QUALITY_PATH
-from ui.components import metric_row, page_header, section_heading
+
+def profile_table(df: pd.DataFrame) -> None:
+    table(column_profile(df), {
+        "Missing": number("Missing", "%d"),
+        "Missing (%)": number("Missing (%)", "%.1f"),
+        "Distinct": number("Distinct values", "%d"),
+    }, max_rows=None)
 
 
-def dataset_quality_page():
-    page_header("Data ingestion", "Dataset quality", "Inspect a real processed extract or an uploaded food-related CSV. Source files are never modified.")
-    st.markdown("""<div class="workflow">
-    <div class="workflow-step"><b>01</b>Upload</div><div class="workflow-step"><b>02</b>Inspect</div>
-    <div class="workflow-step"><b>03</b>Quality check</div><div class="workflow-step"><b>04</b>Schema mapping</div>
-    <div class="workflow-step"><b>05</b>Preview</div><div class="workflow-step"><b>06</b>Import to My Data</div></div>""", unsafe_allow_html=True)
-    source = st.radio("Quality report source", ["M5 Forecasting extract", "Instacart extract", "Upload generic food CSV"], horizontal=True)
-    if source != "Upload generic food CSV":
-        report_path = M5_QUALITY_PATH if source.startswith("M5") else INSTACART_QUALITY_PATH
-        if not report_path.exists():
-            st.warning("The processed-data quality report is unavailable. Run `python src/real_data_processor.py` to rebuild it from the raw public dataset.")
-            return
-        report = json.loads(report_path.read_text(encoding="utf-8"))
-        st.caption("This report is produced during bounded, dataset-specific preprocessing. It describes the processed extract and join checks without loading large raw files into the interface.")
-        metric_row([("Rows", f"{report.get('rows', 0):,}"), ("Columns", str(len(report.get("columns", [])))), ("Duplicate relationship keys", str(report.get("duplicate_keys", 0))), ("Invalid dates", str(report.get("invalid_dates", "Not applicable")))])
-        left, right = st.columns(2)
+def outlier_table(df: pd.DataFrame, columns: list[str]) -> None:
+    table(iqr_outliers(df, columns), {
+        "Lower bound": number("Lower bound"), "Upper bound": number("Upper bound"),
+        "Outliers": number("Outliers", "%d"), "Outliers (%)": number("Outliers (%)", "%.1f"),
+    })
+
+
+source, df = begin("Data Quality",
+                   "What was checked before analysis, which rows were removed and why, and what was flagged but kept.")
+
+if df is not None:
+    if source in ("demo", "personal"):
+        balance = balance_check(df)
+        if source == "demo":
+            summary = demo_cleaning_summary()
+            removed = summary["rows_read"] - summary["rows_kept"]
+            kpi_row([("Rows read", f"{summary['rows_read']:,}"), ("Rows removed", f"{removed:,}"),
+                     ("Rows kept", f"{summary['rows_kept']:,}"),
+                     ("Missing values in raw file", f"{int(raw_demo().isna().sum().sum()):,}"),
+                     ("Balance check", "All pass" if not balance["failing"] else f"{balance['failing']:,} fail",
+                      "purchased = consumed + wasted + remaining, within ±0.011.")])
+            left, right = st.columns([1.7, 1], gap="large")
+            with left:
+                section("Cleaning steps", "Each removed row is counted once, under the first rule it fails.")
+                steps = pd.DataFrame([{"Check": label, "Rows": summary[key], "Action": action}
+                                      for key, label, action in CLEANING_STEPS])
+                table(steps, {"Check": text("Check", "large"), "Rows": number("Rows", "%d"),
+                              "Action": text("Action", "small")})
+                st.caption("No values are filled in. Blank text fields become the label “Unknown”. "
+                           "Duplicates, missing values and failures are all zero in this file because the demo "
+                           "data is generated; the unit tests exercise every rule on deliberately messy input.")
+            with right:
+                section("Stock balance", "Every record must satisfy:")
+                formula("purchased = consumed + wasted + remaining")
+                st.write("")
+                st.write(f"Largest difference found: {fmt_num(balance['max_abs_residual'], 3)} "
+                         "(rounding to two decimals in the source).")
+                st.caption("Waste is the recorded quantity wasted. It is not computed as purchased − consumed, "
+                           "because that would count food still in stock as waste.")
+        else:
+            kpi_row([("Records", f"{len(df):,}"), ("Missing values", f"{int(df[HOUSEHOLD_NUMERIC].isna().sum().sum()):,}"),
+                     ("Duplicate rows", f"{int(df.drop(columns='Record_ID').duplicated().sum()):,}"),
+                     ("Balance check", "All pass" if not balance["failing"] else f"{balance['failing']:,} fail")])
+            formula("purchased = consumed + wasted + remaining")
+            if balance["failing"]:
+                st.warning(f"{balance['failing']} record(s) do not balance. Edit them on the My Data page; "
+                           "waste figures for those foods may be understated or overstated.")
+
+        section("Columns", "Type, missing values and distinct values in the cleaned data")
+        profile_table(df.drop(columns=["Record_ID"], errors="ignore"))
+        section("Outliers (IQR rule)",
+                "Values outside Q1 − 1.5×IQR to Q3 + 1.5×IQR. They are flagged for review and kept, "
+                "because large purchases can be genuine.")
+        outlier_table(df, HOUSEHOLD_NUMERIC)
+
+    else:
+        report = quality_report(source) or {}
+        numeric = (["Quantity_Sold", "Price"] if source == "m5"
+                   else ["Order_Hour", "Days_Since_Prior_Order", "Add_To_Cart_Order", "Order_Number"])
+        key = ["Date", "Product_ID", "Store_ID"] if source == "m5" else ["Order_ID", "Product_ID"]
+        kpi_row([("Rows", f"{len(df):,}"), ("Columns", f"{len(df.columns)}"),
+                 ("Missing values", f"{int(df.isna().sum().sum()):,}"),
+                 ("Duplicate keys", f"{int(df.duplicated(subset=key).sum()):,}", f"Rows sharing {' + '.join(key)}.")])
+        selection = report.get("selection", {})
+        if selection:
+            st.caption("How the extract was selected: " + selection.get("reason", ""))
+        left, right = st.columns([1.3, 1], gap="large")
         with left:
-            section_heading("Detected schema")
-            st.dataframe(pd.DataFrame({"Column": report.get("columns", [])}), width="stretch", hide_index=True)
+            section("Columns")
+            profile_table(df)
         with right:
-            section_heading("Quality and join checks")
-            checks = {key: value for key, value in report.items() if key not in {"columns", "missing_values", "selection"}}
-            st.json(checks)
-        with st.expander("Missing values and extraction selection"):
-            st.json({"missing_values": report.get("missing_values", {}), "selection": report.get("selection", {})})
-        return
-
-    st.markdown("<div class='upload-well'>", unsafe_allow_html=True)
-    section_heading("Import a CSV", "Drag and drop a food-related CSV. The original file is never changed.")
-    with st.container():
-        uploaded_file = st.file_uploader("Upload external food CSV", type="csv", help="The original file is not changed.")
-        st.caption("The existing alias mapping and data-quality pipeline are used. Missing fields are reported; no values are invented.")
-    st.markdown("</div>", unsafe_allow_html=True)
-    if uploaded_file is None:
-        st.info("Upload a CSV to inspect detected columns, mappings, quality checks, and the processed standardized result.")
-        return
-    temporary_path = None
-    try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as temporary_file:
-            temporary_file.write(uploaded_file.getvalue())
-            temporary_path = temporary_file.name
-        result = process_external_csv(temporary_path)
-    except Exception as error:
-        st.error(f"The uploaded CSV could not be processed: {error}")
-        return
-    finally:
-        if temporary_path:
-            Path(temporary_path).unlink(missing_ok=True)
-
-    inspection, report, cleaning_summary = result["inspection"], result["quality_report"], result["cleaning_summary"]
-    metric_row([("Rows", f"{inspection['shape'][0]:,}"), ("Columns", f"{inspection['shape'][1]}"), ("Duplicate rows", f"{inspection['duplicate_rows']}"), ("Missing values", f"{sum(report['missing_values'].values())}")])
-    first, second = st.columns(2)
-    with first:
-        with st.container(border=True):
-            st.subheader("Detected columns and missing values")
-            st.dataframe(pd.DataFrame({"Column": inspection["data_types"].keys(), "Data type": inspection["data_types"].values(), "Missing values": inspection["missing_values"].values()}), width="stretch", hide_index=True)
-    with second:
-        with st.container(border=True):
-            st.subheader("Schema mapping")
-            mapping = result["column_mapping"]
-            if mapping:
-                st.dataframe(pd.DataFrame({"FDS column": mapping.keys(), "Uploaded column": mapping.values()}), width="stretch", hide_index=True)
+            section("Extraction checks", "Recorded when the extract was built from the raw files")
+            checks = {k: v for k, v in report.items() if isinstance(v, (int, float)) and k != "rows"}
+            table(pd.DataFrame({"Check": [k.replace("_", " ").capitalize() for k in checks], "Count": list(checks.values())}),
+                  {"Count": number("Count", "%d")})
+            if source == "m5":
+                st.caption("Event_Name and Event_Type are blank on days without a calendar event; that is expected, "
+                           "not missing data.")
             else:
-                st.warning("No supported columns were detected in this file.")
-            if report["missing_required_standard_columns"]:
-                st.warning("Missing required fields: " + ", ".join(report["missing_required_standard_columns"]))
-            if report["unmapped_source_columns"]:
-                st.info("Unmapped uploaded columns: " + ", ".join(report["unmapped_source_columns"]))
-    with st.container(border=True):
-        st.subheader("Quality checks and cleaning actions")
-        removed_rows = sum(value for key, value in cleaning_summary.items() if key.startswith("rows_removed")) + cleaning_summary["duplicates_removed"]
-        metric_row([("Invalid dates", f"{report['invalid_dates']}"), ("Invalid numeric values", f"{sum(report['invalid_numeric_values'].values())}"), ("Negative values", f"{sum(report['negative_values'].values())}"), ("Rows removed", f"{removed_rows}")])
-        outliers = pd.DataFrame.from_dict(report["suspicious_outliers_iqr"], orient="index").rename_axis("Column").reset_index()
-        if not outliers.empty:
-            st.caption("IQR outliers are flagged for review and are not automatically removed.")
-            st.dataframe(outliers, width="stretch", hide_index=True)
-        st.caption("Derived columns: " + (", ".join(cleaning_summary["derived_columns"]) or "None"))
-        if inspection["useful_unique_values"]:
-            with st.expander("Useful unique values"):
-                st.json(inspection["useful_unique_values"])
-    with st.container(border=True):
-        standardized = result["standardised_data"]
-        st.subheader("Processed standardized dataset")
-        st.caption(f"Showing the first {min(100, len(standardized))} processed rows.")
-        st.dataframe(standardized.head(100), width="stretch", hide_index=True)
-        st.download_button("Download processed dataset", standardized.to_csv(index=False).encode("utf-8"), file_name="standardized_external_food_data.csv", mime="text/csv")
-        if report["missing_required_standard_columns"]:
-            st.warning("Import to My Data is unavailable until Food and Date are supplied.")
-        elif standardized.empty:
-            st.warning("There are no valid records to import.")
-        elif st.button("Add processed records to My Data", key="import_to_personal"):
-            append_personal_records(standardized)
-            st.success(f"Added {len(standardized)} record(s) to your personal food data. The FORAGE Dataset was not changed.")
+                st.caption("Days_Since_Prior_Order is blank for each customer's first order; that is expected, "
+                           "not missing data.")
+        section("Outliers (IQR rule)", "Flagged for review and kept.")
+        outlier_table(df, numeric)

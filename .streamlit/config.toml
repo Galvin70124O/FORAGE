@@ -1,10 +1,50 @@
+# FORAGE theme: neutral surfaces, one blue accent, Inter.
+# Chart colours are validated for colour-vision deficiency in both modes
+# (see ui/theme.py); keep chartCategoricalColors in the same order.
+
 [theme]
-base = "light"
-primaryColor = "#2E7D32"
-backgroundColor = "#F1F3EC"
-secondaryBackgroundColor = "#FFFFFF"
-textColor = "#172019"
-font = "sans serif"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, system-ui, sans-serif"
+headingFontWeights = [650, 600, 600, 600, 600, 600]
+headingFontSizes = ["1.75rem", "1.25rem", "1.05rem", "1rem", "0.95rem", "0.9rem"]
+baseFontSize = 15
+baseRadius = "6px"
+showSidebarBorder = true
+showWidgetBorder = true
+
+[theme.light]
+primaryColor = "#2a78d6"
+backgroundColor = "#fbfbfa"
+secondaryBackgroundColor = "#f2f2ef"
+textColor = "#1b1b19"
+borderColor = "#e1e0d9"
+dataframeBorderColor = "#e1e0d9"
+dataframeHeaderBackgroundColor = "#f2f2ef"
+linkColor = "#1c5cab"
+chartCategoricalColors = ["#2a78d6", "#eb6834", "#1baf7a"]
+chartSequentialColors = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6", "#1c5cab", "#104281"]
+
+[theme.light.sidebar]
+backgroundColor = "#f4f4f1"
+secondaryBackgroundColor = "#eaeae6"
+
+[theme.dark]
+primaryColor = "#3987e5"
+backgroundColor = "#171716"
+secondaryBackgroundColor = "#222220"
+textColor = "#ecebe7"
+borderColor = "#33332f"
+dataframeBorderColor = "#33332f"
+dataframeHeaderBackgroundColor = "#222220"
+linkColor = "#86b6ef"
+chartCategoricalColors = ["#3987e5", "#d95926", "#199e70"]
+chartSequentialColors = ["#104281", "#184f95", "#1c5cab", "#256abf", "#2a78d6", "#3987e5", "#5598e7", "#6da7ec", "#86b6ef", "#b7d3f6"]
+
+[theme.dark.sidebar]
+backgroundColor = "#1d1d1b"
+secondaryBackgroundColor = "#272725"
+
+[client]
+toolbarMode = "viewer"
 
 [server]
 headless = true

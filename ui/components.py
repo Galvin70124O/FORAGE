@@ -1,4 +1,6 @@
-"""Small layout components reused across pages."""
+"""Layout pieces shared by every page: headers, source label, KPI row, empty states, formatting."""
+
+from __future__ import annotations
 
 from html import escape
 
@@ -6,100 +8,82 @@ import pandas as pd
 import streamlit as st
 
 
-
-from ui.theme import THEMES, current_theme
-
-
-def page_header(kicker, title, description):
-    st.markdown(f'<div class="page-kicker">{kicker.upper()}</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="page-title">{title}</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="page-subtitle">{description}</div>', unsafe_allow_html=True)
+def page_header(title: str, purpose: str) -> None:
+    st.title(title)
+    st.markdown(f'<p class="fg-purpose">{escape(purpose)}</p>', unsafe_allow_html=True)
 
 
-def data_source_badge(kind, name):
-    """Make the currently displayed dataset unmistakable on analytical pages."""
-    st.markdown(
-        f'<div class="source-badge"><span class="source-dot"></span>{escape(kind.upper())} <strong>{escape(name)}</strong></div>',
-        unsafe_allow_html=True,
-    )
+def source_label(name: str, detail: str) -> None:
+    st.markdown(f'<div class="fg-source">Data source: <b>{escape(name)}</b> · {escape(detail)}</div>',
+                unsafe_allow_html=True)
 
 
-def recorded_quantity_note():
-    st.caption("Quantities retain their source units (kg, L, dozen, loaf, and pack). Totals are recorded-quantity summaries; compare physical quantities by food and unit.")
-
-
-def metric_row(items):
-    """Render aligned KPI cards from (label, value, optional delta/help) tuples."""
-    accent_by_label = {
-        "purchased": "teal", "consumed": "green", "wasted": "waste",
-        "overall waste": "accent", "food items": "teal",
-    }
-    theme = THEMES[current_theme()]
+def kpi_row(items: list[tuple]) -> None:
+    """Plain figures: (label, value) or (label, value, help)."""
     columns = st.columns(len(items))
     for column, item in zip(columns, items):
-        label, value, *optional = item
-        context = optional[0] if optional else None
-        help_text = optional[1] if len(optional) > 1 else None
-        context_markup = f'<div class="metric-context">{escape(str(context))}</div>' if context else ""
-        title_markup = f' title="{escape(str(help_text))}"' if help_text else ""
-        accent = theme[accent_by_label.get(str(label).lower(), "accent")]
-        with column:
-            st.markdown(
-                f'<div class="metric-card" style="--metric-accent:{accent}"{title_markup}>'
-                f'<div class="metric-label">{escape(str(label))}</div>'
-                f'<div class="metric-value">{escape(str(value))}</div>{context_markup}</div>',
-                unsafe_allow_html=True,
-            )
+        label, value, *rest = item
+        column.metric(label, value, help=rest[0] if rest else None)
 
 
-def inventory_signal(label, food, quantity, unit):
-    """Present the existing inventory extrema with a compact visual hierarchy."""
-    theme = THEMES[current_theme()]
-    accent = theme["green"] if "consumption" in label.lower() else theme["waste"]
-    st.markdown(
-        f'<div class="signal-card" style="--signal-accent:{accent}"><div class="signal-label">{escape(label)}</div>'
-        f'<div class="signal-name">{escape(str(food))}</div>'
-        f'<div class="signal-value">{quantity:.2f} {escape(str(unit))}</div></div>',
-        unsafe_allow_html=True,
-    )
-
-
-def section_heading(title, note=None):
-    st.markdown(f'<div class="chart-title">{title}</div>', unsafe_allow_html=True)
+def section(title: str, note: str | None = None) -> None:
+    st.subheader(title)
     if note:
-        st.markdown(f'<div class="chart-note">{note}</div>', unsafe_allow_html=True)
+        st.caption(note)
 
 
-def render_filters(df):
-    """Return consumption records filtered by the visible controls."""
+def empty_state(title: str, body: str, *, page: str | None = None, page_label: str | None = None) -> None:
     with st.container(border=True):
-        st.markdown("**Explore consumption records**")
-        first, second, third = st.columns([1, 1, 1.3])
-        with first:
-            foods = st.multiselect("Food", sorted(df["Food"].unique()), placeholder="All foods")
-        with second:
-            categories = st.multiselect("Category", sorted(df["Category"].unique()), placeholder="All categories")
-        with third:
-            dates = st.date_input("Date range", value=(df["Date"].min().date(), df["Date"].max().date()), min_value=df["Date"].min().date(), max_value=df["Date"].max().date())
-    filtered = df.copy()
-    if foods:
-        filtered = filtered[filtered["Food"].isin(foods)]
-    if categories:
-        filtered = filtered[filtered["Category"].isin(categories)]
-    if len(dates) == 2:
-        filtered = filtered[filtered["Date"].between(pd.Timestamp(dates[0]), pd.Timestamp(dates[1]))]
-    return filtered
+        st.markdown(f"**{title}**")
+        st.write(body)
+        if page:
+            st.page_link(page, label=page_label or "Open")
 
 
-def render_provenance(profile):
-    """Show a compact, reusable source contract beside public-data statistics."""
-    with st.container(border=True):
-        section_heading("Data provenance")
-        left, right = st.columns(2)
-        left.caption(f"**Source:** {profile['source']}\n\n**Purpose:** {profile['type']}\n\n**Records:** {profile['records']:,} × {profile['columns']} columns\n\n**Coverage:** {profile['date_range']}")
-        right.caption(f"**Available:** {profile['available']}\n\n**Not available:** {profile['unavailable']}\n\n**Forecasting:** {profile['forecasting']} · **Waste:** {profile['waste']} · **Inventory:** {profile['inventory']}")
+def formula(text: str) -> None:
+    st.markdown(f'<div class="fg-formula">{escape(text)}</div>', unsafe_allow_html=True)
 
 
-def real_data_missing(path, label):
-    page_header("Real data", label, "This page uses a separate, preprocessed public dataset and never changes My Data or the FORAGE demo dataset.")
-    st.info("Run `python src/real_data_processor.py` from the project root to create the local analytical extract.")
+def fmt_num(value: float, decimals: int = 2) -> str:
+    return "–" if pd.isna(value) else f"{value:,.{decimals}f}"
+
+
+def fmt_pct(value: float, decimals: int = 1) -> str:
+    return "–" if pd.isna(value) else f"{value:.{decimals}f}%"
+
+
+def fmt_date(value) -> str:
+    if pd.isna(value):
+        return "–"
+    stamp = pd.Timestamp(value)
+    return f"{stamp.day} {stamp:%b %Y}"
+
+
+ROW_PX = 35
+
+
+def fit_height(rows: int, max_rows: int | None = None) -> int:
+    """Pixel height that shows `rows` rows plus the header with no empty padding rows."""
+    shown = min(rows, max_rows) if max_rows else rows
+    return ROW_PX * (shown + 1) + 3
+
+
+def table(df: pd.DataFrame, columns: dict | None = None, *, max_rows: int | None = 12, hide_index: bool = True) -> None:
+    """st.dataframe sized to its rows; `columns` maps column -> st.column_config entry or a label."""
+    config = {}
+    for name, spec in (columns or {}).items():
+        config[name] = st.column_config.Column(spec) if isinstance(spec, str) else spec
+    height = "content" if max_rows is None or len(df) <= max_rows else fit_height(len(df), max_rows)
+    st.dataframe(df, column_config=config, hide_index=hide_index, width="stretch", height=height)
+
+
+def text(label: str, width: str = "medium"):
+    return st.column_config.TextColumn(label, width=width)
+
+
+def number(label: str, fmt: str = "%.2f", help: str | None = None):
+    return st.column_config.NumberColumn(label, format=fmt, help=help)
+
+
+def date(label: str):
+    return st.column_config.DateColumn(label, format="D MMM YYYY")

@@ -1,57 +1,58 @@
-"""Cached data loaders and model results shared by every view."""
+"""Data-source registry, cached loaders and cached model results shared by every page."""
 
+from __future__ import annotations
+
+import json
 
 import pandas as pd
 import streamlit as st
 
-
-from prediction import (
-    build_models,
-    chronological_split,
-    create_forecasting_features,
-    evaluate_predictions,
-    load_data,
-)
-from recommendations import (
-    CATEGORICAL_FEATURES,
-    FEATURE_COLUMNS,
-    NUMERIC_FEATURES,
-    generate_recommendations,
-)
-from m5_forecasting import forecast_retail_demand
+from clean_data import RAW_DATA_PATH, clean_records
 from dataset_registry import get_dataset
+from m5_forecasting import forecast_retail_demand
+from personal_data import load_personal_data
+from prediction import run_demo_forecast
+from recommendations import generate_recommendations
+from ui.components import fmt_date
+
+SOURCES = {
+    "demo": "Demo data",
+    "personal": "My Data",
+    "m5": "M5 (Walmart)",
+    "instacart": "Instacart",
+}
+HOUSEHOLD_SOURCES = {"demo", "personal"}
+M5_PATH = get_dataset("m5")["path"]
+INSTACART_PATH = get_dataset("instacart")["path"]
+DEMO_PATH = get_dataset("demo")["path"]
+EXTRACT_COMMAND = "python src/real_data_processor.py"
 
 
-
-DATA_PATH = get_dataset("demo")["path"]
-
-M5_DATA_PATH = get_dataset("m5")["path"]
-
-INSTACART_DATA_PATH = get_dataset("instacart")["path"]
-
-M5_QUALITY_PATH = M5_DATA_PATH.parent / "quality_report.json"
-
-INSTACART_QUALITY_PATH = INSTACART_DATA_PATH.parent / "quality_report.json"
-
-@st.cache_data
-def get_cleaned_data():
-    return pd.read_csv(DATA_PATH, parse_dates=["Date", "Estimated_Expiry_Date"])
+def current_source() -> str:
+    return st.session_state.get("source", "demo")
 
 
-@st.cache_data
-def get_m5_data():
-    """Load only the one-time M5 extract, never the raw wide M5 files."""
-    return pd.read_csv(M5_DATA_PATH, parse_dates=["Date"], dtype={
+def set_source(key: str) -> None:
+    st.session_state["source"] = key
+
+
+@st.cache_data(show_spinner="Loading demo data...")
+def load_demo() -> pd.DataFrame:
+    return pd.read_csv(DEMO_PATH, parse_dates=["Date", "Estimated_Expiry_Date"])
+
+
+@st.cache_data(show_spinner="Loading the M5 extract...")
+def load_m5() -> pd.DataFrame:
+    return pd.read_csv(M5_PATH, parse_dates=["Date"], dtype={
         "Product_ID": "category", "Store_ID": "category", "Department": "category",
         "Category": "category", "Quantity_Sold": "int16", "Price": "float32",
         "Weekday": "category", "Month": "int8", "Event_Name": "category", "Event_Type": "category",
     })
 
 
-@st.cache_data
-def get_instacart_data():
-    """Load only the one-time Instacart relational extract."""
-    return pd.read_csv(INSTACART_DATA_PATH, dtype={
+@st.cache_data(show_spinner="Loading the Instacart extract...")
+def load_instacart() -> pd.DataFrame:
+    return pd.read_csv(INSTACART_PATH, dtype={
         "Order_ID": "int32", "User_ID": "int32", "Order_Set": "category",
         "Order_Number": "int16", "Order_Day_Of_Week": "int8", "Order_Hour": "int8",
         "Days_Since_Prior_Order": "float32", "Product_ID": "int32", "Product_Name": "category",
@@ -59,38 +60,64 @@ def get_instacart_data():
     })
 
 
-@st.cache_data(show_spinner="Evaluating the chronological retail-demand test period...")
-def get_m5_forecast_results():
-    return forecast_retail_demand(get_m5_data())
+def load(source: str) -> pd.DataFrame | None:
+    """The selected source's records, or None when a public extract has not been built."""
+    if source == "demo":
+        return load_demo()
+    if source == "personal":
+        return load_personal_data()
+    if source == "m5":
+        return load_m5() if M5_PATH.exists() else None
+    return load_instacart() if INSTACART_PATH.exists() else None
 
 
-@st.cache_data(show_spinner="Evaluating forecasting models on the chronological test period...")
-def get_forecast_results():
-    """Reuse the tested forecasting logic from prediction.py."""
-    raw_df = load_data()
-    featured_df = create_forecasting_features(raw_df)
-    train_df, test_df, cutoff_date = chronological_split(featured_df)
-    x_train, x_test = train_df[FEATURE_COLUMNS], test_df[FEATURE_COLUMNS]
-    y_train, y_test = train_df["Quantity_Consumed"], test_df["Quantity_Consumed"]
-
-    predictions = {"Moving Average": test_df["Rolling_Mean_7"]}
-    for model_name, model in build_models(NUMERIC_FEATURES, CATEGORICAL_FEATURES).items():
-        model.fit(x_train, y_train)
-        predictions[model_name] = pd.Series(model.predict(x_test), index=x_test.index)
-
-    comparison = pd.DataFrame(
-        [{"Model": name, **evaluate_predictions(y_test, values)} for name, values in predictions.items()]
-    ).sort_values("MAE").reset_index(drop=True)
-    best_model = comparison.loc[0, "Model"]
-    chart_data = test_df[["Date", "Food", "Quantity_Unit", "Quantity_Consumed"]].copy()
-    chart_data["Predicted_Consumption"] = predictions[best_model]
-    return comparison, chart_data, best_model, pd.Timestamp(cutoff_date)
+def quality_report(source: str) -> dict | None:
+    path = (M5_PATH if source == "m5" else INSTACART_PATH).parent / "quality_report.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
-@st.cache_data(show_spinner="Preparing explainable purchase recommendations...")
-def get_recommendations():
-    return generate_recommendations()[0]
+def describe(source: str, df: pd.DataFrame | None) -> str:
+    """One line for the data-source label under each page title."""
+    if df is None:
+        return "extract not built yet"
+    if source == "demo":
+        return f"synthetic household records · {len(df):,} rows · {fmt_date(df['Date'].min())} to {fmt_date(df['Date'].max())}"
+    if source == "personal":
+        if df.empty:
+            return "no records yet"
+        return f"your records · {len(df):,} rows · {fmt_date(df['Date'].min())} to {fmt_date(df['Date'].max())}"
+    if source == "m5":
+        return (f"Walmart retail unit sales, store CA_1, top {df['Product_ID'].nunique()} food items · "
+                f"{len(df):,} rows · {fmt_date(df['Date'].min())} to {fmt_date(df['Date'].max())}")
+    return (f"online grocery orders from users 1–2,000 · {len(df):,} order lines · "
+            f"{df['Order_ID'].nunique():,} orders · no calendar dates")
 
 
-def quantity_summary(df, quantity_column):
-    return df.groupby(["Food", "Quantity_Unit"], as_index=False)[quantity_column].sum().sort_values(quantity_column, ascending=False)
+@st.cache_data(show_spinner="Evaluating forecasting models on the held-out period...")
+def demo_forecast() -> dict:
+    return run_demo_forecast(load_demo())
+
+
+@st.cache_data(show_spinner="Evaluating forecasting models on the held-out period...")
+def personal_forecast(df: pd.DataFrame) -> dict:
+    return run_demo_forecast(df.sort_values(["Food", "Date"]).reset_index(drop=True))
+
+
+@st.cache_data(show_spinner="Evaluating M5 forecasting models on the held-out period...")
+def m5_forecast():
+    return forecast_retail_demand(load_m5())
+
+
+@st.cache_data(show_spinner="Building the purchase plan...")
+def demo_recommendations():
+    return generate_recommendations(load_demo(), demo_forecast()["best_model"])
+
+
+@st.cache_data
+def demo_cleaning_summary() -> dict:
+    return clean_records(pd.read_csv(RAW_DATA_PATH))[1]
+
+
+@st.cache_data
+def raw_demo() -> pd.DataFrame:
+    return pd.read_csv(RAW_DATA_PATH)
