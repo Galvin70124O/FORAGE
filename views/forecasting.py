@@ -4,12 +4,11 @@ import pandas as pd
 import streamlit as st
 
 from prediction import TARGET, best_baseline
-from services.data import demo_forecast, m5_forecast, personal_forecast
+from services.data import demo_forecast, m5_forecast
 from ui import charts
 from ui.components import empty_state, fmt_date, kpi_row, section
 from views.common import begin, not_available
 
-PERSONAL_MIN_DAYS = 21
 ONE_STEP = ("These are one-step-ahead forecasts: the prediction for each day uses the actual figure from the day "
             "before (and the week before), so they measure how well a model tracks next-day demand, not how far "
             "ahead it can see.")
@@ -68,12 +67,25 @@ if df is not None:
         not_available(source, "Forecasting",
                       "Instacart orders only have a day-of-week and hour, not calendar dates, so there is no time "
                       "series to forecast.", alternatives=["demo", "m5", "personal"], key="forecast_switch")
-    elif source == "personal" and df.groupby("Food")["Date"].nunique().max() < PERSONAL_MIN_DAYS:
-        empty_state("Not enough history to evaluate a forecast",
-                    f"Model evaluation needs at least {PERSONAL_MIN_DAYS} days of records for a food, so that a "
-                    f"later period can be held back for testing. Your longest history is "
-                    f"{df.groupby('Food')['Date'].nunique().max()} days.",
-                    page="views/my_data.py", page_label="Add records on My Data")
+    elif source == "personal":
+        from pantry import period_forecast_evaluation, periods
+        from services.personal import gate, personal_data
+        from views.common import PERIOD_NOTE
+        shown, reliable, note = gate("forecast")
+        predictions, comparison = period_forecast_evaluation(periods(*personal_data()))
+        st.info(PERIOD_NOTE)
+        if not shown or comparison.empty:
+            empty_state("Not enough of your data to evaluate a forecast",
+                        f"{note} A forecast is scored on periods it has not seen, so each food needs at least two "
+                        "completed pantry-check periods.", page="views/pantry.py", page_label="Do a pantry check")
+        else:
+            if not reliable:
+                st.warning(note)
+            section("Period-level forecasts of daily use", f"Scored on {int(comparison['n'].iloc[0])} later periods; "
+                    "each prediction uses earlier periods only")
+            metrics_table(comparison.drop(columns="n"), comparison.iloc[0]["Model"], "your units per day")
+            st.write(f"Your buy list uses the {comparison.iloc[0]['Model'].lower()}, the more accurate of the two on "
+                     "your own history so far.")
     else:
         if source == "m5":
             tested, _, comparison, meta = m5_forecast()
@@ -83,7 +95,7 @@ if df is not None:
             y_title = "Units sold per day"
             features = "yesterday's and last week's sales, the 7-day average, weekday, month and price"
         else:
-            result = demo_forecast() if source == "demo" else personal_forecast(df)
+            result = demo_forecast()
             comparison, tested, best, cutoff = (result["comparison"], result["tested"], result["best_model"],
                                                 result["cutoff"])
             train_rows, test_rows = result["train_rows"], result["test_rows"]

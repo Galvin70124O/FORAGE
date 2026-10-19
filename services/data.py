@@ -10,14 +10,13 @@ import streamlit as st
 from clean_data import RAW_DATA_PATH, clean_records
 from dataset_registry import get_dataset
 from m5_forecasting import forecast_retail_demand
-from personal_data import load_personal_data
 from prediction import run_demo_forecast
 from recommendations import generate_recommendations
 from ui.components import fmt_date
 
 SOURCES = {
     "demo": "Demo data",
-    "personal": "My Data",
+    "personal": "My data",
     "m5": "M5 (Walmart)",
     "instacart": "Instacart",
 }
@@ -65,7 +64,9 @@ def load(source: str) -> pd.DataFrame | None:
     if source == "demo":
         return load_demo()
     if source == "personal":
-        return load_personal_data()
+        from services.personal import personal_frame
+        frame = personal_frame()
+        return pd.DataFrame() if frame is None else frame
     if source == "m5":
         return load_m5() if M5_PATH.exists() else None
     return load_instacart() if INSTACART_PATH.exists() else None
@@ -84,8 +85,9 @@ def describe(source: str, df: pd.DataFrame | None) -> str:
         return f"synthetic household records · {len(df):,} rows · {fmt_date(df['Date'].min())} to {fmt_date(df['Date'].max())}"
     if source == "personal":
         if df.empty:
-            return "no records yet"
-        return f"your records · {len(df):,} rows · {fmt_date(df['Date'].min())} to {fmt_date(df['Date'].max())}"
+            return "no completed pantry-check periods yet"
+        return (f"your purchases and pantry checks · {len(df):,} food-periods · "
+                f"{fmt_date(df['Period_Start'].min())} to {fmt_date(df['Date'].max())}")
     if source == "m5":
         return (f"Walmart retail unit sales, store CA_1, top {df['Product_ID'].nunique()} food items · "
                 f"{len(df):,} rows · {fmt_date(df['Date'].min())} to {fmt_date(df['Date'].max())}")
@@ -96,11 +98,6 @@ def describe(source: str, df: pd.DataFrame | None) -> str:
 @st.cache_data(show_spinner="Evaluating forecasting models on the held-out period...")
 def demo_forecast() -> dict:
     return run_demo_forecast(load_demo())
-
-
-@st.cache_data(show_spinner="Evaluating forecasting models on the held-out period...")
-def personal_forecast(df: pd.DataFrame) -> dict:
-    return run_demo_forecast(df.sort_values(["Food", "Date"]).reset_index(drop=True))
 
 
 @st.cache_data(show_spinner="Evaluating M5 forecasting models on the held-out period...")

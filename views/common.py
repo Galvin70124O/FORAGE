@@ -12,8 +12,18 @@ UNIT_NOTE = ("Quantities are in each food's recorded unit (kg, L, dozen, loaf or
              "compared within a food; rates and percentages are unit-free.")
 
 
-def begin(title: str, purpose: str) -> tuple[str, pd.DataFrame | None]:
-    """Render the page header and return (source key, data). Data is None when nothing can be shown."""
+PERIOD_NOTE = ("My data is recorded per pantry-check period, not per day, so day-level analyses (next-day "
+               "forecasts, weekend vs weekday tests) cannot run on it. That is a sample-size limit of weekly "
+               "checks, not an error.")
+
+
+def begin(title: str, purpose: str, *, feature: str | None = "waste") -> tuple[str, pd.DataFrame | None]:
+    """Render the page header and return (source key, data). Data is None when nothing can be shown.
+
+    For My data, `feature` names the pantry.UNLOCK rule that must be met before
+    the page shows anything (None = always shown, e.g. Data Quality); a
+    reliability note with sample sizes is shown when it is met but still thin.
+    """
     page_header(title, purpose)
     source = current_source()
     df = load(source)
@@ -23,11 +33,24 @@ def begin(title: str, purpose: str) -> tuple[str, pd.DataFrame | None]:
                     f"Download the raw files into dataset/ and run `{EXTRACT_COMMAND}` from the project root. "
                     "The raw files are never modified.")
         return source, None
-    if source == "personal" and df.empty:
-        empty_state("No personal records yet",
-                    "Add a record or import a CSV on the My Data page. Your records are kept separate from "
-                    "the demo and public datasets.", page="views/my_data.py", page_label="Go to My Data")
-        return source, None
+    if source == "personal":
+        from services.personal import gate
+        if feature:
+            shown, reliable, note = gate(feature)
+            if not shown:
+                empty_state("Not enough of your data yet",
+                            f"{note} Keep logging purchases and do a pantry check every week or so; this page "
+                            "unlocks on its own.", page="views/pantry.py", page_label="Do a pantry check")
+                return source, None
+            if not reliable:
+                st.warning(note)
+            else:
+                st.caption(note)
+        if df.empty and feature:
+            empty_state("No completed periods yet",
+                        "A period ends at a pantry check after a purchase. Log what you buy, then check your pantry.",
+                        page="views/pantry.py", page_label="Do a pantry check")
+            return source, None
     return source, df
 
 

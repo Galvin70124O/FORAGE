@@ -179,36 +179,6 @@ def generate_recommendations(raw_df=None, model_name=None):
     ), high_waste_threshold, short_life_threshold
 
 
-PERSONAL_MIN_RECORDS = 7
-
-
-def personal_recommendations(df):
-    """Purchase suggestions from a user's own records.
-
-    Personal histories are usually too short to train and test a model, so the
-    forecast is the mean of each food's last seven records (the same moving
-    average used as a baseline above). Foods with fewer than seven records are
-    left out rather than guessed.
-    """
-    history = df.dropna(subset=["Date", "Food", "Quantity_Consumed"]).sort_values("Date")
-    eligible = history.groupby("Food").filter(lambda group: len(group) >= PERSONAL_MIN_RECORDS)
-    if eligible.empty:
-        return pd.DataFrame()
-    recent = eligible.groupby("Food").tail(PERSONAL_MIN_RECORDS)
-    table = recent.groupby(["Food", "Quantity_Unit"], as_index=False).agg(
-        Predicted_Demand=("Quantity_Consumed", "mean"))
-    totals = eligible.groupby("Food").agg(Wasted=("Quantity_Wasted", "sum"), Purchased=("Quantity_Purchased", "sum"),
-                                          Current_Remaining_Quantity=("Remaining_Quantity", "last"))
-    table = table.join(totals, on="Food")
-    table["Current_Remaining_Quantity"] = table["Current_Remaining_Quantity"].fillna(0)
-    table["Historical_Waste_Percentage"] = (
-        table["Wasted"] / table["Purchased"].where(table["Purchased"] > 0) * 100).fillna(0)
-    table["Usable_Remaining_Stock"] = (
-        table["Current_Remaining_Quantity"] * (1 - table["Historical_Waste_Percentage"] / 100)).clip(lower=0)
-    table["Recommended_Purchase_Quantity"] = (table["Predicted_Demand"] - table["Usable_Remaining_Stock"]).clip(lower=0)
-    return table.drop(columns=["Wasted", "Purchased"]).sort_values("Recommended_Purchase_Quantity", ascending=False)
-
-
 def main():
     """Print and save explainable next-day purchase recommendations."""
     recommendations, high_waste_threshold, short_life_threshold = generate_recommendations()

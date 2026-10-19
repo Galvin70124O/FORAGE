@@ -1,140 +1,140 @@
-"""My Data: add, import, edit and delete personal food records."""
+"""My data: edit or delete purchases, pantry checks and foods; export and import CSVs (in memory)."""
 
-import tempfile
+import io
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
-from dataset_loader import process_external_csv
-from personal_data import (
-    PERSONAL_DATA_PATH,
-    add_personal_record,
-    append_personal_records,
-    load_personal_data,
-    save_personal_data,
-)
+from pantry import read_import
 from services.data import set_source
-from ui.components import fmt_date, kpi_row, number, page_header, section, source_label, table
+from services.personal import queue_toast, require_user, toast_pending
+from ui.components import kpi_row, number, page_header, section, table
 
-EDITABLE = ["Record_ID", "Date", "Food", "Category", "Quantity_Unit", "Quantity_Purchased", "Quantity_Consumed",
-            "Quantity_Wasted", "Remaining_Quantity", "Price", "Expiry_Days", "Storage_Type"]
+TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "data" / "templates"
+TEMPLATES = {"purchases": TEMPLATE_DIR / "purchases_template.csv",
+             "pantry checks": TEMPLATE_DIR / "pantry_checks_template.csv"}
 
-page_header("My Data", "Your own food records. They are stored locally, used only when the data source is "
-            "My Data, and never mixed with the demo or public datasets.")
-personal = load_personal_data()
-source_label("My Data", f"{len(personal):,} records · stored in data/{PERSONAL_DATA_PATH.name}")
+page_header("My data", "Everything you have logged. Edit or delete entries, and export or import CSV files.")
+db, uid = require_user()
+toast_pending()
+buys, checks, foods = db.purchases(uid), db.checks(uid), db.foods(uid)
 
-records_tab, add_tab, import_tab = st.tabs(["Records", "Add a record", "Import CSV"])
+kpi_row([("Purchases", f"{len(buys):,}"), ("Pantry checks", f"{len(checks):,}"), ("Foods", f"{len(foods):,}")])
+st.button("Analyse my data in Insights", on_click=set_source, args=("personal",),
+          help="Sets the Insights data source to My data.")
 
-with records_tab:
-    if personal.empty:
-        st.write("No records yet. Add one in the next tab, or import a CSV.")
-    else:
-        kpi_row([("Records", f"{len(personal):,}"), ("Foods", f"{personal['Food'].nunique()}"),
-                 ("First date", fmt_date(personal["Date"].min())), ("Last date", fmt_date(personal["Date"].max()))])
-        st.button("Analyse these records", on_click=set_source, args=("personal",),
-                  help="Sets the data source to My Data on every page.")
-        st.caption("Edit cells directly, add or delete rows, then save. Saved records go through the same cleaning "
-                   "rules as imports.")
-        edited = st.data_editor(
-            personal[EDITABLE], hide_index=True, num_rows="dynamic", width="stretch", key="personal_editor",
-            column_config={
-                "Record_ID": None,
-                "Date": st.column_config.DateColumn("Date", format="D MMM YYYY"),
-                "Quantity_Unit": "Unit", "Quantity_Purchased": number("Purchased"),
-                "Quantity_Consumed": number("Consumed"), "Quantity_Wasted": number("Wasted"),
-                "Remaining_Quantity": number("Remaining"), "Price": number("Price"),
-                "Expiry_Days": number("Shelf life (days)", "%d"), "Storage_Type": "Storage",
-            })
-        if st.button("Save changes", type="primary", key="save_personal"):
+
+@st.dialog("Delete entries")
+def confirm_delete(kind: str, ids: list[int]) -> None:
+    st.write(f"Delete {len(ids)} {kind}? This cannot be undone.")
+    with st.container(horizontal=True):
+        if st.button("Delete", type="primary"):
+            for entry in ids:
+                (db.delete_purchase if kind == "purchases" else db.delete_check)(uid, int(entry))
+            queue_toast(f"Deleted {len(ids)} {kind}.")
+            st.rerun()
+        if st.button("Cancel"):
+            st.rerun()
+
+
+def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: dict) -> None:
+    if frame.empty:
+        st.write(f"No {kind} yet.")
+        return
+    view = frame.sort_values(["date", "id"], ascending=False).reset_index(drop=True)
+    view.insert(0, "Select", False)
+    disabled = [c for c in view.columns if c not in editable + ["Select"]]
+    edited = st.data_editor(view, hide_index=True, width="stretch", num_rows="fixed", key=f"edit_{kind}",
+                            disabled=disabled, column_config={"id": None, "Select": st.column_config.CheckboxColumn(
+                                "Select", width="small"), **config}, height=380)
+    selected = edited.loc[edited["Select"], "id"].astype(int).tolist()
+    changed = edited.drop(columns="Select").compare(view.drop(columns="Select")).index
+    with st.container(horizontal=True):
+        if st.button(f"Save {len(changed)} change(s)", type="primary", disabled=len(changed) == 0, key=f"save_{kind}"):
             try:
-                save_personal_data(edited)
-                st.success("Saved.")
+                for index in changed:
+                    row = edited.loc[index]
+                    if kind == "purchases":
+                        db.update_purchase(uid, int(row["id"]), date=row["date"], quantity=row["quantity"],
+                                           unit=row["unit"], total_price=None if pd.isna(row["total_price"]) else row["total_price"])
+                    else:
+                        db.update_check(uid, int(row["id"]), date=row["date"], remaining=row["remaining"],
+                                        wasted=row["wasted"])
+                queue_toast(f"Saved {len(changed)} change(s).")
                 st.rerun()
-            except Exception as error:  # surfaced to the user, nothing is written
-                st.error(f"Could not save: {error}")
+            except ValueError as error:
+                st.error(str(error))
+        if st.button(f"Delete selected ({len(selected)})", disabled=not selected, key=f"delete_{kind}"):
+            confirm_delete(kind, selected)
 
-with add_tab:
-    with st.form("add_record", clear_on_submit=True):
-        first, second, third = st.columns(3)
-        date = first.date_input("Date")
-        food = second.text_input("Food", placeholder="Milk")
-        category = third.text_input("Category", placeholder="Dairy")
-        first, second, third, fourth = st.columns(4)
-        purchased = first.number_input("Purchased", min_value=0.0, format="%.2f")
-        consumed = second.number_input("Consumed", min_value=0.0, format="%.2f")
-        wasted = third.number_input("Wasted", min_value=0.0, format="%.2f")
-        remaining = fourth.number_input("Remaining", min_value=0.0, format="%.2f")
-        first, second, third, fourth = st.columns(4)
-        unit = first.selectbox("Unit", ["kg", "g", "L", "ml", "dozen", "loaf", "pack", "unit"])
-        price = second.number_input("Price", min_value=0.0, format="%.2f")
-        expiry_days = third.number_input("Shelf life (days)", min_value=0, step=1)
-        storage = fourth.selectbox("Storage", ["Refrigerator", "Freezer", "Pantry", "Room temperature", "Other"])
-        st.caption("Purchased must equal consumed + wasted + remaining (to within 0.01).")
-        submitted = st.form_submit_button("Add record", type="primary")
-    if submitted:
-        if not food.strip() or purchased <= 0:
-            st.error("Enter a food name and a purchased quantity above zero.")
-        elif abs(purchased - consumed - wasted - remaining) > 0.011:
-            st.error(f"Consumed + wasted + remaining is {consumed + wasted + remaining:.2f}, but purchased is "
-                     f"{purchased:.2f}. Adjust the quantities so they balance.")
-        else:
-            add_personal_record({
-                "Date": pd.Timestamp(date), "Food": food.strip(), "Category": category.strip() or "Uncategorized",
-                "Quantity_Purchased": purchased, "Quantity_Consumed": consumed, "Quantity_Wasted": wasted,
-                "Remaining_Quantity": remaining, "Price": price, "Expiry_Days": expiry_days,
-                "Storage_Type": storage, "Quantity_Unit": unit,
-                "Estimated_Expiry_Date": pd.Timestamp(date) + pd.Timedelta(days=expiry_days)})
-            st.success(f"Added {food.strip()}.")
 
-with import_tab:
-    st.write("Upload a food CSV. Columns are matched to the FORAGE schema by name (for example, `qty_bought` "
-             "maps to Purchased). The file itself is never changed.")
-    uploaded = st.file_uploader("CSV file", type="csv")
-    if uploaded is not None:
-        temporary_path = None
-        try:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as handle:
-                handle.write(uploaded.getvalue())
-                temporary_path = handle.name
-            with st.spinner("Checking the file..."):
-                result = process_external_csv(temporary_path)
-        except Exception as error:
-            st.error(f"The file could not be read: {error}")
-            result = None
-        finally:
-            if temporary_path:
-                Path(temporary_path).unlink(missing_ok=True)
-        if result is not None:
-            inspection, report, cleaning = result["inspection"], result["quality_report"], result["cleaning_summary"]
-            standardised = result["standardised_data"]
-            removed = cleaning["duplicates_removed"] + sum(v for k, v in cleaning.items() if k.startswith("rows_removed"))
-            kpi_row([("Rows in file", f"{inspection['shape'][0]:,}"), ("Rows removed", f"{removed:,}"),
-                     ("Rows ready", f"{len(standardised):,}"),
-                     ("Missing values", f"{sum(report['missing_values'].values()):,}")])
-            left, right = st.columns(2, gap="large")
-            with left:
-                section("Column matching")
-                mapping = result["column_mapping"]
-                table(pd.DataFrame({"FORAGE column": list(mapping), "Your column": list(mapping.values())}))
-                if report["unmapped_source_columns"]:
-                    st.caption("Not used: " + ", ".join(report["unmapped_source_columns"]))
-            with right:
-                section("Rows removed")
-                table(pd.DataFrame({
-                    "Reason": ["Exact duplicates", "No food name", "Invalid date", "Negative or zero quantity, invalid flag"],
-                    "Rows": [cleaning["duplicates_removed"], cleaning["rows_removed_missing_food"],
-                             cleaning["rows_removed_invalid_date"], cleaning["rows_removed_invalid_values"]]}),
-                      {"Rows": number("Rows", "%d")})
-                st.caption("Outliers are flagged on the Data Quality page and kept. Missing values are not filled in.")
-            section("Preview", f"First {min(20, len(standardised))} of {len(standardised):,} cleaned rows")
-            table(standardised.head(20))
-            if report["missing_required_standard_columns"]:
-                st.warning("The file needs at least a food name and a date column: missing "
-                           + ", ".join(report["missing_required_standard_columns"]) + ".")
-            elif standardised.empty:
-                st.warning("No valid rows to import.")
-            elif st.button(f"Import {len(standardised):,} rows into My Data", type="primary"):
-                append_personal_records(standardised)
-                st.success(f"Imported {len(standardised):,} rows.")
+purchases_tab, checks_tab, foods_tab, files_tab = st.tabs(["Purchases", "Pantry checks", "Foods", "Import and export"])
+date_column = st.column_config.DateColumn("Date", format="D MMM YYYY")
+
+with purchases_tab:
+    editable_table(buys, "purchases", ["date", "quantity", "unit", "total_price"], {
+        "date": date_column, "food": "Food", "category": "Category", "quantity": number("Quantity"),
+        "unit": "Unit", "total_price": number("Total paid (₹)"), "shelf_life_days": None})
+
+with checks_tab:
+    editable_table(checks, "pantry checks", ["date", "remaining", "wasted"], {
+        "date": date_column, "food": "Food", "category": None, "unit": "Unit", "remaining": number("Left"),
+        "wasted": number("Thrown away"), "shelf_life_days": None})
+
+with foods_tab:
+    if foods.empty:
+        st.write("Foods appear here when you log a purchase.")
+    else:
+        edited = st.data_editor(foods, hide_index=True, width="stretch", num_rows="fixed", key="edit_foods",
+                                disabled=["id"], column_config={
+                                    "id": None, "name": "Food", "category": "Category", "unit": "Default unit",
+                                    "shelf_life_days": st.column_config.NumberColumn("Shelf life (days)", min_value=1, step=1)})
+        changed = edited.compare(foods).index
+        if st.button(f"Save {len(changed)} change(s)", type="primary", disabled=len(changed) == 0, key="save_foods"):
+            for index in changed:
+                row = edited.loc[index]
+                db.update_food(uid, int(row["id"]), name=row["name"], category=row["category"], unit=row["unit"],
+                               shelf_life_days=None if pd.isna(row["shelf_life_days"]) else int(row["shelf_life_days"]))
+            queue_toast(f"Saved {len(changed)} food change(s).")
+            st.rerun()
+
+with files_tab:
+    left, right = st.columns(2, gap="large")
+    with left:
+        section("Export", "Your data as CSV, in the same columns the importer reads.")
+        export_buys = buys.drop(columns="id").assign(date=buys["date"].dt.strftime("%Y-%m-%d"))
+        export_checks = checks[["date", "food", "remaining", "wasted"]].assign(
+            date=checks["date"].dt.strftime("%Y-%m-%d"))
+        st.download_button("Download purchases", export_buys.to_csv(index=False), "forage_purchases.csv",
+                           "text/csv", disabled=buys.empty)
+        st.download_button("Download pantry checks", export_checks.to_csv(index=False), "forage_pantry_checks.csv",
+                           "text/csv", disabled=checks.empty)
+        for name, path in TEMPLATES.items():
+            st.download_button(f"Blank {name} template", path.read_bytes(), path.name, "text/csv")
+    with right:
+        section("Import", "Purchases or pantry checks. Rows already in your data are skipped.")
+        uploaded = st.file_uploader("CSV file", type="csv")
+        if uploaded is not None:
+            try:
+                raw = pd.read_csv(io.BytesIO(uploaded.getvalue()))  # in memory: nothing is written to disk
+            except Exception as error:
+                st.error(f"The file could not be read as CSV: {error}")
+                raw = None
+            if raw is not None:
+                kind, rows, report = read_import(raw)
+                if kind is None:
+                    st.error("Not recognised: a purchases file needs date, food and quantity columns; a pantry-check "
+                             "file needs date, food and remaining.")
+                else:
+                    removed = report["duplicates"] + report["missing_date_or_food"] + report["invalid_numbers"]
+                    st.write(f"Recognised as **{kind}**: {len(rows):,} valid rows, {removed:,} removed "
+                             f"({report['duplicates']} duplicates, {report['missing_date_or_food']} missing date or "
+                             f"food, {report['invalid_numbers']} impossible numbers); {report['names_unified']} food "
+                             "names unified for case and spacing.")
+                    table(rows.head(8), max_rows=8)
+                    if st.button(f"Import {len(rows):,} rows", type="primary", disabled=rows.empty):
+                        with st.spinner("Importing..."):
+                            added, skipped = (db.import_checks if kind == "checks" else db.import_purchases)(uid, rows)
+                        queue_toast(f"Imported {added:,} {kind}; skipped {skipped:,} already present.")
+                        st.rerun()

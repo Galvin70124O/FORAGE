@@ -101,16 +101,3 @@ def test_waste_is_never_computed_for_public_sources(columns, func):
 def test_registry_prohibits_waste_for_public_sources(source):
     dataset = get_dataset(source)
     assert "waste" in dataset["prohibits"] and "waste" not in dataset["supports"]
-
-
-def test_personal_recommendations_need_seven_records_and_use_usable_stock():
-    from recommendations import personal_recommendations
-    dates = pd.date_range("2025-01-01", periods=7)
-    rows = [{"Date": d, "Food": "Milk", "Quantity_Unit": "L", "Quantity_Consumed": 1.0, "Quantity_Wasted": 0.2,
-             "Quantity_Purchased": 2.0, "Remaining_Quantity": 0.5} for d in dates]
-    rows.append({"Date": dates[0], "Food": "Bread", "Quantity_Unit": "loaf", "Quantity_Consumed": 1.0,
-                 "Quantity_Wasted": 0, "Quantity_Purchased": 1.0, "Remaining_Quantity": 0})
-    table = personal_recommendations(pd.DataFrame(rows)).set_index("Food")
-    assert list(table.index) == ["Milk"]  # Bread has one record: no guess
-    assert table.loc["Milk", "Historical_Waste_Percentage"] == pytest.approx(10)
-    assert table.loc["Milk", "Recommended_Purchase_Quantity"] == pytest.approx(1.0 - 0.5 * 0.9)

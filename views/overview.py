@@ -12,7 +12,7 @@ from waste import food_waste, overall_waste
 CAPABILITIES = pd.DataFrame({
     "Analysis": ["Descriptive statistics", "Waste and expiry", "Forecasting", "Recommendations"],
     "Demo data": ["Yes", "Yes", "Yes, next-day consumption", "Purchase quantities"],
-    "My Data": ["Yes", "Yes", "Yes, with enough history", "Purchase quantities"],
+    "My data": ["Yes, per pantry-check period", "Yes", "7-day use, after 3 weeks", "Weekly buy list"],
     "M5 (Walmart)": ["Yes", "No, waste is not recorded", "Yes, next-day unit sales", "Items with rising demand"],
     "Instacart": ["Yes", "No, waste is not recorded", "No, orders have no dates", "Likely repeat purchases"],
 })
@@ -21,9 +21,16 @@ source, df = begin(
     "Overview",
     "UN SDG target 12.3 aims to halve per-capita food waste at retail and consumer level by 2030. "
     "FORAGE measures where food is bought, used and wasted, and what to buy next.",
+    feature=None,
 )
 
-if df is not None:
+if source == "personal" and (df is None or df.empty):
+    from ui.components import empty_state
+    if df is not None:
+        empty_state("No completed periods yet",
+                    "Log what you buy, then do a pantry check: each check closes a period, and your waste rate "
+                    "and spending appear here.", page="views/bought.py", page_label="I bought something")
+elif df is not None:
     if source in ("demo", "personal"):
         headline = overall_waste(df)
         foods = food_waste(df)

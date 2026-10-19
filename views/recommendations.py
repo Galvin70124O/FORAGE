@@ -3,10 +3,9 @@
 import pandas as pd
 import streamlit as st
 
-from recommendations import PERSONAL_MIN_RECORDS, personal_recommendations
 from services.data import demo_recommendations
 from ui import charts
-from ui.components import empty_state, fmt_date, formula, kpi_row, number, section, table, text
+from ui.components import fmt_date, formula, kpi_row, number, section, table, text
 from views.common import begin
 
 PLAN_COLUMNS = {
@@ -59,19 +58,19 @@ if df is not None:
                            file_name="forage_purchase_plan.csv", mime="text/csv")
 
     elif source == "personal":
-        plan = personal_recommendations(df)
-        if plan.empty:
-            empty_state("Not enough history for recommendations",
-                        f"Suggestions need at least {PERSONAL_MIN_RECORDS} records for a food.",
-                        page="views/my_data.py", page_label="Add records on My Data")
-        else:
-            section("How the quantities are calculated")
-            formula("predicted demand = mean consumption of the food's last 7 records")
-            formula("buy = max(0, predicted demand − in stock × (1 − waste rate))")
-            st.caption("Personal histories are usually too short to train and test a model, so the 7-record average "
-                       "is used (it is also the moving-average baseline on the Forecasting page).")
-            columns = {k: v for k, v in PLAN_COLUMNS.items() if k in plan.columns}
-            table(plan[list(columns)], columns)
+        from pantry import buy_list, expected_stock, stock_batches
+        from services.personal import gate, personal_data
+        buys, checks = personal_data()
+        today = pd.Timestamp.today().normalize()
+        stock = expected_stock(buys, checks, today)
+        plan = buy_list(stock, stock_batches(buys, stock), today, 7)
+        shown, reliable, note = gate("buy_list")
+        section("How the quantities are calculated")
+        formula("need = your usual daily use (last 4 pantry-check periods) × 7 days")
+        formula("buy = max(0, need − stock that will still be good during the week)")
+        (st.caption if reliable else st.warning)(note)
+        table(plan, {"Need": number("Need (7 days)"), "Usable_Stock": number("Good stock"), "Buy": number("Buy")},
+              max_rows=15)
 
     elif source == "m5":
         recent_end = df["Date"].max()

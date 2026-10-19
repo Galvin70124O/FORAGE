@@ -94,7 +94,13 @@ if df is not None:
                            "amounts than others.")
 
     st.header("Patterns")
-    if source in ("demo", "personal"):
+    if source == "personal":
+        from views.common import PERIOD_NOTE
+        section("Distribution of waste per period", "Waste as a share of what was available in each period")
+        charts.histogram(df.dropna(subset=["Waste_Percentage"]), "Waste_Percentage",
+                         value_title="Waste (% of available)", slot=1, bins=20)
+        st.caption(PERIOD_NOTE)
+    elif source == "demo":
         left, right = st.columns(2, gap="large")
         with left:
             section("Distribution of waste per record", "Waste as a share of each purchase")

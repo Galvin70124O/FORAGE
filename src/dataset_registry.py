@@ -14,9 +14,9 @@ DATASETS = {
         "prohibits": {"real_statistics", "personal_statistics", "real_forecast", "real_recommendations"},
     },
     "personal": {
-        "label": "My Personal Food Data",
-        "kind": "user-entered or deliberately imported records",
-        "path": ROOT / "data" / "my_food_data.csv",
+        "label": "My data",
+        "kind": "the signed-in user's purchases and pantry checks (stored in the database)",
+        "path": None,
         "supports": {"personal_statistics", "personal_forecast", "personal_recommendations"},
         "prohibits": {"public_data_claims"},
     },

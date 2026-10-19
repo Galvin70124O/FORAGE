@@ -17,6 +17,20 @@ from waste import (
 )
 from stats import describe_strength
 
+def personal_expiring(as_of, days):
+    """Expiring stock from the user's purchases, in the same columns as the demo table."""
+    from pantry import expected_stock, expiring_soon, stock_batches
+    from services.personal import personal_data
+    buys, checks = personal_data()
+    soon = expiring_soon(stock_batches(buys, expected_stock(buys, checks, as_of)), as_of, days)
+    if soon.empty:
+        return pd.DataFrame(columns=["Food", "Quantity_Unit", "Remaining", "Batches", "Earliest_Expiry", "Days_Left"])
+    return (soon.groupby(["Food", "Unit"], as_index=False)
+            .agg(Remaining=("Quantity", "sum"), Batches=("Quantity", "size"), Earliest_Expiry=("Expiry", "min"),
+                 Days_Left=("Days_Left", "min"))
+            .rename(columns={"Unit": "Quantity_Unit"}).sort_values("Days_Left"))
+
+
 source, df = begin("Waste & Expiry", "How much food is wasted, which foods and categories waste most, "
                    "and which stock is close to its expiry date.")
 
@@ -33,7 +47,10 @@ elif df is not None:
     categories = category_waste(df)
     top = foods.iloc[0]
     as_of = df["Date"].max() if source == "demo" else pd.Timestamp.today().normalize()
-    soon_3, soon_7 = expiring_stock(df, as_of, 3), expiring_stock(df, as_of, 7)
+    if source == "personal":
+        soon_3, soon_7 = personal_expiring(as_of, 3), personal_expiring(as_of, 7)
+    else:
+        soon_3, soon_7 = expiring_stock(df, as_of, 3), expiring_stock(df, as_of, 7)
 
     kpi_row([
         ("Waste rate", fmt_pct(headline["rate"]), "Mean of the food-level rates (wasted ÷ purchased)."),
@@ -63,8 +80,10 @@ elif df is not None:
     st.header("Expiry")
     as_of_text = (f"As of {fmt_date(as_of)}, the last date in the demo data." if source == "demo"
                   else f"As of today, {fmt_date(as_of)}.")
-    st.caption(as_of_text + " Stock is each purchase's recorded remaining quantity, assumed still on hand until it "
-               "expires; batches already past expiry are excluded.")
+    st.caption(as_of_text + (" Stock is what should be on hand now (last pantry check + purchases since − usual "
+               "use), split into the purchases it most likely came from (newest first)." if source == "personal" else
+               " Stock is each purchase's recorded remaining quantity, assumed still on hand until it expires;")
+               + " batches already past expiry are excluded.")
     expiry_columns = {"Quantity_Unit": "Unit", "Remaining": number("Remaining", "%.2f"),
                       "Batches": number("Batches", "%d"), "Earliest_Expiry": st.column_config.DateColumn("Earliest expiry", format="D MMM YYYY"),
                       "Days_Left": number("Days left", "%d")}
