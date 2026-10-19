@@ -49,7 +49,6 @@ app.py                  Entry point: page config, sidebar (navigation + data-sou
 views/                  One file per page (run by st.navigation)
   overview.py  data_quality.py  eda.py  waste.py  forecasting.py  recommendations.py  my_data.py
   common.py             Page header, source label and "not available" states shared by pages
-  auth.py               Supabase sign-in screens, shown only when AUTH_ENABLED = True in app.py
 ui/                     Presentation helpers
   theme.py              Chart colour tokens for light and dark mode, and a small amount of CSS
   charts.py             Altair builders: bar, line, histogram, scatter, correlation heatmap
@@ -114,4 +113,4 @@ Command-line versions of the analysis are also available: `python src/clean_data
 
 ## Deployment
 
-Deploy on Streamlit Community Cloud with main file `app.py` and branch `main`. No secrets are needed while `AUTH_ENABLED` is `False`. Never commit `dataset/`, `data/real/`, `data/my_food_data.csv`, `.streamlit/secrets.toml`, `.venv/` or any credentials.
+Deploy on Streamlit Community Cloud with main file `app.py` and branch `main`. Never commit `dataset/`, `data/real/`, `data/my_food_data.csv`, `.streamlit/secrets.toml`, `.venv/` or any credentials.

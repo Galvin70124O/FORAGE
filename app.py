@@ -17,10 +17,6 @@ if str(SRC_DIR) not in sys.path:
 from services.data import SOURCES  # noqa: E402
 from ui.theme import apply_styles  # noqa: E402
 
-# Development switch: set to True to restore the existing Supabase
-# login/signup/session gate. While False, no Supabase Auth calls are made.
-AUTH_ENABLED = False
-
 PAGES = [
     st.Page("views/overview.py", title="Overview", default=True),
     st.Page("views/data_quality.py", title="Data Quality"),
@@ -48,13 +44,6 @@ def main() -> None:
     st.set_page_config(page_title="FORAGE", layout="wide", initial_sidebar_state="expanded")
     apply_styles()
     st.session_state.setdefault("source", "demo")
-    if AUTH_ENABLED:
-        from auth import get_current_user
-        from views.auth import render_authenticated_sidebar_controls, render_authentication_page
-        if get_current_user() is None:
-            render_authentication_page()
-            st.stop()
-        render_authenticated_sidebar_controls()
     navigation = st.navigation(PAGES, position="hidden")
     render_sidebar()
     navigation.run()

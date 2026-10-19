@@ -2,7 +2,7 @@
 
 This module deliberately never reads or writes either development dataset.
 It is the small storage boundary that can later be replaced by a user-scoped
-Supabase repository without changing the personal dashboard.
+database without changing the personal dashboard.
 """
 
 from __future__ import annotations
