@@ -29,9 +29,12 @@ def begin(title: str, purpose: str, *, feature: str | None = "waste") -> tuple[s
     df = load(source)
     source_label(SOURCES[source], describe(source, df))
     if df is None:
-        empty_state(f"The {SOURCES[source]} extract has not been built",
-                    f"Download the raw files into dataset/ and run `{EXTRACT_COMMAND}` from the project root. "
-                    "The raw files are never modified.")
+        empty_state(f"{SOURCES[source]} is available in the local version",
+                    f"The {SOURCES[source]} dataset is licensed for non-commercial use and its terms do not clearly "
+                    "allow redistribution, so FORAGE does not publish it online (see docs/data_licences.md). To use "
+                    "it, run FORAGE locally: download the dataset yourself into dataset/ and run "
+                    f"`{EXTRACT_COMMAND}`. The demo data and your own data work everywhere.")
+        switch_buttons(["demo"], f"missing_{source}")
         return source, None
     if source == "personal":
         from services.personal import gate

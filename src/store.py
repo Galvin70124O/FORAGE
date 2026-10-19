@@ -343,6 +343,14 @@ class Store:
             added += 1
         return added, skipped
 
+    @with_retry
+    def delete_user(self, user_id: int) -> None:
+        """Remove a user and every row they own (explicit deletes, so it works on SQLite and Postgres)."""
+        with self.engine.begin() as conn:
+            for table in (pantry_checks, purchases, settings, foods):
+                conn.execute(delete(table).where(table.c.user_id == user_id))
+            conn.execute(delete(users).where(users.c.id == user_id))
+
     # settings ---------------------------------------------------------------
     @with_retry
     def get_setting(self, user_id: int, key: str, default: str | None = None) -> str | None:

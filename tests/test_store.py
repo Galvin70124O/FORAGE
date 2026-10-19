@@ -156,3 +156,12 @@ def test_database_urls_get_the_psycopg_driver():
     assert normalise_database_url("postgresql://u:p@h/db?sslmode=require").startswith("postgresql+psycopg://u:p@h/db")
     assert normalise_database_url("postgres://u@h/db").startswith("postgresql+psycopg://")
     assert normalise_database_url("sqlite:///x.db") == "sqlite:///x.db"
+
+
+def test_deleting_a_user_removes_only_their_rows(store, two_users):
+    alice, bob = two_users
+    store.set_setting(alice, "k", "v")
+    store.delete_user(alice)
+    assert store.purchases(alice).empty and store.checks(alice).empty and store.foods(alice).empty
+    assert store.get_setting(alice, "k") is None
+    assert store.purchases(bob)["food"].tolist() == ["Rice"]
