@@ -52,6 +52,33 @@ def _outlier_summary(df):
     return summary
 
 
+def column_profile(df):
+    """Per-column type, missing count/share and distinct values for a quality table."""
+    rows = len(df)
+    return pd.DataFrame({
+        "Column": df.columns,
+        "Type": [str(dtype) for dtype in df.dtypes],
+        "Missing": df.isna().sum().to_numpy(),
+        "Missing (%)": (df.isna().mean() * 100).to_numpy() if rows else 0.0,
+        "Distinct": [df[column].nunique(dropna=True) for column in df.columns],
+    })
+
+
+def iqr_outliers(df, columns):
+    """IQR outlier counts for any numeric columns (flagged for review, never removed)."""
+    rows = []
+    for column in columns:
+        values = pd.to_numeric(df[column], errors="coerce").dropna()
+        if len(values) < 4:
+            continue
+        q1, q3 = values.quantile([0.25, 0.75])
+        low, high = q1 - 1.5 * (q3 - q1), q3 + 1.5 * (q3 - q1)
+        count = int(((values < low) | (values > high)).sum())
+        rows.append({"Column": column, "Lower bound": low, "Upper bound": high,
+                     "Outliers": count, "Outliers (%)": count / len(values) * 100})
+    return pd.DataFrame(rows, columns=["Column", "Lower bound", "Upper bound", "Outliers", "Outliers (%)"])
+
+
 def build_quality_report(df, missing_standard_columns, unmapped_source_columns):
     """Create a plain-Python report that can be printed or saved as JSON later."""
     invalid_dates = 0

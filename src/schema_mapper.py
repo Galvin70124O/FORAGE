@@ -2,7 +2,6 @@
 
 import re
 
-import pandas as pd
 
 
 # Each key is a project-standard column. Add new aliases here as new data sources

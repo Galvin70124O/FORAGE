@@ -99,3 +99,13 @@ def test_personal_records_never_invent_an_expiry_date():
                             "Expiry_Days": None}])
     normalised = _normalise(record, source="test")
     assert pd.isna(normalised.loc[0, "Estimated_Expiry_Date"])
+
+
+def test_column_profile_and_iqr_outliers():
+    from data_quality import column_profile, iqr_outliers
+    df = pd.DataFrame({"a": [1, 2, None, 4], "b": ["x", "x", "y", None]})
+    profile = column_profile(df).set_index("Column")
+    assert profile.loc["a", "Missing"] == 1 and profile.loc["a", "Missing (%)"] == 25
+    assert profile.loc["b", "Distinct"] == 2
+    outliers = iqr_outliers(pd.DataFrame({"v": [1, 2, 2, 3, 2, 100]}), ["v"]).set_index("Column")
+    assert outliers.loc["v", "Outliers"] == 1
