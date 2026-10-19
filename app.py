@@ -15,6 +15,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from services.data import SOURCES  # noqa: E402
+from services.session import render_account  # noqa: E402
 from ui.theme import apply_styles  # noqa: E402
 
 PAGES = [
@@ -38,6 +39,8 @@ def render_sidebar() -> None:
         st.radio("Data source", list(SOURCES), format_func=SOURCES.get, key="source",
                  help="Every analysis page uses only the selected source. Sources are never combined.")
         st.caption("Demo data is synthetic and for illustration only. M5 and Instacart are public datasets.")
+        st.divider()
+        render_account()
 
 
 def main() -> None:
