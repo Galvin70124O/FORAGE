@@ -1,6 +1,6 @@
 """Simulate a Streamlit Community Cloud deployment from what is committed to git.
 
-1. clone the repository (HEAD) into a fresh temporary folder: no untracked files, no data/real/, no secrets;
+1. export the committed files (git archive HEAD) into a fresh temporary folder: no untracked files, no data/real/, no secrets;
 2. create a fresh virtual environment and install ONLY requirements.txt;
 3. optionally copy a secrets file into the clone (never printed); if it has [connections.sql], run
    scripts/init_db.py and scripts/check_database.py against that database first;
@@ -16,11 +16,13 @@ Exit code 0 only if every step passed.
 """
 
 import argparse
+import io
 import os
 import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
 import time
 import tomllib
@@ -50,7 +52,10 @@ def main() -> None:
 
     workdir = Path(tempfile.mkdtemp(prefix="forage-cloud-"))
     clone = workdir / "app"
-    run(["git", "clone", "--quiet", str(ROOT), str(clone)], cwd=workdir, label="clone committed files")
+    archive = subprocess.run(["git", "archive", "--format=tar", "HEAD"], cwd=ROOT, capture_output=True, check=True)
+    with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:  # exactly the committed files at HEAD
+        tar.extractall(clone, filter="data")
+    print("--> exported committed files (git archive HEAD)")
     untracked = [p for p in ("data/real", "dataset", "data/my_food_data.csv", ".streamlit/secrets.toml")
                  if (clone / p).exists()]
     if untracked:
