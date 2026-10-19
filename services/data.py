@@ -9,10 +9,10 @@ import streamlit as st
 
 from clean_data import RAW_DATA_PATH, clean_records
 from dataset_registry import get_dataset
-from m5_forecasting import forecast_retail_demand
-from prediction import run_demo_forecast
-from recommendations import generate_recommendations
 from ui.components import fmt_date
+
+# Model modules (scikit-learn, scipy) are imported inside the functions that need them, so pages
+# that only show data start quickly on a cold start.
 
 SOURCES = {
     "demo": "Demo data",
@@ -25,6 +25,18 @@ M5_PATH = get_dataset("m5")["path"]
 INSTACART_PATH = get_dataset("instacart")["path"]
 DEMO_PATH = get_dataset("demo")["path"]
 EXTRACT_COMMAND = "python src/real_data_processor.py"
+
+
+@st.cache_resource(show_spinner=False)
+def _artifacts() -> dict | None:
+    from artifacts import load
+    return load()
+
+
+def _precomputed(key: str | None):
+    """A precomputed demo result (see src/artifacts.py), or None to compute it live."""
+    results = _artifacts() if key else None
+    return None if results is None else results.get(key)
 
 
 def current_source() -> str:
@@ -97,16 +109,23 @@ def describe(source: str, df: pd.DataFrame | None) -> str:
 
 @st.cache_resource(show_spinner="Evaluating forecasting models on the held-out period...")
 def demo_forecast() -> dict:
+    if (hit := _precomputed("demo_forecast")) is not None:
+        return hit
+    from prediction import run_demo_forecast
     return run_demo_forecast(load_demo())
 
 
 @st.cache_resource(show_spinner="Evaluating M5 forecasting models on the held-out period...")
 def m5_forecast():
+    from m5_forecasting import forecast_retail_demand
     return forecast_retail_demand(load_m5())
 
 
 @st.cache_resource(show_spinner="Building the purchase plan...")
 def demo_recommendations():
+    if (hit := _precomputed("demo_recommendations")) is not None:
+        return hit
+    from recommendations import generate_recommendations
     return generate_recommendations(load_demo(), best_next_day("demo"))
 
 
@@ -123,6 +142,8 @@ def raw_demo() -> pd.DataFrame:
 @st.cache_resource(show_spinner="Simulating households over the test period...")
 def demo_backtest() -> tuple[pd.DataFrame, pd.DataFrame, float, int]:
     """(summary, per-food results, recorded waste % in the data, days simulated) for the demo data."""
+    if (hit := _precomputed("demo_backtest")) is not None:
+        return hit
     from backtest import demo_frame, run_backtest, summarise
     from waste import unit_prices
 
@@ -139,6 +160,8 @@ def demo_backtest() -> tuple[pd.DataFrame, pd.DataFrame, float, int]:
 @st.cache_data(show_spinner="Running hypothesis tests...")
 def source_tests(source: str) -> list:
     """Hypothesis tests for a public or demo source (My data is computed per request)."""
+    if (hit := _precomputed(f"source_tests_{source}" if source == "demo" else None)) is not None:
+        return hit
     from hypothesis import household_tests, instacart_tests, m5_tests
 
     if source == "demo":
@@ -166,6 +189,8 @@ FOLDS, FOLD_DAYS = 5, 14
 @st.cache_resource(show_spinner="Backtesting next-day models over 5 rolling folds...")
 def demo_rolling():
     """(per-fold metrics, mean ± std per model) for next-day demo forecasts; best model first."""
+    if (hit := _precomputed("demo_rolling")) is not None:
+        return hit
     from horizon import rolling_origin
     from prediction import (CATEGORICAL_FEATURES, DEMO_BASELINES, FEATURE_COLUMNS, NUMERIC_FEATURES, TARGET,
                             build_models, create_forecasting_features)
@@ -205,6 +230,8 @@ def _week(df: pd.DataFrame, key: str, target: str, static: list[str], categorica
 
 @st.cache_resource(show_spinner="Evaluating 7-day forecasts...")
 def demo_week() -> dict:
+    if (hit := _precomputed("demo_week")) is not None:
+        return hit
     from prediction import TARGET
     return _week(load_demo(), "Food", TARGET, ["Category", "Quantity_Unit"], ["Food", "Category"],
                  demo_forecast()["cutoff"])
@@ -220,6 +247,8 @@ def m5_week() -> dict:
 @st.cache_resource(show_spinner="Explaining the forecaster on held-out data...")
 def forecaster_explanations(source: str) -> dict:
     """Permutation importance and residuals for the selected next-day model on the final test period."""
+    if (hit := _precomputed(f"forecaster_explanations_{source}" if source == "demo" else None)) is not None:
+        return hit
     from explain import error_by, importance, residual_frame
     from m5_forecasting import FEATURES as M5_FEATURES
     from prediction import FEATURE_COLUMNS, TARGET
@@ -248,6 +277,8 @@ def forecaster_explanations(source: str) -> dict:
 
 @st.cache_resource(show_spinner="Training the waste-risk classifiers...")
 def demo_classifier() -> dict:
+    if (hit := _precomputed("demo_classifier")) is not None:
+        return hit
     from explain import importance
     from waste_risk import evaluate
     result = evaluate(load_demo())
@@ -279,3 +310,36 @@ def instacart_rules():
     from basket import baskets, find_rules
     matrix = baskets(load_instacart().assign(Product_Name=lambda d: d["Product_Name"].astype(str)), top_n=150)
     return matrix.shape, find_rules(matrix, min_support=0.005, min_lift=1.2)
+
+
+@st.cache_resource(show_spinner="Scoring the purchase plan for waste risk...")
+def demo_plan_with_risk() -> pd.DataFrame:
+    """The next-day plan with the classifier's waste risk (%) and a "likely to be wasted" alert."""
+    if (hit := _precomputed("demo_plan_with_risk")) is not None:
+        return hit
+    from waste_risk import planned_rows, score_purchases
+    plan = demo_recommendations()[0]
+    model_info = demo_classifier()["model"]
+    rows = planned_rows(load_demo(), plan["Food"], plan["Recommended_Purchase_Quantity"].clip(lower=0.01),
+                        plan["Forecast_Date"].iloc[0])
+    scored = plan.assign(Waste_Risk=score_purchases(model_info, rows).to_numpy() * 100)
+    likely = (scored["Waste_Risk"] >= model_info[2] * 100) & (scored["Recommended_Purchase_Quantity"] > 0)
+    scored["Alerts"] = [
+        ("likely to be wasted" if a == "No alert" else f"{a}; likely to be wasted") if flag else a
+        for a, flag in zip(scored["Alerts"], likely)]
+    return scored
+
+
+def data_as_of(source: str) -> str:
+    """Footer text: the last date covered by the selected source."""
+    if source == "demo":
+        return fmt_date(load_demo()["Date"].max())
+    if source == "m5":
+        return fmt_date(load_m5()["Date"].max()) if M5_PATH.exists() else "local version only"
+    if source == "instacart":
+        return "no calendar dates" if INSTACART_PATH.exists() else "local version only"
+    from services.personal import personal_data
+    data = personal_data()
+    if not data or (data[0].empty and data[1].empty):
+        return "no entries yet"
+    return fmt_date(pd.concat([data[0]["date"], data[1]["date"]]).max())

@@ -35,6 +35,8 @@ from sklearn.metrics import confusion_matrix, f1_score, precision_score, recall_
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+from prediction import FOREST
+
 HIGH_WASTE_PCT = 30.0
 TARGET_RECALL = 0.80
 NUMERIC = ["Expiry_Days", "Quantity_Purchased", "Recent_Consumption"]
@@ -62,7 +64,7 @@ def classifiers(numeric: list[str]) -> dict:
         "Logistic Regression": Pipeline([("prep", preprocess(True)), ("model", LogisticRegression(
             class_weight="balanced", max_iter=2000))]),
         "Random Forest": Pipeline([("prep", preprocess(False)), ("model", RandomForestClassifier(
-            n_estimators=200, min_samples_leaf=5, class_weight="balanced", random_state=42, n_jobs=-1))]),
+            **FOREST, class_weight="balanced"))]),
     }
 
 
@@ -74,12 +76,14 @@ def time_split(df: pd.DataFrame, fraction: float = 0.2) -> tuple[pd.DataFrame, p
 
 def recall_first_threshold(y_true, scores, target: float = TARGET_RECALL) -> float:
     """Highest threshold whose recall is still >= target (falls back to 0.5 if none reach it)."""
-    best = None
-    for threshold in np.unique(np.round(scores, 4))[::-1]:
-        if recall_score(y_true, scores >= threshold, zero_division=0) >= target:
-            best = float(threshold)
-            break
-    return best if best is not None else 0.5
+    y_true, scores = np.asarray(y_true), np.round(np.asarray(scores, float), 4)
+    positives = y_true.sum()
+    if positives == 0:
+        return 0.5
+    for threshold in np.unique(scores)[::-1]:  # vectorised recall: positives scoring at or above the threshold
+        if (y_true[scores >= threshold] == 1).sum() / positives >= target:
+            return float(threshold)
+    return 0.5
 
 
 def metrics(y_true, scores, threshold: float) -> dict:
@@ -112,6 +116,7 @@ def evaluate(df: pd.DataFrame) -> dict:
     best_row = comparison[comparison["Features"] == "All features"].iloc[0]
     best_key = f"{best_row['Model']} · All features"
     return {"comparison": comparison, "best": best_key, "model": fitted[best_key], "fitted": fitted,
+            "threshold": fitted[best_key][2],
             "test": test, "scores": test_scores, "train_rows": len(train), "test_rows": len(test),
             "positive_rate": float(data["High_Waste"].mean()), "cutoff": test["Date"].min()}
 

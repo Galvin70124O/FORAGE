@@ -10,6 +10,7 @@ average) are compared with Linear Regression and Random Forest on a later,
 unseen period. The best model is whichever has the lowest test MAE.
 """
 
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -25,6 +26,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_PATH = PROJECT_ROOT / "data" / "cleaned_food_data.csv"
 OUTPUT_DIR = PROJECT_ROOT / "outputs" / "predictions"
 TARGET = "Quantity_Consumed"
+
+# Random-forest budget, fixed for Streamlit Community Cloud's limited CPU (a full 200-tree forest
+# took ~50 s to fit on one core): 100 shallow trees on half the features fit in a few seconds.
+# FORAGE_N_JOBS limits parallelism (default: all cores).
+N_JOBS = int(os.environ.get("FORAGE_N_JOBS", "-1"))
+FOREST = dict(n_estimators=100, max_depth=10, min_samples_leaf=5, max_features=0.5, random_state=42, n_jobs=N_JOBS)
 
 NUMERIC_FEATURES = [
     "Lag_1_Consumption", "Lag_7_Consumption", "Rolling_Mean_7",
@@ -110,9 +117,7 @@ def build_models(numeric_features, categorical_features):
         ]),
         "Random Forest": Pipeline([
             ("preprocessor", forest_preprocessor),
-            ("model", RandomForestRegressor(
-                n_estimators=200, random_state=42, n_jobs=-1, min_samples_leaf=2
-            )),
+            ("model", RandomForestRegressor(**FOREST)),
         ]),
     }
 

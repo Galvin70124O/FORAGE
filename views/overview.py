@@ -1,108 +1,130 @@
-"""Overview: headline figures for the selected source, framed by SDG 12.3."""
+"""Overview: the dashboard. Four KPIs with month-on-month change, the waste trend, top wasted foods, and actions."""
+
+from html import escape
 
 import pandas as pd
 import streamlit as st
 
 from services.data import SOURCES
 from ui import charts
-from ui.components import fmt_pct, kpi_row, section, table
-from views.common import UNIT_NOTE, begin
-from waste import food_waste, overall_waste
+from ui.components import empty_state, kpi_row, section, table
+from views.common import begin
 
 CAPABILITIES = pd.DataFrame({
     "Analysis": ["Descriptive statistics", "Waste and expiry", "Forecasting", "Recommendations"],
-    "Demo data": ["Yes", "Yes", "Yes, next-day consumption", "Purchase quantities"],
-    "My data": ["Yes, per pantry-check period", "Yes", "7-day use, after 3 weeks", "Weekly buy list"],
-    "M5 (Walmart)": ["Yes", "No, waste is not recorded", "Yes, next-day unit sales", "Items with rising demand"],
-    "Instacart": ["Yes", "No, waste is not recorded", "No, orders have no dates", "Likely repeat purchases"],
+    "Demo data": ["Yes", "Yes", "Next day and 7 days", "Daily and weekly purchase plans"],
+    "My data": ["Per pantry-check period", "Yes", "7-day use, after 3 weeks", "Weekly buy list"],
+    "M5 (Walmart)": ["Yes", "No, waste is not recorded", "Next day and 7 days", "Rising and falling demand"],
+    "Instacart": ["Yes", "No, waste is not recorded", "No, orders have no dates", "Repeat purchases, bought together"],
 })
 
-source, df = begin(
-    "Overview",
-    "UN SDG target 12.3 aims to halve per-capita food waste at retail and consumer level by 2030. "
-    "FORAGE measures where food is bought, used and wasted, and what to buy next.",
-    feature=None,
-)
+
+def action_list(actions: list[dict], empty: str) -> None:
+    section("Action list", "The most urgent items and what to do about them")
+    if not actions:
+        st.write(empty)
+        return
+    html = "".join(
+        f'<div class="fg-action"><div class="fg-action-title"><span class="fg-tag">{escape(a["tag"])}</span>'
+        f'{escape(a["title"])}</div><div class="fg-action-why">{escape(a["why"])}</div></div>' for a in actions)
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def rupee_charts(monthly: pd.Series, by_food: pd.Series, *, illustrative: bool) -> None:
+    note = "Illustrative (synthetic prices)" if illustrative else "From the prices you paid"
+    left, right = st.columns(2, gap="large")
+    with left:
+        if len(monthly) >= 2:
+            change = (monthly.iloc[-1] - monthly.iloc[-2]) / monthly.iloc[-2] * 100 if monthly.iloc[-2] else 0
+            title = (f"₹{monthly.iloc[-1]:,.0f} wasted in {monthly.index[-1]:%B}, "
+                     f"{abs(change):.0f}% {'less' if change < 0 else 'more'} than {monthly.index[-2]:%B}")
+        else:
+            title = f"₹{monthly.sum():,.0f} wasted so far"
+        charts.line(monthly.rename_axis("Month").reset_index(), "Month", "Rupees", x_title=None, y_title="₹ wasted",
+                    y_format=",.0f", x_format="%b %Y", title=title, subtitle=f"₹ wasted per month · {note}",
+                    label_last=True)
+    with right:
+        top = by_food.head(8)
+        if not top.empty:
+            share = top.iloc[0] / by_food.sum() * 100 if by_food.sum() else 0
+            charts.bar(top.rename_axis("Food").reset_index(), "Food", "Rupees", value_title="₹ wasted",
+                       value_format=",.0f", title=f"{top.index[0]} is the costliest waste: {share:.0f}% of all ₹ wasted",
+                       subtitle=f"Top {len(top)} foods by ₹ wasted · {note}")
+
+
+source, df = begin("Overview", "Where food is bought, used and wasted, and what to do next. FORAGE is framed by "
+                   "UN SDG target 12.3: halve per-capita food waste by 2030.", feature=None)
 
 if source == "personal" and (df is None or df.empty):
-    from ui.components import empty_state
     if df is not None:
         empty_state("No completed periods yet",
-                    "Log what you buy, then do a pantry check: each check closes a period, and your waste rate "
-                    "and spending appear here.", page="views/bought.py", page_label="I bought something")
+                    "Log what you buy, then do a pantry check: each check closes a period, and your waste, spending "
+                    "and actions appear here.", page="views/bought.py", page_label="I bought something")
 elif df is not None:
-    if source in ("demo", "personal"):
-        headline = overall_waste(df)
-        foods = food_waste(df)
-        top = foods.iloc[0]
-        consumption_rate = (df.groupby("Food")["Quantity_Consumed"].sum()
-                            / df.groupby("Food")["Quantity_Purchased"].sum().where(lambda s: s > 0)).mean() * 100
-        kpi_row([
-            ("Records", f"{len(df):,}"),
-            ("Foods tracked", f"{df['Food'].nunique()}"),
-            ("Days covered", f"{df['Date'].nunique():,}"),
-            ("Waste rate", fmt_pct(headline["rate"]), "Wasted ÷ purchased per food, averaged across foods."),
-            ("Consumption rate", fmt_pct(consumption_rate), "Consumed ÷ purchased per food, averaged across foods."),
-        ])
-        st.caption(f"Highest waste rate: {top['Food']} at {fmt_pct(top['Waste_Rate'])} of what was bought. {UNIT_NOTE}")
-
-        left, right = st.columns([1.4, 1], gap="large")
-        with left:
-            section("Waste rate by month", "Wasted ÷ purchased, averaged across foods")
-            monthly = (df.assign(Month_Start=df["Date"].dt.to_period("M").dt.to_timestamp())
-                       .groupby(["Month_Start", "Food"])[["Quantity_Wasted", "Quantity_Purchased"]].sum())
-            monthly = (monthly["Quantity_Wasted"] / monthly["Quantity_Purchased"] * 100).groupby("Month_Start").mean()
-            charts.line(monthly.rename("Waste rate").reset_index(), "Month_Start", "Waste rate",
-                        x_title="Month", y_title="Waste rate (%)", y_format=".1f", slot=1, x_format="%b %Y",
-                        height=280)
-        with right:
-            section("Waste rate by category", "Mean of the food-level rates")
-            by_category = foods.groupby("Category", as_index=False)["Waste_Rate"].mean()
-            charts.bar(by_category, "Category", "Waste_Rate", value_title="Waste rate (%)", slot=1,
-                       value_format=".1f", height=280)
-
+    if source == "demo":
+        from services.overview import demo_dashboard
+        board = demo_dashboard()
+        kpi_row(board["kpis"])
+        st.caption(f"This month = {board['month']}, the last month in the demo data. Forecast accuracy = 1 − WAPE "
+                   "(total absolute error ÷ total actual).")
+        rupee_charts(board["monthly"], board["by_food"], illustrative=True)
+        action_list(board["actions"], "Nothing urgent in the plan.")
+    elif source == "personal":
+        from services.overview import personal_dashboard
+        from services.personal import personal_data
+        board = personal_dashboard(*personal_data())
+        kpi_row(board["kpis"])
+        st.caption(f"This month = {board['month']}. Changes compare with last month; they appear once both months "
+                   "have data.")
+        rupee_charts(board["monthly"], board["by_food"], illustrative=False)
+        action_list(board["actions"], "Nothing is close to expiring or at risk of being wasted.")
     elif source == "m5":
-        daily = df.groupby("Date", as_index=False)["Quantity_Sold"].sum()
-        kpi_row([
-            ("Records", f"{len(df):,}"),
-            ("Items", f"{df['Product_ID'].nunique()}"),
-            ("Days covered", f"{df['Date'].nunique()}"),
-            ("Units sold", f"{df['Quantity_Sold'].sum():,.0f}"),
-            ("Units per day", f"{daily['Quantity_Sold'].mean():,.0f}", "Mean of daily totals across all items."),
-        ])
-        st.caption("M5 records retail unit sales. It has no household consumption, stock, expiry or waste.")
-        left, right = st.columns([1.4, 1], gap="large")
+        from services.overview import m5_dashboard
+        board = m5_dashboard()
+        kpi_row(board["kpis"])
+        st.caption("M5 records retail unit sales only: no household consumption, stock, expiry or waste.")
+        left, right = st.columns(2, gap="large")
         with left:
-            section("Daily unit sales", "All selected items, store CA_1")
-            charts.line(daily, "Date", "Quantity_Sold", x_title="Date", y_title="Units sold per day",
-                        y_format=",.0f", height=280)
+            weekly = board["weekly"]
+            charts.line(weekly.rename_axis("Week").reset_index(), "Week", "Units", x_title=None,
+                        y_title="Units sold per week", y_format=",.0f", label_last=True,
+                        title=f"{weekly.iloc[-2]:,.0f} units in the last full week",
+                        subtitle="Weekly unit sales, 100 food items, store CA_1")
         with right:
-            section("Unit sales by department")
-            by_department = df.groupby("Department", as_index=False, observed=True)["Quantity_Sold"].sum()
-            charts.bar(by_department, "Department", "Quantity_Sold", value_title="Units sold",
-                       value_format=",.0f", height=280)
-
+            top = board["top"].head(8)
+            charts.bar(top.rename_axis("Item").reset_index(), "Item", "Units", value_title="Units sold",
+                       value_format=",.0f", title=f"{top.index[0]} sells the most",
+                       subtitle="Top 8 items by units sold (M5 item IDs)")
+        action_list(board["actions"], "No item changed by 20% or more.")
     else:
         orders = df["Order_ID"].nunique()
-        kpi_row([
-            ("Order lines", f"{len(df):,}"),
-            ("Orders", f"{orders:,}"),
-            ("Customers", f"{df['User_ID'].nunique():,}"),
-            ("Products", f"{df['Product_ID'].nunique():,}"),
-            ("Reorder rate", fmt_pct(df["Reordered"].mean() * 100), "Share of order lines the customer had bought before."),
-        ])
-        st.caption("Instacart records what was ordered and reordered. It has no quantities, consumption, expiry or waste.")
-        left, right = st.columns([1.4, 1], gap="large")
+        basket = df.groupby("Order_ID").size()
+        kpi_row([("Orders", f"{orders:,}"), ("Reorder rate", f"{df['Reordered'].mean() * 100:.1f}%",
+                  "Share of order lines the customer had bought before."),
+                 ("Items per order", f"{basket.mean():.1f}", "Mean basket size."),
+                 ("Products", f"{df['Product_ID'].nunique():,}")])
+        st.caption("Instacart has no calendar dates, so there is no month-on-month change, and no quantities, "
+                   "expiry or waste.")
+        left, right = st.columns(2, gap="large")
+        departments = df.groupby("Department", observed=True).size().sort_values(ascending=False)
         with left:
-            section("Order lines by department")
-            by_department = df.groupby("Department", as_index=False, observed=True).size()
-            charts.bar(by_department, "Department", "size", value_title="Order lines", value_format=",.0f", height=420)
+            charts.bar(departments.head(10).rename("Lines").rename_axis("Department").reset_index(), "Department",
+                       "Lines", value_title="Order lines", value_format=",.0f",
+                       title=f"{departments.index[0].capitalize()} fills {departments.iloc[0] / len(df) * 100:.0f}% "
+                             "of order lines", subtitle="Top 10 departments")
         with right:
-            section("Orders by hour of day", "Distinct orders, by the hour the order was placed")
-            by_hour = df.groupby("Order_Hour", as_index=False)["Order_ID"].nunique()
-            charts.bar(by_hour, "Order_Hour", "Order_ID", value_title="Orders", category_title="Hour of day",
-                       value_format=",.0f", horizontal=False, sort="ascending", height=420)
+            reorder = df.groupby("Department", observed=True)["Reordered"].mean().mul(100).sort_values(ascending=False)
+            charts.bar(reorder.head(10).rename("Rate").rename_axis("Department").reset_index(), "Department", "Rate",
+                       value_title="Reorder rate (%)", value_format=".0f",
+                       title=f"{reorder.index[0].capitalize()} is reordered most ({reorder.iloc[0]:.0f}%)",
+                       subtitle="Share of order lines bought before, top 10 departments")
+        products = df.groupby("Product_Name", observed=True).agg(Lines=("Order_ID", "size"), Rate=("Reordered", "mean"))
+        products = products[products["Lines"] >= 50].sort_values("Rate", ascending=False).head(5)
+        action_list([{"tag": "Regular list", "title": f"Keep {name} on the regular list",
+                      "why": f"Reordered {row.Rate * 100:.0f}% of the time across {row.Lines:,} order lines."}
+                     for name, row in products.iterrows()], "")
 
-    section("What each source supports",
-            "Sources are never mixed. Pages show a clear notice when the selected source cannot support an analysis.")
-    table(CAPABILITIES[["Analysis", SOURCES[source]] + [c for c in CAPABILITIES.columns[1:] if c != SOURCES[source]]])
+    with st.expander("What each data source supports"):
+        st.caption("Sources are never mixed. Pages show a clear notice when the selected source cannot support an "
+                   "analysis.")
+        table(CAPABILITIES[["Analysis", SOURCES[source]] + [c for c in CAPABILITIES.columns[1:] if c != SOURCES[source]]])

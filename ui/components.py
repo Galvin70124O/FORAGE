@@ -8,22 +8,37 @@ import pandas as pd
 import streamlit as st
 
 
-def page_header(title: str, purpose: str) -> None:
-    st.title(title)
-    st.markdown(f'<p class="fg-purpose">{escape(purpose)}</p>', unsafe_allow_html=True)
+def page_header(title: str, purpose: str, *, pill: str | None = None, detail: str | None = None) -> None:
+    """Title and one-line purpose on the left; the data-source pill on the right; an optional detail line."""
+    left, right = st.columns([5, 2], vertical_alignment="bottom")
+    with left:
+        st.title(title)
+        st.markdown(f'<p class="fg-purpose">{escape(purpose)}</p>', unsafe_allow_html=True)
+    if pill:
+        right.markdown(f'<div style="text-align:right"><span class="fg-pill">Source: <b>{escape(pill)}</b></span></div>',
+                       unsafe_allow_html=True)
+    if detail:
+        st.markdown(f'<div class="fg-detail">{escape(detail)}</div>', unsafe_allow_html=True)
 
 
 def source_label(name: str, detail: str) -> None:
-    st.markdown(f'<div class="fg-source">Data source: <b>{escape(name)}</b> · {escape(detail)}</div>',
-                unsafe_allow_html=True)
+    """Detail line for pages that render their own header (personal pages)."""
+    st.markdown(f'<div class="fg-detail">{escape(name)} · {escape(detail)}</div>', unsafe_allow_html=True)
 
 
 def kpi_row(items: list[tuple]) -> None:
-    """Plain figures: (label, value) or (label, value, help)."""
+    """Plain figures: (label, value[, help[, delta[, delta_color]]]).
+
+    `delta` is shown with an arrow as well as colour; use delta_color="inverse" when a fall is good
+    (waste), "normal" when a rise is good, "off" for neutral changes.
+    """
     columns = st.columns(len(items))
     for column, item in zip(columns, items):
         label, value, *rest = item
-        column.metric(label, value, help=rest[0] if rest else None)
+        help_text = rest[0] if len(rest) > 0 else None
+        delta = rest[1] if len(rest) > 1 else None
+        delta_color = rest[2] if len(rest) > 2 else "normal"
+        column.metric(label, value, delta=delta, delta_color=delta_color, help=help_text)
 
 
 def section(title: str, note: str | None = None) -> None:
@@ -83,6 +98,15 @@ def text(label: str, width: str = "medium"):
 
 def number(label: str, fmt: str = "%.2f", help: str | None = None):
     return st.column_config.NumberColumn(label, format=fmt, help=help)
+
+
+def rupees(label: str, help: str | None = None):
+    return st.column_config.NumberColumn(label, format="₹%.0f", help=help)
+
+
+def percent_bar(label: str, help: str | None = None, max_value: float = 100):
+    """Waste % and similar rates as a progress bar with the number printed (not colour alone)."""
+    return st.column_config.ProgressColumn(label, format="%.1f%%", min_value=0, max_value=max_value, help=help)
 
 
 def date(label: str):

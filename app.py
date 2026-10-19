@@ -14,9 +14,9 @@ SRC_DIR = PROJECT_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from services.data import SOURCES  # noqa: E402
+from services.data import SOURCES, data_as_of  # noqa: E402
 from services.session import personal_available, render_account  # noqa: E402
-from ui.theme import apply_styles  # noqa: E402
+from ui.theme import VERSION, apply_styles  # noqa: E402
 
 
 def build_pages(signed_in: bool) -> dict[str, list]:
@@ -56,6 +56,8 @@ def render_sidebar(pages: dict[str, list], signed_in: bool) -> None:
         st.caption("Demo data is synthetic and for illustration only. M5 and Instacart are public datasets.")
         st.divider()
         render_account()
+        st.markdown(f'<div class="fg-footer">Data as of {data_as_of(st.session_state["source"])}<br>'
+                    f'FORAGE {VERSION}</div>', unsafe_allow_html=True)
 
 
 def main() -> None:

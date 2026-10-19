@@ -26,7 +26,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-from prediction import evaluate_models
+from prediction import FOREST, evaluate_models
 
 HORIZON = 7
 WEEK_NUMERIC = ["Last_7", "Prev_7", "Avg_4w", "Weekday", "Month"]
@@ -67,8 +67,7 @@ def week_models(categorical: list[str]) -> dict:
                                 *([("cat", OneHotEncoder(handle_unknown="ignore"), categorical)] if categorical else [])])
     return {
         "Linear Regression": Pipeline([("prep", linear), ("model", LinearRegression())]),
-        "Random Forest": Pipeline([("prep", forest), ("model", RandomForestRegressor(
-            n_estimators=150, min_samples_leaf=3, random_state=42, n_jobs=-1))]),
+        "Random Forest": Pipeline([("prep", forest), ("model", RandomForestRegressor(**FOREST))]),
     }
 
 

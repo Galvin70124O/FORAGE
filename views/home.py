@@ -35,7 +35,7 @@ def classifier_risk(buys, checks, cover):
     return score_purchases(result["model"], open_buys).groupby(open_buys["Food"]).max()
 
 
-page_header("Home", "What needs your attention today, from your own purchases and pantry checks.")
+page_header("Home", pill="My data", purpose="What needs your attention today, from your own purchases and pantry checks.")
 db, uid = require_user()
 toast_pending()
 

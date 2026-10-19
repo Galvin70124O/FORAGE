@@ -15,7 +15,7 @@ TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "data" / "templates"
 TEMPLATES = {"purchases": TEMPLATE_DIR / "purchases_template.csv",
              "pantry checks": TEMPLATE_DIR / "pantry_checks_template.csv"}
 
-page_header("My data", "Everything you have logged. Edit or delete entries, and export or import CSV files.")
+page_header("My data", pill="My data", purpose="Everything you have logged. Edit or delete entries, and export or import CSV files.")
 db, uid = require_user()
 toast_pending()
 buys, checks, foods = db.purchases(uid), db.checks(uid), db.foods(uid)

@@ -9,7 +9,7 @@ from ui.components import fmt_date, page_header, section, table, number
 
 UNITS = ["kg", "g", "L", "ml", "piece", "dozen", "loaf", "pack", "unit"]
 
-page_header("I bought…", "Log a purchase: pick the food, check the amount and price, save.")
+page_header("I bought…", pill="My data", purpose="Log a purchase: pick the food, check the amount and price, save.")
 db, uid = require_user()
 toast_pending()
 

@@ -4,18 +4,17 @@ import pandas as pd
 import streamlit as st
 
 from recommendations import weekly_plan
-from waste_risk import planned_rows, score_purchases
-from services.data import demo_backtest, demo_classifier, demo_recommendations, demo_week, load_demo
+from services.data import demo_backtest, demo_plan_with_risk, demo_recommendations, demo_week, load_demo
 from views import backtest_section
 from ui import charts
-from ui.components import fmt_date, formula, kpi_row, number, section, table, text
+from ui.components import fmt_date, formula, kpi_row, number, percent_bar, section, table, text
 from views.common import begin
 
 PLAN_COLUMNS = {
     "Food": text("Food", "small"), "Quantity_Unit": text("Unit", "small"),
     "Predicted_Demand": number("Predicted demand", "%.2f", "Next-day forecast, in the food's unit."),
     "Current_Remaining_Quantity": number("In stock", "%.2f"),
-    "Historical_Waste_Percentage": number("Waste rate (%)", "%.1f"),
+    "Historical_Waste_Percentage": percent_bar("Waste rate"),
     "Usable_Remaining_Stock": number("Usable stock", "%.2f", "In stock × (1 − waste rate)."),
     "Recommended_Purchase_Quantity": number("Buy", "%.2f"),
     "Days_Until_Expiry": number("Days to expiry", "%d"),
@@ -32,19 +31,6 @@ ALERT_TAGS = {"historical waste is in the highest 25% of foods": "High waste",
 def short_alerts(alerts: str) -> str:
     return ", ".join(ALERT_TAGS.get(part.strip(), part.strip()) for part in alerts.split(";")) if alerts != "No alert" else "–"
 
-def with_waste_risk(plan: pd.DataFrame) -> pd.DataFrame:
-    """Score each planned purchase with the waste-risk classifier and add a "likely to be wasted" alert."""
-    model_info = demo_classifier()["model"]
-    rows = planned_rows(load_demo(), plan["Food"], plan["Recommended_Purchase_Quantity"].clip(lower=0.01),
-                        plan["Forecast_Date"].iloc[0])
-    scored = plan.assign(Waste_Risk=score_purchases(model_info, rows).to_numpy() * 100)
-    likely = (scored["Waste_Risk"] >= model_info[2] * 100) & (scored["Recommended_Purchase_Quantity"] > 0)
-    scored["Alerts"] = [
-        ("likely to be wasted" if a == "No alert" else f"{a}; likely to be wasted") if flag else a
-        for a, flag in zip(scored["Alerts"], likely)]
-    return scored
-
-
 source, df = begin("Recommendations", "What to act on next, derived from the selected source. "
                    "Each recommendation shows the calculation behind it.")
 
@@ -52,8 +38,8 @@ if df is not None:
     if source == "demo":
         plan_tab, backtest_tab = st.tabs(["Purchase plan", "Backtest: does it work?"])
         with plan_tab:
-            plan, high_waste, short_life = demo_recommendations()
-            plan = with_waste_risk(plan)
+            _, high_waste, short_life = demo_recommendations()
+            plan = demo_plan_with_risk()
             model = plan["Forecast_Model"].iloc[0]
             buy = plan["Recommended_Purchase_Quantity"] > 0
             kpi_row([("Plan for", fmt_date(plan["Forecast_Date"].iloc[0])),

@@ -7,7 +7,7 @@ from pantry import TOLERANCE, expected_stock
 from services.personal import queue_toast, require_user, toast_pending
 from ui.components import empty_state, fmt_date, formula, number, page_header
 
-page_header("Pantry check", "Look in your fridge and cupboards: correct what is left and add anything you threw "
+page_header("Pantry check", pill="My data", purpose="Look in your fridge and cupboards: correct what is left and add anything you threw "
             "away. Weekly is enough.")
 db, uid = require_user()
 toast_pending()

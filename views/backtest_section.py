@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 
 from ui import charts
-from ui.components import kpi_row, number, section, table
+from ui.components import kpi_row, number, table
 
 ASSUMPTIONS = [
     "Every household eats exactly the recorded consumption of each day, so demand is identical.",
@@ -37,13 +37,15 @@ def render(summary: pd.DataFrame, days: int, *, reference: float | None = None, 
     chart_data = summary.reset_index()
     left, right = st.columns(2, gap="large")
     with left:
-        section("Waste by household", "Wasted ÷ purchased, mean across foods")
-        charts.bar(chart_data, "Policy", "Waste_Pct", value_title="Waste (% of purchases)", slot=1,
-                   value_format=".1f", sort=list(summary.index), horizontal=False, height=260)
+        charts.bar(chart_data, "Policy", "Waste_Pct", value_title="Waste (% of purchases)", value_format=".1f",
+                   sort=list(summary.index), horizontal=False, highlight=[plan.name],
+                   title=f"Waste falls from {recorded['Waste_Pct']:.1f}% to {plan['Waste_Pct']:.1f}%",
+                   subtitle="Wasted ÷ purchased, mean across foods, by household")
     with right:
-        section("Stock-outs by household", "Food-days on which demand was not fully met")
         charts.bar(chart_data, "Policy", "Stockout_Pct", value_title="Food-days with a stock-out (%)",
-                   value_format=".1f", sort=list(summary.index), horizontal=False, height=260)
+                   value_format=".1f", sort=list(summary.index), horizontal=False, highlight=[plan.name],
+                   title=f"At the cost of stock-outs on {plan['Stockout_Pct']:.0f}% of food-days",
+                   subtitle="Food-days on which demand was not fully met, by household")
     table(chart_data[["Policy", "Waste_Pct", "Wasted_Rupees", "Stockout_Pct", "Unmet_Pct", "Leftover"]], {
         "Waste_Pct": number("Waste (%)", "%.1f"), "Wasted_Rupees": number("₹ wasted", "₹%.0f"),
         "Stockout_Pct": number("Stock-out food-days (%)", "%.1f"), "Unmet_Pct": number("Demand unmet (%)", "%.1f"),

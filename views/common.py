@@ -6,7 +6,7 @@ import pandas as pd
 import streamlit as st
 
 from services.data import EXTRACT_COMMAND, SOURCES, current_source, describe, load, set_source
-from ui.components import empty_state, page_header, source_label
+from ui.components import empty_state, page_header
 
 UNIT_NOTE = ("Quantities are in each food's recorded unit (kg, L, dozen, loaf or pack), so totals are only "
              "compared within a food; rates and percentages are unit-free.")
@@ -24,10 +24,9 @@ def begin(title: str, purpose: str, *, feature: str | None = "waste") -> tuple[s
     the page shows anything (None = always shown, e.g. Data Quality); a
     reliability note with sample sizes is shown when it is met but still thin.
     """
-    page_header(title, purpose)
     source = current_source()
     df = load(source)
-    source_label(SOURCES[source], describe(source, df))
+    page_header(title, purpose, pill=SOURCES[source], detail=describe(source, df))
     if df is None:
         empty_state(f"{SOURCES[source]} is available in the local version",
                     f"The {SOURCES[source]} dataset is licensed for non-commercial use and its terms do not clearly "

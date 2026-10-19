@@ -9,7 +9,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 
-from prediction import chronological_split, evaluate_models, select_best_model
+from prediction import FOREST, chronological_split, evaluate_models, select_best_model
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data" / "real" / "m5" / "m5_food_demand.csv"
@@ -44,7 +44,7 @@ def impute_price(train: pd.DataFrame, test: pd.DataFrame) -> tuple[pd.DataFrame,
 def m5_models() -> dict:
     return {
         "Linear Regression": LinearRegression(),
-        "Random Forest": RandomForestRegressor(n_estimators=120, min_samples_leaf=2, random_state=42, n_jobs=-1),
+        "Random Forest": RandomForestRegressor(**FOREST),
     }
 
 
