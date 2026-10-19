@@ -60,8 +60,13 @@ def _normalise(df: pd.DataFrame, *, source: str) -> pd.DataFrame:
     if "Input_Method" not in working or working["Input_Method"].isna().all():
         working["Input_Method"] = source
     cleaned, _ = clean_and_derive_features(working)
-    if "Estimated_Expiry_Date" not in cleaned and "Date" in cleaned:
-        cleaned["Estimated_Expiry_Date"] = cleaned["Date"] + pd.to_timedelta(cleaned["Expiry_Days"].fillna(0), unit="D")
+    if "Date" in cleaned and "Expiry_Days" in cleaned:
+        # Unknown shelf life stays unknown (NaT); it is never assumed to be zero days.
+        derived = cleaned["Date"] + pd.to_timedelta(cleaned["Expiry_Days"], unit="D")
+        if "Estimated_Expiry_Date" in cleaned:
+            cleaned["Estimated_Expiry_Date"] = pd.to_datetime(cleaned["Estimated_Expiry_Date"], errors="coerce").fillna(derived)
+        else:
+            cleaned["Estimated_Expiry_Date"] = derived
     for column in PERSONAL_COLUMNS:
         if column not in cleaned:
             cleaned[column] = pd.NA

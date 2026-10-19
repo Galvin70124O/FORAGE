@@ -1,6 +1,7 @@
-streamlit
-altair
+streamlit>=1.46
+altair>=5
 pandas
 scikit-learn
 matplotlib
 supabase
+pytest

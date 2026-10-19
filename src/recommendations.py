@@ -4,30 +4,30 @@ Run from the project root with:
     python src/recommendations.py
 
 This is a separate recommendation layer: it first predicts next-day demand with
-the selected Linear Regression forecasting model, then compares that demand with
-the latest recorded stock and each food's actual historical waste pattern.
+whichever forecaster won the chronological evaluation in prediction.py (lowest
+test MAE), then compares that demand with the latest recorded stock and each
+food's own historical waste rate.
 """
 
 from pathlib import Path
 
 import pandas as pd
 
-from prediction import TARGET, build_models, create_forecasting_features, load_data
+from prediction import (
+    CATEGORICAL_FEATURES,
+    DEMO_BASELINES,
+    FEATURE_COLUMNS,
+    NUMERIC_FEATURES,
+    TARGET,
+    build_models,
+    create_forecasting_features,
+    load_data,
+    run_demo_forecast,
+)
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = PROJECT_ROOT / "outputs" / "recommendations"
-
-NUMERIC_FEATURES = [
-    "Lag_1_Consumption",
-    "Lag_7_Consumption",
-    "Rolling_Mean_7",
-    "Month",
-    "Is_Weekend",
-    "Is_Festival",
-]
-CATEGORICAL_FEATURES = ["Day_of_Week", "Food", "Category"]
-FEATURE_COLUMNS = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
 
 def build_next_day_features(raw_df, future_is_festival=0):
@@ -115,18 +115,30 @@ def create_reasons(recommendations):
     return reasons
 
 
-def generate_recommendations():
-    """Forecast demand with the selected model and calculate purchase quantities."""
-    raw_df = load_data()
-    training_df = create_forecasting_features(raw_df)
+def predict_next_day(raw_df, model_name):
+    """Next-day demand per food from the named forecaster.
 
-    # Linear Regression was the best model in the chronological evaluation in
-    # prediction.py. It is retrained here on all available historical records.
-    model = build_models(NUMERIC_FEATURES, CATEGORICAL_FEATURES)["Linear Regression"]
-    model.fit(training_df[FEATURE_COLUMNS], training_df[TARGET])
-
+    A baseline needs no fitting; a model is refit on all history (its test-set
+    score was already measured in run_demo_forecast).
+    """
     future_features, forecast_date = build_next_day_features(raw_df)
-    future_features["Predicted_Demand"] = model.predict(future_features[FEATURE_COLUMNS])
+    if model_name in DEMO_BASELINES:
+        predicted = future_features[DEMO_BASELINES[model_name]]
+    else:
+        training_df = create_forecasting_features(raw_df)
+        model = build_models(NUMERIC_FEATURES, CATEGORICAL_FEATURES)[model_name]
+        model.fit(training_df[FEATURE_COLUMNS], training_df[TARGET])
+        predicted = model.predict(future_features[FEATURE_COLUMNS])
+    future_features["Predicted_Demand"] = predicted
+    return future_features, forecast_date
+
+
+def generate_recommendations(raw_df=None, model_name=None):
+    """Forecast demand with the evaluated best model and calculate purchase quantities."""
+    raw_df = load_data() if raw_df is None else raw_df
+    if model_name is None:
+        model_name = run_demo_forecast(raw_df)["best_model"]
+    future_features, forecast_date = predict_next_day(raw_df, model_name)
     # Negative demand is physically impossible, so zero is the sensible lower bound.
     future_features["Predicted_Demand"] = future_features["Predicted_Demand"].clip(lower=0)
 
@@ -154,9 +166,10 @@ def generate_recommendations():
     )
     recommendations["Reason"] = create_reasons(recommendations)
     recommendations["Forecast_Date"] = forecast_date
+    recommendations["Forecast_Model"] = model_name
 
     output_columns = [
-        "Forecast_Date", "Category", "Quantity_Unit", "Predicted_Demand", "Historical_Average_Consumption",
+        "Forecast_Date", "Forecast_Model", "Category", "Quantity_Unit", "Predicted_Demand", "Historical_Average_Consumption",
         "Current_Remaining_Quantity", "Historical_Waste_Percentage",
         "Usable_Remaining_Stock", "Recommended_Purchase_Quantity",
         "Days_Until_Expiry", "Alerts", "Reason",
