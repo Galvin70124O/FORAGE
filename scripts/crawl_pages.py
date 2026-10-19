@@ -113,6 +113,8 @@ def main() -> None:
                         if m.type == "error" or (m.type == "warning" and "WARN" in m.text) else None)
                 page.on("pageerror", lambda e: console.append(f"pageerror: {e}"))
                 page.goto(args.url)
+                # a cold start (fresh environment) can take a while before anything renders
+                page.wait_for_selector('[data-testid="stSidebar"] a', timeout=240_000)
                 settle(page, 2500)
                 if args.exercise and mode == args.modes[0] and width == args.widths[0]:
                     exercise(page, console, results)
