@@ -85,11 +85,11 @@ def chronological_split(df, test_fraction=0.20):
 
 
 def evaluate_predictions(actual, predicted):
-    """MAE, RMSE and R² of one set of held-out predictions."""
+    """MAE, RMSE and R² of one set of held-out predictions (R² is undefined below two points)."""
     return {
         "MAE": float(mean_absolute_error(actual, predicted)),
         "RMSE": float(mean_squared_error(actual, predicted) ** 0.5),
-        "R2": float(r2_score(actual, predicted)),
+        "R2": float(r2_score(actual, predicted)) if len(actual) >= 2 else float("nan"),
     }
 
 

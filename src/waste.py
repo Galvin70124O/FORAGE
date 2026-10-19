@@ -3,6 +3,9 @@
 Definitions used throughout FORAGE:
 
 * Stock balance per record: purchased = consumed + wasted + remaining.
+  My Data is built from purchases and pantry checks, so its balance includes
+  the stock carried over from the previous check (an `Opening_Stock` column):
+  opening + purchased = consumed + wasted + remaining.
   Waste is the recorded `Quantity_Wasted`; it is never derived as
   purchased - consumed, because that would count unused stock as waste.
 * Waste rate of a food = total wasted / total purchased for that food (x100).
@@ -34,10 +37,20 @@ def require_waste_columns(df: pd.DataFrame, extra: set[str] = frozenset()) -> No
         raise WasteNotSupported(f"Waste analysis needs recorded waste; missing columns: {sorted(missing)}")
 
 
+def is_stock_flow(df: pd.DataFrame) -> bool:
+    """True for My Data periods, whose stock carries over from one pantry check to the next."""
+    return "Opening_Stock" in df.columns
+
+
 def balance_residual(df: pd.DataFrame) -> pd.Series:
-    """purchased - consumed - wasted - remaining for each record (0 when balanced)."""
+    """(opening +) purchased - consumed - wasted - remaining per record; 0 when balanced.
+
+    For stock-flow logs the opening stock is the previous day's remaining; it is
+    unknown on a food's first logged day, so that day is not checked (NaN).
+    """
     require_waste_columns(df, {"Quantity_Consumed", "Remaining_Quantity"})
-    return (df["Quantity_Purchased"] - df["Quantity_Consumed"]
+    opening = df["Opening_Stock"] if is_stock_flow(df) else 0
+    return (opening + df["Quantity_Purchased"] - df["Quantity_Consumed"]
             - df["Quantity_Wasted"] - df["Remaining_Quantity"])
 
 
@@ -119,7 +132,8 @@ def expiring_stock(df: pd.DataFrame, as_of: pd.Timestamp, within_days: int) -> p
     """Remaining stock whose estimated expiry falls in [as_of, as_of + within_days].
 
     Batches already past expiry are excluded (they are waste, not a warning),
-    as are batches with no remaining quantity or no expiry date.
+    as are batches with no remaining quantity or no expiry date. (My Data uses
+    pantry.stock_batches instead, because its stock carries over between checks.)
     """
     require_waste_columns(df, {"Remaining_Quantity", "Estimated_Expiry_Date"})
     as_of = pd.Timestamp(as_of).normalize()

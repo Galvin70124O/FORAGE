@@ -107,6 +107,24 @@ def build_quality_report(df, missing_standard_columns, unmapped_source_columns):
     }
 
 
+def normalise_names(values):
+    """Collapse spacing and unify case variants of the same name.
+
+    "milk", " MILK " and "Milk" become one spelling: the most common original
+    form of that name in the data (ties go to the first seen). Returns
+    (normalised, changed) where `changed` marks values that were rewritten.
+    """
+    text = values.astype("string").str.strip().str.replace(r"\s+", " ", regex=True)
+    key = text.str.lower()
+    canonical = {}
+    for lower, group in text.groupby(key, sort=False):
+        canonical[lower] = group.value_counts().index[0]
+    normalised = key.map(canonical).astype("string")
+    normalised[text.isna()] = pd.NA
+    changed = values.astype("string").ne(normalised).fillna(False)
+    return normalised, changed
+
+
 def clean_and_derive_features(df):
     """Apply safe conversions, remove clearly invalid rows, and add supported features.
 
@@ -114,7 +132,7 @@ def clean_and_derive_features(df):
     summary documents every row-removal decision.
     """
     cleaned = df.copy()
-    summary = {"duplicates_removed": 0, "rows_removed_missing_food": 0,
+    summary = {"duplicates_removed": 0, "rows_removed_missing_food": 0, "food_names_normalised": 0,
                "rows_removed_invalid_date": 0, "rows_removed_invalid_values": 0,
                "derived_columns": []}
 
@@ -122,9 +140,13 @@ def clean_and_derive_features(df):
     cleaned = cleaned.drop_duplicates().copy()
     summary["duplicates_removed"] = before - len(cleaned)
 
+    for column in ("Food", "Category"):
+        if column in cleaned:
+            names = cleaned[column].astype("string").str.strip()
+            names[names.isin(["", "nan", "None"])] = pd.NA
+            cleaned[column], changed = normalise_names(names)
+            summary[f"{column.lower()}_names_normalised"] = int(changed.sum())
     if "Food" in cleaned:
-        cleaned["Food"] = cleaned["Food"].astype("string").str.strip()
-        cleaned.loc[cleaned["Food"].isin(["", "nan", "None"]), "Food"] = pd.NA
         before = len(cleaned)
         cleaned = cleaned.dropna(subset=["Food"]).copy()
         summary["rows_removed_missing_food"] = before - len(cleaned)
@@ -148,8 +170,6 @@ def clean_and_derive_features(df):
     for column in QUANTITY_COLUMNS + ["Price", "Expiry_Days"]:
         if column in cleaned:
             invalid_rows |= cleaned[column].lt(0).fillna(False)
-    if "Quantity_Purchased" in cleaned:
-        invalid_rows |= cleaned["Quantity_Purchased"].le(0).fillna(False)
     if "Is_Festival" in cleaned:
         invalid_rows |= ~cleaned["Is_Festival"].isin([0, 1]) & cleaned["Is_Festival"].notna()
     summary["rows_removed_invalid_values"] = int(invalid_rows.sum())
@@ -160,22 +180,18 @@ def clean_and_derive_features(df):
         cleaned["Month"] = cleaned["Date"].dt.month
         cleaned["Is_Weekend"] = (cleaned["Date"].dt.dayofweek >= 5).astype(int)
         summary["derived_columns"].extend(["Day_of_Week", "Month", "Is_Weekend"])
+    # A purchase of 0 is valid in a daily log (a day when nothing was bought);
+    # the ratios are then undefined (NaN), never infinite.
+    purchased = cleaned["Quantity_Purchased"].where(cleaned["Quantity_Purchased"] > 0) \
+        if "Quantity_Purchased" in cleaned else None
     if {"Quantity_Purchased", "Quantity_Wasted"}.issubset(cleaned.columns):
-        cleaned["Waste_Percentage"] = (
-            cleaned["Quantity_Wasted"] / cleaned["Quantity_Purchased"] * 100
-        ).round(2)
+        cleaned["Waste_Percentage"] = (cleaned["Quantity_Wasted"] / purchased * 100).round(2)
         summary["derived_columns"].append("Waste_Percentage")
     if {"Quantity_Purchased", "Quantity_Consumed"}.issubset(cleaned.columns):
-        cleaned["Consumption_Rate"] = (
-            cleaned["Quantity_Consumed"] / cleaned["Quantity_Purchased"]
-        ).round(4)
+        cleaned["Consumption_Rate"] = (cleaned["Quantity_Consumed"] / purchased).round(4)
         summary["derived_columns"].append("Consumption_Rate")
-    if ("Remaining_Quantity" not in cleaned and
-            {"Quantity_Purchased", "Quantity_Consumed", "Quantity_Wasted"}.issubset(cleaned.columns)):
-        cleaned["Remaining_Quantity"] = (
-            cleaned["Quantity_Purchased"] - cleaned["Quantity_Consumed"] - cleaned["Quantity_Wasted"]
-        ).round(2)
-        summary["derived_columns"].append("Remaining_Quantity")
+    # Remaining stock is never derived: in a daily log it depends on stock carried
+    # over from earlier days, which the row alone does not contain.
 
     if "Date" in cleaned and "Food" in cleaned:
         cleaned = cleaned.sort_values(["Date", "Food"]).reset_index(drop=True)

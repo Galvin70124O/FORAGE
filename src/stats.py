@@ -95,3 +95,13 @@ def describe_strength(r: float) -> str:
     else:
         return "no meaningful"
     return f"{strength} {'positive' if r > 0 else 'negative'}"
+
+
+def sample_note(n: int, minimum: int, unit: str = "observations") -> str:
+    """'n = 12 days · not reliable yet (needs at least 30)' style label shown beside a metric."""
+    note = f"n = {n:,} {unit}"
+    return note if n >= minimum else f"{note} · not reliable yet (needs at least {minimum:,})"
+
+
+def is_reliable(n: int, minimum: int) -> bool:
+    return n >= minimum

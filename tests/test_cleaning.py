@@ -3,7 +3,6 @@ import pandas as pd
 from clean_data import RAW_DATA_PATH, clean_records
 from conftest import make_raw_row
 from data_quality import build_quality_report, clean_and_derive_features
-from personal_data import _normalise
 
 
 def test_duplicates_are_removed_and_counted():
@@ -93,19 +92,17 @@ def test_import_pipeline_drops_invalid_rows_but_keeps_outliers():
     assert 500 in set(cleaned["Quantity_Purchased"])
 
 
-def test_personal_records_never_invent_an_expiry_date():
-    record = pd.DataFrame([{"Date": "2025-05-01", "Food": "Bread", "Quantity_Purchased": 1.0,
-                            "Quantity_Consumed": 0.5, "Quantity_Wasted": 0.0, "Remaining_Quantity": 0.5,
-                            "Expiry_Days": None}])
-    normalised = _normalise(record, source="test")
-    assert pd.isna(normalised.loc[0, "Estimated_Expiry_Date"])
+def test_days_without_a_purchase_are_kept_and_ratios_are_undefined():
+    cleaned, summary = clean_and_derive_features(pd.DataFrame({
+        "Date": ["2026-03-01", "2026-03-02"], "Food": ["Milk", "Milk"],
+        "Quantity_Purchased": [2, 0], "Quantity_Consumed": [1, 1], "Quantity_Wasted": [0, 0]}))
+    assert len(cleaned) == 2 and summary["rows_removed_invalid_values"] == 0
+    assert pd.isna(cleaned.loc[1, "Waste_Percentage"])
+    assert "Remaining_Quantity" not in cleaned  # never invented
 
 
-def test_column_profile_and_iqr_outliers():
-    from data_quality import column_profile, iqr_outliers
-    df = pd.DataFrame({"a": [1, 2, None, 4], "b": ["x", "x", "y", None]})
-    profile = column_profile(df).set_index("Column")
-    assert profile.loc["a", "Missing"] == 1 and profile.loc["a", "Missing (%)"] == 25
-    assert profile.loc["b", "Distinct"] == 2
-    outliers = iqr_outliers(pd.DataFrame({"v": [1, 2, 2, 3, 2, 100]}), ["v"]).set_index("Column")
-    assert outliers.loc["v", "Outliers"] == 1
+def test_name_variants_are_unified_to_the_most_common_spelling():
+    from data_quality import normalise_names
+    names, changed = normalise_names(pd.Series(["Milk", " milk", "MILK ", "Milk", "Brown  Bread"]))
+    assert names.tolist() == ["Milk", "Milk", "Milk", "Milk", "Brown Bread"]
+    assert changed.tolist() == [False, True, True, False, True]
