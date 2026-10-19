@@ -62,6 +62,6 @@ def forecast_retail_demand(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame
     for name, values in predictions.items():
         test[name] = values
     test["Predicted_Sales"] = predictions[best_model]
-    metadata = {"cutoff": cutoff, "best_model": best_model, "features": FEATURES,
+    metadata = {"cutoff": cutoff, "best_model": best_model, "features": FEATURES, "models": models,
                 "train_rows": len(train), "test_rows": len(test), "price_median": price_median}
     return test, data, comparison, metadata

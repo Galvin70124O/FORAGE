@@ -4,7 +4,8 @@ import pandas as pd
 import streamlit as st
 
 from prediction import TARGET
-from services.data import FOLD_DAYS, FOLDS, demo_forecast, demo_rolling, demo_week, m5_forecast, m5_rolling, m5_week
+from services.data import (FOLD_DAYS, FOLDS, demo_forecast, demo_rolling, demo_week, forecaster_explanations,
+                           m5_forecast, m5_rolling, m5_week)
 from ui import charts
 from ui.components import empty_state, fmt_date, kpi_row, number, section, table
 from views.common import begin, not_available
@@ -146,7 +147,7 @@ if df is not None:
                         "festival flag, food and category")
         best = summary.iloc[0]["Model"]
 
-        day_tab, week_tab, folds_tab = st.tabs(["Next day", "Next 7 days", "Rolling backtest"])
+        day_tab, week_tab, folds_tab, explain_tab = st.tabs(["Next day", "Next 7 days", "Rolling backtest", "Explanations"])
         with day_tab:
             selected_kpis(summary, best, unit)
             st.info(ONE_STEP)
@@ -188,3 +189,34 @@ if df is not None:
                         order=[best, baseline], dashed=[baseline], x_type="O", zero=False, y_format=".3f", height=260)
             st.caption(f"The selected model ({best}) against the best baseline ({baseline}). Every fold is checked "
                        "for leakage in the test suite: training data ends before the fold's first test day.")
+
+        with explain_tab:
+            from explain import reading as error_reading
+            from explain import sample, top_feature_sentence
+            info = forecaster_explanations(source)
+            name, (item_key, group_key) = info["model_name"], info["keys"]
+            if info["selected_overall"] != name:
+                st.caption(f"The selected forecaster is a baseline ({info['selected_overall']}), which has nothing to "
+                           f"explain; this tab explains the best model, {name}.")
+            left, right = st.columns(2, gap="large")
+            with left:
+                section(f"What {name} relies on", "Permutation importance on the final test period (rise in MAE)")
+                charts.bar(info["importance"], "Feature", "Importance", value_title="Rise in MAE when shuffled",
+                           value_format=".3f", height=260)
+                st.caption(top_feature_sentence(info["importance"], "MAE"))
+            with right:
+                section("Residuals against predictions", "Actual − predicted; points above 0 were under-predicted")
+                charts.scatter(sample(info["residuals"]), "Predicted", "Residual", x_title=f"Predicted ({unit.split(' (')[0]})",
+                               y_title="Residual", label=item_key, height=260, label_extremes=0,
+                               tooltip=[f"{item_key}:N", charts.tip("Predicted", "Predicted"),
+                                        charts.tip("Actual", "Actual"), charts.tip("Residual", "Residual")])
+            st.markdown("**Where it fails:** " + error_reading(info["residuals"], info["by_item"], item_key, unit))
+            left, right = st.columns(2, gap="large")
+            with left:
+                section(f"Error by {item_key.replace('_', ' ').lower()}", "MAE as % of that item's average demand")
+                charts.bar(info["by_item"].head(15), item_key, "Relative_MAE", value_title="Typical error (% of average)",
+                           value_format=".1f", height=300)
+            with right:
+                section(f"Error by {group_key.lower()}", "MAE as % of the group's average demand")
+                charts.bar(info["by_group"], group_key, "Relative_MAE", value_title="Typical error (% of average)",
+                           value_format=".1f", height=300)

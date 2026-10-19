@@ -4,7 +4,8 @@ import pandas as pd
 import streamlit as st
 
 from recommendations import weekly_plan
-from services.data import demo_backtest, demo_recommendations, demo_week, load_demo
+from waste_risk import planned_rows, score_purchases
+from services.data import demo_backtest, demo_classifier, demo_recommendations, demo_week, load_demo
 from views import backtest_section
 from ui import charts
 from ui.components import fmt_date, formula, kpi_row, number, section, table, text
@@ -18,15 +19,31 @@ PLAN_COLUMNS = {
     "Usable_Remaining_Stock": number("Usable stock", "%.2f", "In stock × (1 − waste rate)."),
     "Recommended_Purchase_Quantity": number("Buy", "%.2f"),
     "Days_Until_Expiry": number("Days to expiry", "%d"),
+    "Waste_Risk": st.column_config.ProgressColumn("Waste risk", format="%.0f%%", min_value=0, max_value=100,
+                                                  help="Classifier probability that this purchase ends up high waste."),
     "Alerts": text("Alerts", "medium"),
 }
 ALERT_TAGS = {"historical waste is in the highest 25% of foods": "High waste",
               "usable stock is below predicted demand": "Low stock",
-              "remaining stock has comparatively short shelf life": "Expires soon"}
+              "remaining stock has comparatively short shelf life": "Expires soon",
+              "likely to be wasted": "Likely wasted"}
 
 
 def short_alerts(alerts: str) -> str:
     return ", ".join(ALERT_TAGS.get(part.strip(), part.strip()) for part in alerts.split(";")) if alerts != "No alert" else "–"
+
+def with_waste_risk(plan: pd.DataFrame) -> pd.DataFrame:
+    """Score each planned purchase with the waste-risk classifier and add a "likely to be wasted" alert."""
+    model_info = demo_classifier()["model"]
+    rows = planned_rows(load_demo(), plan["Food"], plan["Recommended_Purchase_Quantity"].clip(lower=0.01),
+                        plan["Forecast_Date"].iloc[0])
+    scored = plan.assign(Waste_Risk=score_purchases(model_info, rows).to_numpy() * 100)
+    likely = (scored["Waste_Risk"] >= model_info[2] * 100) & (scored["Recommended_Purchase_Quantity"] > 0)
+    scored["Alerts"] = [
+        ("likely to be wasted" if a == "No alert" else f"{a}; likely to be wasted") if flag else a
+        for a, flag in zip(scored["Alerts"], likely)]
+    return scored
+
 
 source, df = begin("Recommendations", "What to act on next, derived from the selected source. "
                    "Each recommendation shows the calculation behind it.")
@@ -36,6 +53,7 @@ if df is not None:
         plan_tab, backtest_tab = st.tabs(["Purchase plan", "Backtest: does it work?"])
         with plan_tab:
             plan, high_waste, short_life = demo_recommendations()
+            plan = with_waste_risk(plan)
             model = plan["Forecast_Model"].iloc[0]
             buy = plan["Recommended_Purchase_Quantity"] > 0
             kpi_row([("Plan for", fmt_date(plan["Forecast_Date"].iloc[0])),
@@ -49,7 +67,7 @@ if df is not None:
             st.caption(f"Predicted demand is the next-day forecast from {model}, the model with the lowest error on the "
                        "Forecasting page, refit on all history. In stock is the remaining quantity on the last recorded "
                        "day. Discounting it by the food's own waste rate assumes stock is wasted at the same rate as "
-                       "past purchases. Alerts: High waste = waste rate in the top quarter of "
+                       "past purchases. Waste risk is the classifier on Waste & Expiry; Likely wasted = above its alert threshold. Alerts: High waste = waste rate in the top quarter of "
                        f"foods (≥ {high_waste:.1f}%); Low stock = usable stock below demand; Expires soon = stock expiring "
                        f"within {short_life:.0f} days (the shortest quarter).")
 
@@ -144,23 +162,48 @@ if df is not None:
               max_rows=10)
 
     else:
-        products = df.groupby(["Product_Name", "Department"], observed=True).agg(
-            Order_Lines=("Order_ID", "size"), Customers=("User_ID", "nunique"), Reorder_Rate=("Reordered", "mean"))
-        products = products[products["Order_Lines"] >= 50].reset_index()
-        products["Reorder_Rate"] *= 100
-        products = products.sort_values(["Reorder_Rate", "Order_Lines"], ascending=False)
-        kpi_row([("Products with 50+ order lines", f"{len(products):,}"),
-                 ("Median reorder rate", f"{products['Reorder_Rate'].median():.1f}%"),
-                 ("Reordered 80% of the time or more", f"{int((products['Reorder_Rate'] >= 80).sum())}")])
-        section("How this is calculated")
-        formula("reorder rate = order lines the customer had bought before ÷ all order lines for the product")
-        st.caption("Products bought often and reordered most of the time are dependable repeat purchases: good "
-                   "candidates for a regular list, and the least likely to be wasted. Products with fewer than 50 "
-                   "order lines are left out because their rates are unstable. Instacart has no quantities, so no "
-                   "purchase amounts are suggested.")
-        section("Most reliable repeat purchases")
-        charts.bar(products.head(12), "Product_Name", "Reorder_Rate", value_title="Reorder rate (%)",
-                   category_title="Product", value_format=".1f", height=380)
-        table(products.head(50), {"Product_Name": "Product", "Department": "Department",
-                                  "Order_Lines": number("Order lines", "%d"), "Customers": number("Customers", "%d"),
-                                  "Reorder_Rate": number("Reorder rate (%)", "%.1f")}, max_rows=10)
+        repeat_tab, together_tab = st.tabs(["Repeat purchases", "Bought together"])
+        with together_tab:
+            from basket import DEFINITIONS, bought_together, strongest_rules
+            from services.data import instacart_rules
+            (orders, products), rules = instacart_rules()
+            section("Products bought together", f"Association rules (FP-growth) on {orders:,} orders that contain at "
+                    f"least two of the {products} most-ordered products; minimum support 0.5%, lift above 1.2")
+            for name, meaning in DEFINITIONS.items():
+                st.markdown(f"**{name}:** {meaning}")
+            top = strongest_rules(rules, 10)
+            table(top[["If", "Then", "Support", "Confidence", "Lift"]], {
+                "If": text("If the basket has", "medium"), "Then": text("it often also has", "medium"),
+                "Support": number("Support", "%.3f"), "Confidence": number("Confidence", "%.2f"),
+                "Lift": number("Lift", "%.2f")}, max_rows=None)
+            st.caption(f"{len(rules):,} rules found; each pair is shown once, in its stronger direction.")
+            choices = sorted({next(iter(a)) for a in rules["Antecedents"] if len(a) == 1})
+            product = st.selectbox("Frequently bought together with", choices,
+                                   index=choices.index("Banana") if "Banana" in choices else 0, key="together_product")
+            matches = bought_together(rules, product)
+            if matches.empty:
+                st.write("No rule passes the thresholds for this product.")
+            else:
+                table(matches, {"Then": text("Also in the basket", "large"), "Support": number("Support", "%.3f"),
+                                "Confidence": number("Confidence", "%.2f"), "Lift": number("Lift", "%.2f")})
+        with repeat_tab:
+            products = df.groupby(["Product_Name", "Department"], observed=True).agg(
+                Order_Lines=("Order_ID", "size"), Customers=("User_ID", "nunique"), Reorder_Rate=("Reordered", "mean"))
+            products = products[products["Order_Lines"] >= 50].reset_index()
+            products["Reorder_Rate"] *= 100
+            products = products.sort_values(["Reorder_Rate", "Order_Lines"], ascending=False)
+            kpi_row([("Products with 50+ order lines", f"{len(products):,}"),
+                     ("Median reorder rate", f"{products['Reorder_Rate'].median():.1f}%"),
+                     ("Reordered 80% of the time or more", f"{int((products['Reorder_Rate'] >= 80).sum())}")])
+            section("How this is calculated")
+            formula("reorder rate = order lines the customer had bought before ÷ all order lines for the product")
+            st.caption("Products bought often and reordered most of the time are dependable repeat purchases: good "
+                       "candidates for a regular list, and the least likely to be wasted. Products with fewer than 50 "
+                       "order lines are left out because their rates are unstable. Instacart has no quantities, so no "
+                       "purchase amounts are suggested.")
+            section("Most reliable repeat purchases")
+            charts.bar(products.head(12), "Product_Name", "Reorder_Rate", value_title="Reorder rate (%)",
+                       category_title="Product", value_format=".1f", height=380)
+            table(products.head(50), {"Product_Name": "Product", "Department": "Department",
+                                      "Order_Lines": number("Order lines", "%d"), "Customers": number("Customers", "%d"),
+                                      "Reorder_Rate": number("Reorder rate (%)", "%.1f")}, max_rows=10)

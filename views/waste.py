@@ -17,6 +17,7 @@ from waste import (
     waste_vs_shelf_life,
 )
 from stats import describe_strength
+from views import risk_section
 
 def personal_expiring(as_of, days):
     """Expiring stock from the user's purchases, in the same columns as the demo table."""
@@ -154,3 +155,21 @@ elif df is not None:
                        extra_tooltip=[charts.tip("Food_List", "Foods", None)])
             st.caption("The data does not record why food was thrown away, so waste on foods that expire within "
                        "a week is treated as expiry-driven.")
+
+    st.header("Waste-risk model")
+    if source == "demo":
+        from services.data import demo_classifier
+        risk_section.render(demo_classifier(), source=source)
+    else:
+        from services.data import personal_classifier
+        from services.personal import gate, personal_data
+        shown, reliable, note = gate("classifier")
+        result = personal_classifier(*personal_data()) if shown else None
+        if result is None:
+            st.write("The classifier trains on your own purchases once at least 30 have been fully used up or thrown "
+                     "away, with at least 5 high-waste and 5 normal ones. Until then, Home flags stock that will "
+                     "expire before you can eat it at your usual pace. " + note)
+        else:
+            if not reliable:
+                st.warning(note)
+            risk_section.render(result, source=source)

@@ -403,3 +403,66 @@ def period_forecast_evaluation(table: pd.DataFrame, window: int = 4) -> tuple[pd
                                 **evaluate_predictions(predictions["Actual"], predictions[name])}
                                for name in ("Previous period", f"{window}-period average")])
     return predictions, comparison.sort_values(["MAE", "RMSE"]).reset_index(drop=True)
+
+
+def purchase_outcomes(purchases: pd.DataFrame, checks: pd.DataFrame) -> pd.DataFrame:
+    """What happened to each purchase, allocated first-in-first-out at each pantry check.
+
+    At a check, the derived consumption is taken from the oldest batches first,
+    then the waste (old stock is what expires). A purchase is "resolved" at the
+    check where its last unit is accounted for; only resolved purchases have a
+    known waste %. `Recent_Consumption` is the mean consumed share of up to 7
+    earlier purchases of the same food that were resolved BEFORE this purchase
+    was made, so it only uses information available at purchase time. Stock on
+    hand before the first logged purchase is an unlabelled "opening" batch.
+    """
+    rows = []
+    for food in sorted(set(purchases["food"]) if not purchases.empty else set()):
+        buys = purchases[purchases["food"] == food].sort_values(["date", "id"])
+        food_checks = checks[checks["food"] == food].sort_values("date") if not checks.empty else checks
+        batches = []  # dicts: id, qty, left, consumed, wasted, resolved
+        events = [(d, 0, row) for d, row in zip(buys["date"], buys.itertuples())] + \
+                 [(d, 1, row) for d, row in zip(food_checks["date"], food_checks.itertuples())]
+        first_check_seen = False
+        for day, kind, row in sorted(events, key=lambda e: (e[0], e[1])):
+            if kind == 0:
+                batches.append({"row": row, "left": float(row.quantity), "consumed": 0.0, "wasted": 0.0,
+                                "resolved": pd.NaT})
+                continue
+            if not first_check_seen and not batches:  # baseline check before any purchase
+                batches.append({"row": None, "left": float(row.remaining), "consumed": 0.0, "wasted": 0.0,
+                                "resolved": pd.NaT})
+                first_check_seen = True
+                continue
+            first_check_seen = True
+            available = sum(b["left"] for b in batches)
+            consumed = available - row.wasted - row.remaining
+            if consumed < -TOLERANCE:
+                continue  # impossible check: flagged on Data Quality, not allocated
+            for amount, field in ((max(consumed, 0.0), "consumed"), (float(row.wasted), "wasted")):
+                for batch in batches:
+                    take = min(batch["left"], amount)
+                    batch["left"] -= take
+                    batch[field] += take
+                    amount -= take
+                    if batch["left"] <= 1e-9 and pd.isna(batch["resolved"]):
+                        batch["resolved"] = day
+                    if amount <= 1e-9:
+                        break
+        for batch in batches:
+            if batch["row"] is None:
+                continue
+            buy = batch["row"]
+            rows.append({"Date": buy.date, "Food": food, "Category": buy.category, "Expiry_Days": buy.shelf_life_days,
+                         "Quantity_Purchased": float(buy.quantity), "Quantity_Consumed": batch["consumed"],
+                         "Quantity_Wasted": batch["wasted"], "Resolved": batch["resolved"]})
+    out = pd.DataFrame(rows, columns=["Date", "Food", "Category", "Expiry_Days", "Quantity_Purchased",
+                                      "Quantity_Consumed", "Quantity_Wasted", "Resolved"])
+    out["Waste_Percentage"] = (out["Quantity_Wasted"] / out["Quantity_Purchased"] * 100).where(out["Resolved"].notna())
+    shares = out["Quantity_Consumed"] / out["Quantity_Purchased"]
+    recent = []
+    for row in out.itertuples():
+        earlier = out[(out["Food"] == row.Food) & (out["Resolved"] < row.Date)].sort_values("Resolved").tail(7)
+        recent.append(shares[earlier.index].mean() if not earlier.empty else np.nan)
+    out["Recent_Consumption"] = recent
+    return out

@@ -95,17 +95,17 @@ def describe(source: str, df: pd.DataFrame | None) -> str:
             f"{df['Order_ID'].nunique():,} orders · no calendar dates")
 
 
-@st.cache_data(show_spinner="Evaluating forecasting models on the held-out period...")
+@st.cache_resource(show_spinner="Evaluating forecasting models on the held-out period...")
 def demo_forecast() -> dict:
     return run_demo_forecast(load_demo())
 
 
-@st.cache_data(show_spinner="Evaluating M5 forecasting models on the held-out period...")
+@st.cache_resource(show_spinner="Evaluating M5 forecasting models on the held-out period...")
 def m5_forecast():
     return forecast_retail_demand(load_m5())
 
 
-@st.cache_data(show_spinner="Building the purchase plan...")
+@st.cache_resource(show_spinner="Building the purchase plan...")
 def demo_recommendations():
     return generate_recommendations(load_demo(), best_next_day("demo"))
 
@@ -120,7 +120,7 @@ def raw_demo() -> pd.DataFrame:
     return pd.read_csv(RAW_DATA_PATH)
 
 
-@st.cache_data(show_spinner="Simulating households over the test period...")
+@st.cache_resource(show_spinner="Simulating households over the test period...")
 def demo_backtest() -> tuple[pd.DataFrame, pd.DataFrame, float, int]:
     """(summary, per-food results, recorded waste % in the data, days simulated) for the demo data."""
     from backtest import demo_frame, run_backtest, summarise
@@ -163,7 +163,7 @@ def messy_sample_cleaning():
 FOLDS, FOLD_DAYS = 5, 14
 
 
-@st.cache_data(show_spinner="Backtesting next-day models over 5 rolling folds...")
+@st.cache_resource(show_spinner="Backtesting next-day models over 5 rolling folds...")
 def demo_rolling():
     """(per-fold metrics, mean ± std per model) for next-day demo forecasts; best model first."""
     from horizon import rolling_origin
@@ -174,7 +174,7 @@ def demo_rolling():
                           models_factory=lambda: build_models(NUMERIC_FEATURES, CATEGORICAL_FEATURES))
 
 
-@st.cache_data(show_spinner="Backtesting M5 models over 5 rolling folds...")
+@st.cache_resource(show_spinner="Backtesting M5 models over 5 rolling folds...")
 def m5_rolling():
     from horizon import rolling_origin
     from m5_forecasting import FEATURES, M5_BASELINES, create_m5_features, impute_price, m5_models
@@ -203,14 +203,79 @@ def _week(df: pd.DataFrame, key: str, target: str, static: list[str], categorica
             "train_rows": int((frame["Date"] + pd.Timedelta(days=7) < cutoff).sum()), "test_rows": len(test)}
 
 
-@st.cache_data(show_spinner="Evaluating 7-day forecasts...")
+@st.cache_resource(show_spinner="Evaluating 7-day forecasts...")
 def demo_week() -> dict:
     from prediction import TARGET
     return _week(load_demo(), "Food", TARGET, ["Category", "Quantity_Unit"], ["Food", "Category"],
                  demo_forecast()["cutoff"])
 
 
-@st.cache_data(show_spinner="Evaluating M5 7-day forecasts...")
+@st.cache_resource(show_spinner="Evaluating M5 7-day forecasts...")
 def m5_week() -> dict:
     return _week(load_m5().assign(Product_ID=lambda d: d["Product_ID"].astype(str)), "Product_ID",
                  "Quantity_Sold", [], [], m5_forecast()[3]["cutoff"])
+
+
+# --- explanations and the waste-risk classifier (C7, C8) --------------------------
+@st.cache_resource(show_spinner="Explaining the forecaster on held-out data...")
+def forecaster_explanations(source: str) -> dict:
+    """Permutation importance and residuals for the selected next-day model on the final test period."""
+    from explain import error_by, importance, residual_frame
+    from m5_forecasting import FEATURES as M5_FEATURES
+    from prediction import FEATURE_COLUMNS, TARGET
+
+    summary = (demo_rolling() if source == "demo" else m5_rolling())[1]
+    models = summary[summary["Type"] == "Model"]
+    best = models.iloc[0]["Model"]  # explain the best model even if a baseline was selected overall
+    if source == "demo":
+        result = demo_forecast()
+        model, tested = result["models"][best], result["tested"]
+        X, y = result["test_features"][FEATURE_COLUMNS], result["test_features"][TARGET]
+        groups, keys = tested[["Food", "Category"]], ("Food", "Category")
+        predicted = tested[best]
+    else:
+        tested, _, _, meta = m5_forecast()
+        model = meta["models"][best]
+        X, y = tested[M5_FEATURES], tested["Quantity_Sold"]
+        groups, keys = tested[["Product_ID", "Department"]].astype(str), ("Product_ID", "Department")
+        predicted = tested[best]
+    residuals = residual_frame(y.reset_index(drop=True), predicted.reset_index(drop=True), groups.reset_index(drop=True))
+    return {"model_name": best, "selected_overall": summary.iloc[0]["Model"],
+            "importance": importance(model, X, y, scoring="neg_mean_absolute_error"),
+            "residuals": residuals, "by_item": error_by(residuals, keys[0]), "by_group": error_by(residuals, keys[1]),
+            "keys": keys}
+
+
+@st.cache_resource(show_spinner="Training the waste-risk classifiers...")
+def demo_classifier() -> dict:
+    from explain import importance
+    from waste_risk import evaluate
+    result = evaluate(load_demo())
+    model, features, _ = result["model"]
+    result["importance"] = importance(model, result["test"][features], result["test"]["High_Waste"], scoring="roc_auc")
+    return result
+
+
+@st.cache_resource(show_spinner="Training the waste-risk classifiers on your purchases...", max_entries=16, ttl=3600)
+def personal_classifier(purchases: pd.DataFrame, checks: pd.DataFrame) -> dict | None:
+    """The classifier trained on the user's resolved purchases, or None when there are too few of each class."""
+    from pantry import purchase_outcomes
+    from waste_risk import add_features, evaluate
+    outcomes = purchase_outcomes(purchases, checks).dropna(subset=["Waste_Percentage", "Expiry_Days"])
+    labelled = add_features(outcomes) if not outcomes.empty else outcomes
+    if len(labelled) < 30 or labelled["High_Waste"].sum() < 5 or (1 - labelled["High_Waste"]).sum() < 5:
+        return None
+    try:
+        result = evaluate(outcomes)
+    except ValueError:
+        return None
+    result.pop("fitted")  # keep only the chosen model
+    return result
+
+
+@st.cache_resource(show_spinner="Finding products bought together (FP-growth)...")
+def instacart_rules():
+    """(basket matrix shape, association rules) for the top 150 Instacart products."""
+    from basket import baskets, find_rules
+    matrix = baskets(load_instacart().assign(Product_Name=lambda d: d["Product_Name"].astype(str)), top_n=150)
+    return matrix.shape, find_rules(matrix, min_support=0.005, min_lift=1.2)

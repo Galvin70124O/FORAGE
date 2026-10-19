@@ -17,6 +17,24 @@ from pantry import (
 from services.personal import require_user, toast_pending
 from ui.components import empty_state, fmt_date, kpi_row, number, page_header, section, table
 
+def classifier_risk(buys, checks, cover):
+    """Highest classifier probability of high waste among each food's open purchases, once the model is unlocked."""
+    if not unlocked("classifier", cover)[0]:
+        return None
+    from pantry import purchase_outcomes
+    from services.data import personal_classifier
+    from waste_risk import score_purchases
+    result = personal_classifier(buys, checks)
+    if result is None:
+        return None
+    open_buys = purchase_outcomes(buys, checks)
+    open_buys = open_buys[open_buys["Resolved"].isna()].dropna(subset=["Expiry_Days", "Recent_Consumption"])
+    if open_buys.empty:
+        return None
+    open_buys = open_buys.assign(Day_of_Week=open_buys["Date"].dt.day_name())
+    return score_purchases(result["model"], open_buys).groupby(open_buys["Food"]).max()
+
+
 page_header("Home", "What needs your attention today, from your own purchases and pantry checks.")
 db, uid = require_user()
 toast_pending()
@@ -75,7 +93,11 @@ with right:
     else:
         risk = risk.groupby(["Food", "Unit"], as_index=False).agg(
             At_Risk=("At_Risk", "sum"), Expiry=("Expiry", "min"), Value=("Value", "sum"))
-        table(risk[["Food", "At_Risk", "Unit", "Expiry", "Value"]], {
+        model_risk = classifier_risk(buys, checks, cover)
+        if model_risk is not None:
+            risk["Model_Risk"] = risk["Food"].map(model_risk) * 100
+        table(risk[[c for c in ["Food", "At_Risk", "Unit", "Expiry", "Value", "Model_Risk"] if c in risk]], {
+            "Model_Risk": st.column_config.ProgressColumn("Model risk", format="%.0f%%", min_value=0, max_value=100),
             "At_Risk": number("At risk", "%.2f"), "Expiry": st.column_config.DateColumn("By", format="D MMM"),
             "Value": number("Worth (₹)", "%.0f")}, max_rows=6)
         st.caption(note)

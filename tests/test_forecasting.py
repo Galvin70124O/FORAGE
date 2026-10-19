@@ -153,3 +153,21 @@ def test_weekly_plan_buys_only_what_keeps_and_says_when_to_shop_again():
     assert out.loc["Milk", "Buy_Now"] == pytest.approx(14 * 3 / 7 - 1.0)  # 3 days' worth minus stock
     assert out.loc["Milk", "Shop_Again_In_Days"] == 3
     assert out.loc["Rice", "Buy_Now"] == pytest.approx(3.0) and pd.isna(out.loc["Rice", "Shop_Again_In_Days"])
+
+
+def test_permutation_importance_finds_the_informative_feature_and_errors_by_group():
+    from sklearn.linear_model import LinearRegression
+
+    from explain import error_by, importance, reading, residual_frame
+    rng = np.random.default_rng(0)
+    X = pd.DataFrame({"signal": rng.normal(size=400), "noise": rng.normal(size=400)})
+    y = 3 * X["signal"] + rng.normal(scale=0.1, size=400)
+    model = LinearRegression().fit(X, y)
+    table = importance(model, X, y, scoring="neg_mean_absolute_error")
+    assert table.iloc[0]["Feature"] == "signal" and table.set_index("Feature").loc["noise", "Importance"] < 0.01
+    groups = pd.DataFrame({"Food": ["A"] * 200 + ["B"] * 200})
+    actual = pd.Series([10.0] * 200 + [1.0] * 200)
+    predicted = pd.Series([9.0] * 200 + [0.5] * 200)
+    by_food = error_by(residual_frame(actual, predicted, groups), "Food")
+    assert by_food.iloc[0]["Food"] == "B" and by_food.iloc[0]["Relative_MAE"] == pytest.approx(50)
+    assert "B" in reading(residual_frame(actual, predicted, groups), by_food, "Food", "units")

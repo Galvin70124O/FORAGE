@@ -162,6 +162,7 @@ def run_demo_forecast(raw_df=None):
         "comparison": comparison, "tested": tested, "best_model": best, "cutoff": cutoff,
         "train_rows": len(train_df), "test_rows": len(test_df),
         "train_start": train_df["Date"].min(), "test_end": test_df["Date"].max(),
+        "models": models, "test_features": test_df[FEATURE_COLUMNS + [TARGET]],
     }
 
 

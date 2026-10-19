@@ -165,3 +165,17 @@ def test_period_forecasts_only_use_earlier_periods():
     assert row["Actual"] == pytest.approx(0.25) and row["Previous period"] == pytest.approx(0.5)
     assert row["4-period average"] == pytest.approx(0.5)  # only the first period is in the past
     assert set(comparison["Model"]) == {"Previous period", "4-period average"} and comparison["n"].iloc[0] == 1
+
+
+def test_purchase_outcomes_allocate_use_then_waste_oldest_first():
+    from pantry import purchase_outcomes
+    out = purchase_outcomes(BUYS, CHECKS).set_index("Date")
+    first, second = out.loc[pd.Timestamp("2026-03-01")], out.loc[pd.Timestamp("2026-03-03")]
+    # check 4 Mar: 4 available, 2 eaten (all of batch 1), 0.5 thrown away (from batch 2), 1.5 left
+    assert first["Quantity_Consumed"] == 2 and first["Quantity_Wasted"] == 0
+    assert first["Resolved"] == pd.Timestamp("2026-03-04") and first["Waste_Percentage"] == 0
+    # check 8 Mar: 1.0 eaten from batch 2, 0.5 still left -> not resolved, so no label yet
+    assert second["Quantity_Wasted"] == 0.5 and second["Quantity_Consumed"] == 1.0
+    assert pd.isna(second["Resolved"]) and pd.isna(second["Waste_Percentage"])
+    # batch 2 was bought before batch 1 was resolved, so it has no "recent consumption" history
+    assert pd.isna(second["Recent_Consumption"])
