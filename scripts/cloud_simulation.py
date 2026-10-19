@@ -33,6 +33,30 @@ ROOT = Path(__file__).resolve().parent.parent
 BENIGN = [re.compile(p) for p in (r"ConnectionResetError", r"WinError 10054", r"missing ScriptRunContext")]
 
 
+def log_issues(lines: list[str]) -> list[str]:
+    """Warning/error lines, judging each traceback by its final exception line.
+
+    Windows' asyncio prints a ConnectionResetError traceback when a browser tab closes; that is
+    client-side noise (it does not happen on Linux hosts such as Streamlit Cloud) and is ignored.
+    """
+    issues, block = [], []
+    for line in lines + [""]:
+        if block:
+            block.append(line)
+            if line and not line.startswith((" ", "	")) and not line.startswith("Traceback"):
+                if not any(p.search(line) for p in BENIGN):
+                    issues.append(" / ".join(block[-2:]))
+                block = []
+            continue
+        if line.startswith("Traceback"):
+            block = [line]
+        elif line.startswith("Exception in callback") or line.startswith("handle: <Handle"):
+            continue
+        elif re.search(r"ERROR|Error|WARNING|Warning", line) and not any(p.search(line) for p in BENIGN):
+            issues.append(line)
+    return issues
+
+
 def run(command, cwd, env=None, label=""):
     print(f"--> {label or ' '.join(map(str, command))}")
     result = subprocess.run(command, cwd=cwd, env=env, capture_output=True, text=True)
@@ -101,8 +125,7 @@ def main() -> None:
         server.terminate()
         server.wait(timeout=30)
     lines = log_path.read_text(encoding="utf-8").splitlines()
-    issues = [line for line in lines if re.search(r"Traceback|ERROR|Error|WARNING|Warning", line)
-              and not any(p.search(line) for p in BENIGN)]
+    issues = log_issues(lines)
     print(f"server log: {len(lines)} lines, {len(issues)} warning/error lines")
     for line in issues[:20]:
         print("    " + line)
