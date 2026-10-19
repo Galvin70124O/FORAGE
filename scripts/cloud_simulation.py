@@ -48,6 +48,7 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--modes", nargs="+", default=["light", "dark"])
     parser.add_argument("--keep", action="store_true", help="keep the temporary clone for inspection")
+    parser.add_argument("--no-exercise", action="store_true", help="skip logging a purchase (e.g. sign-in required)")
     args = parser.parse_args()
 
     workdir = Path(tempfile.mkdtemp(prefix="forage-cloud-"))
@@ -95,7 +96,7 @@ def main() -> None:
         print("--> app healthy; crawling")
         crawl = subprocess.run([sys.executable, str(ROOT / "scripts" / "crawl_pages.py"), "--url",
                                 f"http://localhost:{args.port}", "--out", str(workdir / "shots"), "--modes",
-                                *args.modes, "--exercise"], cwd=clone, env=env)
+                                *args.modes, *([] if args.no_exercise else ["--exercise"])], cwd=clone, env=env)
     finally:
         server.terminate()
         server.wait(timeout=30)

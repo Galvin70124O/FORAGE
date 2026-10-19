@@ -80,7 +80,7 @@ def quality_report(source: str) -> dict | None:
 def describe(source: str, df: pd.DataFrame | None) -> str:
     """One line for the data-source label under each page title."""
     if df is None:
-        return "extract not built yet"
+        return "available in the local version"
     if source == "demo":
         return f"synthetic household records · {len(df):,} rows · {fmt_date(df['Date'].min())} to {fmt_date(df['Date'].max())}"
     if source == "personal":
