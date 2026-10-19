@@ -7,7 +7,7 @@ from pantry import parse_bill
 from services.personal import foods as cached_foods
 from services.personal import purchases as cached_purchases
 from services.personal import queue_toast, require_user, toast_pending
-from ui.components import fmt_date, page_header, section, table, number
+from ui.components import fmt_date, number, page_header, section, table
 
 UNITS = ["kg", "g", "L", "ml", "piece", "dozen", "loaf", "pack", "unit"]
 

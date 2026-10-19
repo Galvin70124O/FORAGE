@@ -4,8 +4,24 @@ import pandas as pd
 import streamlit as st
 
 from data_quality import column_profile, iqr_outliers
-from services.data import demo_cleaning_summary, messy_sample_cleaning, quality_report, raw_demo
-from ui.components import date, empty_state, fmt_num, formula, kpi_row, number, section, table, text
+from services.data import (
+    demo_cleaning_summary,
+    messy_sample_cleaning,
+    quality_report,
+    raw_demo,
+)
+from ui.components import (
+    date,
+    empty_state,
+    fmt_num,
+    formula,
+    kpi_row,
+    methods,
+    number,
+    section,
+    table,
+    text,
+)
 from views.common import begin
 from waste import balance_check
 
@@ -49,6 +65,8 @@ def outlier_table(df: pd.DataFrame, columns: list[str]) -> None:
 source, df = begin("Data Quality",
                    "What was checked before analysis, which rows were removed and why, and what was flagged but kept.",
                    feature=None)
+methods(['Every row is checked against the rules in a fixed order; a removed row is counted under the first rule it fails. Nothing is filled in or guessed.',
+         'Outliers use the IQR rule: values below Q1 − 1.5×IQR or above Q3 + 1.5×IQR are flagged for review and kept, because a big purchase can be genuine.'])
 
 if source == "personal":
     from services.personal import personal_data

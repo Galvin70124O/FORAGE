@@ -7,8 +7,8 @@ import pandas as pd
 import streamlit as st
 
 from pantry import read_import
-from services.data import set_source
 from services import personal
+from services.data import set_source
 from services.personal import queue_toast, require_user, toast_pending
 from ui.components import kpi_row, number, page_header, section, table
 

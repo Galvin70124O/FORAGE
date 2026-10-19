@@ -111,3 +111,10 @@ def percent_bar(label: str, help: str | None = None, max_value: float = 100):
 
 def date(label: str):
     return st.column_config.DateColumn(label, format="D MMM YYYY")
+
+
+def methods(lines: list[str]) -> None:
+    """A collapsed "Methods" note: what the analysis does and how to read it, in plain words."""
+    with st.expander("Methods"):
+        for line in lines:
+            st.markdown(f"- {line}")

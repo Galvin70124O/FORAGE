@@ -4,10 +4,27 @@ import pandas as pd
 import streamlit as st
 
 from prediction import TARGET
-from services.data import (FOLD_DAYS, FOLDS, demo_forecast, demo_rolling, demo_week, forecaster_explanations,
-                           m5_forecast, m5_rolling, m5_week)
+from services.data import (
+    FOLD_DAYS,
+    FOLDS,
+    demo_forecast,
+    demo_rolling,
+    demo_week,
+    forecaster_explanations,
+    m5_forecast,
+    m5_rolling,
+    m5_week,
+)
 from ui import charts
-from ui.components import empty_state, fmt_date, kpi_row, number, section, table
+from ui.components import (
+    empty_state,
+    fmt_date,
+    kpi_row,
+    methods,
+    number,
+    section,
+    table,
+)
 from views.common import begin, not_available
 
 ONE_STEP = ("Next-day forecasts are one-step-ahead: the prediction for each day uses the actual figure from the day "
@@ -102,6 +119,8 @@ def selected_kpis(summary: pd.DataFrame, best: str, unit: str) -> None:
 
 source, df = begin("Forecasting", "How accurately demand can be predicted for tomorrow and for the next 7 days, "
                    "scored on periods the models never saw and compared with simple baselines.")
+methods(['Models learn from earlier days and are scored on later days they never saw. MAE is the typical error, RMSE punishes big misses, R² is the share of variation explained (1 = perfect).',
+         "Rolling origin repeats this with 5 moving cut-offs; the lowest mean MAE wins. Baselines (yesterday's value, averages) show whether a model adds anything at all."])
 
 if df is not None:
     if source == "instacart":

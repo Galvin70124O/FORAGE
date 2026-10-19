@@ -5,7 +5,14 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
-from services.data import EXTRACT_COMMAND, SOURCES, current_source, describe, load, set_source
+from services.data import (
+    EXTRACT_COMMAND,
+    SOURCES,
+    current_source,
+    describe,
+    load,
+    set_source,
+)
 from ui.components import empty_state, page_header
 
 UNIT_NOTE = ("Quantities are in each food's recorded unit (kg, L, dozen, loaf or pack), so totals are only "

@@ -17,7 +17,16 @@ from pantry import (
 from services.personal import checks as personal_checks
 from services.personal import purchases as personal_purchases
 from services.personal import require_user, toast_pending
-from ui.components import empty_state, fmt_date, kpi_row, number, page_header, section, table
+from ui.components import (
+    empty_state,
+    fmt_date,
+    kpi_row,
+    number,
+    page_header,
+    section,
+    table,
+)
+
 
 def classifier_risk(buys, checks, cover):
     """Highest classifier probability of high waste among each food's open purchases, once the model is unlocked."""

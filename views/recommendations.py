@@ -4,10 +4,26 @@ import pandas as pd
 import streamlit as st
 
 from recommendations import weekly_plan
-from services.data import demo_backtest, demo_plan_with_risk, demo_recommendations, demo_week, load_demo
-from views import backtest_section
+from services.data import (
+    demo_backtest,
+    demo_plan_with_risk,
+    demo_recommendations,
+    demo_week,
+    load_demo,
+)
 from ui import charts
-from ui.components import fmt_date, formula, kpi_row, number, percent_bar, section, table, text
+from ui.components import (
+    fmt_date,
+    formula,
+    kpi_row,
+    methods,
+    number,
+    percent_bar,
+    section,
+    table,
+    text,
+)
+from views import backtest_section
 from views.common import begin
 
 PLAN_COLUMNS = {
@@ -33,6 +49,8 @@ def short_alerts(alerts: str) -> str:
 
 source, df = begin("Recommendations", "What to act on next, derived from the selected source. "
                    "Each recommendation shows the calculation behind it.")
+methods(['Buy = forecast demand − stock that will still be good. The backtest replays the test period day by day with the same demand, eating oldest food first and binning food past its shelf life.',
+         'Association rules: support = how common the items are together, confidence = how often the second follows the first, lift > 1 = bought together more often than chance.'])
 
 if df is not None:
     if source == "demo":

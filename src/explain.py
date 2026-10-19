@@ -53,7 +53,7 @@ def reading(residuals: pd.DataFrame, by_group: pd.DataFrame, key: str, unit: str
             f"and least with {best[key]} ({best['Relative_MAE']:.0f}%); residuals show {tendency} and {peaks}.")
 
 
-def sample(frame: pd.DataFrame, n: int = 1500, seed: int = 7) -> pd.DataFrame:
+def sample(frame: pd.DataFrame, n: int = 1500, seed: int = 42) -> pd.DataFrame:
     """A fixed random sample for scatter plots (keeps charts light)."""
     return frame.sample(n=min(n, len(frame)), random_state=seed) if len(frame) > n else frame
 

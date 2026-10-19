@@ -1,209 +1,209 @@
 Date,Food,Category,Input_Method,Source_Reference,Quantity_Unit,Quantity_Purchased,Quantity_Consumed,Quantity_Wasted,Quantity_Remaining,Price,Expiry_Days,Estimated_Expiry_Date,Storage_Type,Is_Festival
-2025-05-20,Spinach,Vegetables,Receipt OCR,RCT-20250520,kg,1.31,0.68,0.24,0.39,63.84,5,2025-05-25,Refrigerator,0
-2025-09-07,Tomato,Vegetables,Receipt OCR,RCT-20250907,kg,1.85,1.33,0.33,0.19,284.16,7,2025-09-14,Refrigerator,0
-2025-07-31,Curd,Dairy,Receipt OCR,RCT-20250731,kg,2.44,1.12,0.88,0.43,62.31,7,2025-08-07,Refrigerator,0.0
-2025-04-04,Spinach,Vegetables,Receipt OCR,RCT-20250404,kg,1.0,0.6,0.22,0.18,78.72,5,2025-04-09,Refrigerator,0
-2025-08-24,Rice,Grains,Manual Entry,MAN-20250824,kg,4.62,2.07,0.86,1.69,143.45,90,2025-11-22,Pantry,0
-2025-08-18,Biscuit,Snacks,Receipt OCR,RCT-20250818,pack,2.12,0.82,0.71,0.6,217.09,60,2025-10-17,Pantry,0
-2025-04-20,Carrot,Vegetables,Receipt OCR,RCT-20250420,kg,1.92,0.83,0.25,0.84,294.41,14,2025-05-04,Refrigerator,0.0
-2025-05-19,Spinach,Vegetables,Manual Entry,MAN-20250519,kg,1.15,0.68,0.23,0.23,210.02,5,2025-05-24,Refrigerator,0
-2025-12-01,Potato,Vegetables,Manual Entry,MAN-20251201,kg,2.32,1.55,0.19,0.59,344.63,30,2025-12-31,Pantry,0
-2025-09-10,Rice,Grains,Receipt OCR,RCT-20250910,kg,5.76,1.85,2.18,1.73,614.1,90,2025-12-09,Pantry,0
-2025-02-23,Onion,Vegetables,Manual Entry,MAN-20250223,kg,2.17,1.34,0.57,0.27,233.49,30,2025-03-25,Pantry,0
-2025-06-08,Cooking Oil,Essentials,Receipt OCR,RCT-20250608,L,1.82,0.36,0.59,-0.87,221.8,180,2025-12-05,Pantry,0.0
-2025-12-04,  Chicken ,Protein,Receipt OCR,RCT-20251204,kg,1.87,1.28,0.34,0.24,189.02,3,2025-12-07,Refrigerator,0.0
-2025-10-01,Bread,Bakery,Receipt OCR,RCT-20251001,loaf,2.05,1.31,0.49,0.25,42.52,5,2025-09-28,Pantry,1.0
-2025-03-07,Potato,Vegetables,Manual Entry,MAN-20250307,kg,2.64,1.51,0.58,0.55,158.75,30,2025-04-06,Pantry,0
-2025-04-09,Cooking Oil,Essentials,Receipt OCR,RCT-20250409,L,2.04,0.49,0.98,0.56,115.12,180,2025-10-06,Pantry,0
-2025-07-18,Curd,Dairy,Receipt OCR,RCT-20250718,kg,2.53,1.41,0.41,0.72,199.53,7,2025-07-25,Refrigerator,0
-2025-07-15,Carrot,Vegetables,Manual Entry,MAN-20250715,kg,1.41,0.89,0.25,0.28,247.16,14,2025-07-29,Refrigerator,0
-2025-12-24,Milk,Dairy,Receipt OCR,RCT-20251224,L,3.59,1.94,0.35,1.31,321.48,7,2025-12-31,Refrigerator,0
-2025-11-17,dal,Pulses,Receipt OCR,RCT-20251117,kg,3.04,1.07,1.14,0.84,259.97,180,2026-05-16,Pantry,0.0
-2025-08-04,Chicken,Protein,Manual Entry,MAN-20250804,kg,1.97,1.3,0.33,0.33,167.78,3,2025-08-07,Refrigerator,0
-2025/1/1/1,Rice,Grains,Manual Entry,MAN-20250329,kg,4.82,2.35,1.47,1.0,645.1,90,2025-06-27,Pantry,0.0
-2025-02-19,Cheese,Dairy,Receipt OCR,RCT-20250219,kg,0.88,0.44,0.21,0.23,96.44,30,2025-03-21,Refrigerator,0
-2025-06-09,Banana,Fruits,Receipt OCR,RCT-20250609,dozen,1.51,1.51,0.0,0.0,54.57,6,2025-06-15,Pantry,0
-2025-12-06,Spinach,Vegetables,Receipt OCR,RCT-20251206,kg,1.52,0.59,0.42,0.51,71.5,5,2025-12-11,Refrigerator,0
-2025-11-26,Onion,Vegetables,Receipt OCR,RCT-20251126,kg,3.13,1.49,0.61,1.03,386.18,30,2025-12-26,Pantry,0
-2025-01-12,Eggs,Protein,Manual Entry,MAN-20250112,dozen,1.87,1.62,0.1,0.14,231.77,21,2025-02-02,Refrigerator,0
-2025-06-08,Chicken,Protein,Receipt OCR,RCT-20250608,kg,2.11,1.27,0.2,0.63,230.8,3,2025-06-11,Refrigerator,0
-2025-09-14,Orange,Fruits,Receipt OCR,RCT-20250914,kg,17.91,8.91,3.33,5.67,1626.03,14,2025-09-28,Refrigerator,0.0
-2025-11-16,Carrot,Vegetables,Receipt OCR,RCT-20251116,kg,1.92,1.36,0.21,0.35,226.05,14,2025-11-30,Refrigerator,0
-2025-11-27,Wheat Flour,Grains,Receipt OCR,RCT-20251127,kg,4.11,1.59,0.51,2.01,218.1,90,2026-02-25,Pantry,0
-2025-03-27,Carrot,Vegetables,Receipt OCR,RCT-20250327,kg,1.99,1.15,0.22,0.62,43.55,14,2025-04-10,Refrigerator,0
-2025-09-01,Potato,Vegetables,Receipt OCR,RCT-20250901,kg,3.08,1.67,0.96,0.46,117.78,30,2025-10-01,Pantry,0
-2025-10-14,spinach,Vegetables,Receipt OCR,RCT-20251014,kg,1.53,0.65,0.42,0.45,106.16,5,2025-10-19,Refrigerator,0.0
-2025-10-22,Potato,Vegetables,Receipt OCR,RCT-20251022,kg,2.83,1.62,0.55,0.67,82.0,30,2025-11-21,Pantry,0
-2025-05-14,Cheese,Dairy,Receipt OCR,RCT-20250514,kg,1.06,0.58,0.17,0.31,92.94,30,2025-06-13,Refrigerator,0
-2025-08-01,Apple,Fruits,Receipt OCR,RCT-20250801,kg,1.83,1.05,0.5,0.28,135.75,14,2025-07-29,Refrigerator,1.0
-2025-03-01,Milk,Dairy,Receipt OCR,RCT-20250301,L,2.33,2.33,0.0,0.0,431.79,7,2025-03-08,Refrigerator,0
-2025-05-06,  Cheese ,Dairy,Receipt OCR,RCT-20250506,kg,0.95,0.56,0.22,0.17,101.6,30,2025-06-05,Refrigerator,0.0
-2025-03-28,Curd,Dairy,Receipt OCR,RCT-20250328,kg,34.65,13.95,4.65,16.05,609.15,7,2025-04-04,Refrigerator,0.0
-,Wheat Flour,Grains,Receipt OCR,RCT-20250225,kg,4.99,1.56,1.51,1.91,124.41,90,2025-05-26,Pantry,0.0
-2025-12-27,Carrot,Vegetables,Receipt OCR,RCT-20251227,kg,1.95,1.04,0.38,0.52,88.54,14,2026-01-10,Refrigerator,0
-2025-06-19,Milk,Dairy,Receipt OCR,RCT-20250619,L,2.93,1.89,0.66,0.38,282.52,7,2025-06-26,Refrigerator,0
-2025-01-25,Curd,Dairy,Receipt OCR,RCT-20250125,kg,2.44,1.25,0.6,0.6,₹120,7,2025-02-01,Refrigerator,0.0
-2025-07-21,Dal,Pulses,Manual Entry,MAN-20250721,kg,3.37,1.1,1.2,1.08,257.75,180,2026-01-17,Pantry,0
-2025-12-26,Sugar,Essentials,Receipt OCR,RCT-20251226,kg,2.01,0.46,0.79,0.76,144.92,180,2026-06-24,Pantry,0
-2025-07-30,Rice,Grains,Receipt OCR,RCT-20250730,kg,4.41,2.02,0.82,1.57,157.26,90,2025-10-28,Pantry,0
-2025-07-19,Orange,Fruits,Receipt OCR,RCT-20250719,kg,2.16,0.96,0.7,0.5,280.9,14,2025-08-02,Refrigerator,0
-2025-08-18,Eggs,Protein,Receipt OCR,RCT-20250818,dozen,2.08,1.5,0.16,0.42,179.16,21,2025-09-08,Refrigerator,0
-2025-08-01,Cooking Oil,Essentials,Receipt OCR,RCT-20250801,L,2.5,0.48,0.92,1.1,62.49,180,2026-01-28,Pantry,1
-2025-05-19,Potato,Vegetables,Manual Entry,MAN-20250519,kg,3.12,1.6,1.01,0.51,376.47,30,2025-06-18,Pantry,0
-2025-10-21,POTATO,Vegetables,Manual Entry,MAN-20251021,kg,2.9,1.51,0.77,0.61,396.19,30,2025-11-20,Pantry,0.0
-2025-11-29,Milk,Dairy,Receipt OCR,RCT-20251129,L,3.82,2.43,0.68,0.71,253.01,7,2025-12-06,Refrigerator,0
-2025-02-17,Rice,Grains,Receipt OCR,RCT-20250217,kg,4.49,1.9,1.09,1.5,518.57,90,2025-05-18,Pantry,0
-2025-05-26,Sugar,Essentials,Manual Entry,MAN-20250526,kg,1.92,0.48,0.31,1.12,76.61,180,2025-11-22,Pantry,0
-2025-02-08,Onion,Vegetables,Manual Entry,MAN-20250208,kg,2.83,1.56,0.47,0.8,397.22,30,2025-03-10,Pantry,0
-2025-11-03,Sugar,Essentials,Receipt OCR,RCT-20251103,kg,two,0.52,0.39,1.09,95.85,180,2026-05-02,Pantry,0.0
-2025-01-09,Orange,Fruits,Manual Entry,MAN-20250109,kg,2.32,0.93,0.28,1.11,126.71,14,2025-01-23,Refrigerator,0
-2025-08-04,Wheat Flour,Grains,Manual Entry,MAN-20250804,kg,4.63,1.23,0.84,2.57,402.98,90,2025-11-02,Pantry,0
-2025-03-11,Rice,Grains,Receipt OCR,RCT-20250311,kg,3.43,2.16,0.3,0.96,225.67,90,2025-06-09,Pantry,0
-2025-06-24,Banana,Fruits,Receipt OCR,RCT-20250624,dozen,1.98,1.17,0.21,0.6,71.58,6,2025-06-30,Pantry,0
-2025-08-30,Carrot,Vegetables,Receipt OCR,RCT-20250830,kg,2.11,0.88,0.8,0.44,277.11,14,2025-09-13,Refrigerator,0
-2025-12-03,Apple,Fruits,Receipt OCR,RCT-20251203,kg,2.22,0.93,0.44,0.85,210.98,14,2025-12-17,Refrigerator,0
-2025-01-23,Milk,Dairy,Manual Entry,MAN-20250123,L,2.84,2.34,0.21,0.29,444.15,7,2025-01-30,Refrigerator,0
-2025-11-08,Cheese,Dairy,Receipt OCR,RCT-20251108,kg,1.14,0.52,0.39,0.24,68.46,30,2025-12-08,Refrigerator,0
-2025-07-14,Onion,Vegetables,Receipt OCR,RCT-20250714,kg,3.44,1.33,1.03,1.07,152.62,30,2025-08-13,Pantry,0
-2025-01-06,Cheese,Dairy,Receipt OCR,RCT-20250106,kg,0.68,0.47,0.1,0.11,30.11,30,2025-02-05,Refrigerator,0
-31/02/2025,Chicken,Protein,Manual Entry,MAN-20250502,kg,2.15,1.4,0.27,0.48,178.83,3,2025-05-05,Refrigerator,0.0
-2025-07-26,Potato,Vegetables,Receipt OCR,RCT-20250726,kg,2.94,1.52,0.55,0.87,317.92,30,2025-08-25,Pantry,0
-2025-01-21,Orange,Fruits,Receipt OCR,RCT-20250121,kg,12.87,12.1,0.22,0.55,1378.63,14,2025-02-04,Refrigerator,0.0
-2025-03-08,Tomato,Vegetables,Manual Entry,MAN-20250308,kg,2.2,1.15,0.22,0.82,148.92,7,2025-03-15,Refrigerator,0
-2025-05-10,Milk,Dairy,Manual Entry,MAN-20250510,L,3.64,2.96,0.47,0.21,215.24,7,2025-05-17,Refrigerator,0
-2025-05-16,Potato,Vegetables,Receipt OCR,RCT-20250516,kg,3.13,1.57,0.32,1.24,378.58,30,2025-06-15,Pantry,0
-2025-03-09,Bread,Bakery,Manual Entry,MAN-20250309,loaf,2.26,1.54,0.19,0.53,257.38,5,2025-03-14,Pantry,0.0
-2025-09-30,Cheese,Dairy,Receipt OCR,RCT-20250930,kg,-0.79,0.37,0.27,0.14,33.45,30,2025-10-30,Refrigerator,0.0
-2025-05-08,Chicken,Protein,Receipt OCR,RCT-20250508,kg,2.12,1.15,0.65,0.32,299.15,3,2025-05-11,Refrigerator,0
-yesterday,Wheat Flour,Grains,Receipt OCR,RCT-20250921,kg,4.04,1.7,0.87,1.46,412.58,90,2025-12-20,Pantry,0.0
-2025-05-22,Eggs,Protein,Manual Entry,MAN-20250522,dozen,1.87,1.2,0.44,0.23,174.79,21,2025-06-12,Refrigerator,0
-2025-06-10,Banana,Fruits,Manual Entry,MAN-20250610,dozen,1.47,1.27,0.12,0.08,214.72,6,2025-06-16,Pantry,0
-2025-12-11,Carrot,Vegetables,Receipt OCR,RCT-20251211,kg,16.08,8.56,5.28,2.24,615.6,14,2025-12-25,Refrigerator,0.0
-2025-11-16,Onion,Vegetables,Receipt OCR,RCT-20251116,kg,3.56,1.68,1.26,0.63,427.53,30,2025-12-16,Pantry,0
-2025-10-18,Potato,Vegetables,Manual Entry,MAN-20251018,kg,3.48,1.78,1.14,0.56,261.91,30,2025-11-17,Pantry,0
-2025-05-17,Bread,Bakery,Receipt OCR,RCT-20250517,loaf,1.88,1.52,0.25,0.11,81.0,5,2025-05-22,Pantry,0
-2025-01-10,Chicken,Protein,Receipt OCR,RCT-20250110,kg,2.28,1.5,0.17,0.62,97.71,3,2025-01-13,Refrigerator,0
-2025-06-14,Banana,Fruits,Receipt OCR,RCT-20250614,dozen,2.11,1.01,0.65,0.45,84.0,6,2025-06-20,Pantry,0
-2025-10-21,Chicken,Protein,Manual Entry,MAN-20251021,kg,2.25,1.25,0.21,0.79,-114.93,3,2025-10-24,Refrigerator,0.0
-2025-13-45,Tomato,Vegetables,Receipt OCR,RCT-20250406,kg,1.74,1.16,0.28,0.3,146.97,7,2025-04-13,Refrigerator,0.0
-2025-05-19,Orange,Fruits,Manual Entry,MAN-20250519,kg,1.91,0.99,0.25,0.67,85.03,14,2025-06-02,Refrigerator,0
-2025-05-29,Curd,Dairy,Receipt OCR,RCT-20250529,kg,2.24,1.23,0.51,0.51,158.02,7,2025-06-05,Refrigerator,0
-2025-05-11,Spinach,Vegetables,Receipt OCR,RCT-20250511,kg,1.47,0.76,0.45,0.26,117.55,5,2025-05-16,Refrigerator,0
-2025-08-15,Potato,Vegetables,Manual Entry,MAN-20250815,kg,2.78,1.82,0.61,0.35,175.75,30,2025-09-14,Pantry,1
-2025-12-30,Wheat Flour,Grains,Manual Entry,MAN-20251230,kg,3.69,1.41,0.56,1.72,524.43,90,2026-03-30,Pantry,0
-2025-07-05,Cheese,Dairy,Receipt OCR,RCT-20250705,kg,0.9,0.56,0.21,0.13,124.34,30,2025-08-04,Refrigerator,0
-2025-08-03,Onion,Vegetables,Manual Entry,MAN-20250803,kg,2.99,1.88,0.48,0.63,253.99,30,2025-09-02,Pantry,0
-2025-04-20,Carrot,Vegetables,Receipt OCR,RCT-20250420,kg,1.92,0.83,0.25,0.84,294.41,14,2025-05-04,Refrigerator,0
-2025-11-04,Apple,Fruits,Receipt OCR,RCT-20251104,kg,1.87,1.19,,0.31,174.45,14,2025-11-18,Refrigerator,0.0
-2025-09-19,Banana,Fruits,Receipt OCR,RCT-20250919,dozen,1.85,1.07,0.35,0.43,55.17,6,2025-09-25,Pantry,0
-2025-06-24,Orange,Fruits,Receipt OCR,RCT-20250624,kg,1.96,0.99,0.53,0.44,59.24,14,2025-07-08,Refrigerator,0
-2025-09-04,Cheese,Dairy,Receipt OCR,RCT-20250904,kg,1.25,0.51,0.41,0.34,130.49,30,2025-10-04,Refrigerator,0
-2025-09-24,Chicken,Protein,Receipt OCR,RCT-20250924,kg,2.51,1.23,0.78,0.5,,3,2025-09-27,Refrigerator,0.0
+2025-04-19,APPLE,Fruits,Receipt OCR,RCT-20250419,kg,1.94,1.16,0.28,0.5,162.49,14,2025-05-03,Refrigerator,0.0
+2025-12-16,Cheese,Dairy,Receipt OCR,RCT-20251216,kg,0.92,0.5,0.1,0.32,34.73,30,2026-01-15,Refrigerator,0
+2025-05-28,Milk,Dairy,Receipt OCR,RCT-20250528,L,3.5,2.25,0.77,0.48,170.0,7,2025-06-04,Refrigerator,0
+2025-02-06,Biscuit,Snacks,Manual Entry,MAN-20250206,pack,1.9,0.85,0.5,0.55,50.13,60,2025-04-07,Pantry,0
+2025-08-02,  Apple ,Fruits,Receipt OCR,RCT-20250802,kg,1.67,1.03,0.22,0.42,165.41,14,2025-08-16,Refrigerator,0.0
+2025-04-25,Carrot,Vegetables,Receipt OCR,RCT-20250425,kg,2.43,1.08,0.79,0.56,275.4,14,2025-05-09,Refrigerator,0
+2025-06-02,Onion,Vegetables,Manual Entry,MAN-20250602,kg,3.19,1.25,0.72,1.21,316.38,30,2025-07-02,Pantry,0
+2025-09-26,Banana,Fruits,Receipt OCR,RCT-20250926,dozen,2.12,1.27,0.53,0.32,110.71,6,2025-10-02,Pantry,0
+2025-08-05,Tomato,Vegetables,Receipt OCR,RCT-20250805,kg,1.45,1.19,0.14,0.12,266.26,7,2025-08-12,Refrigerator,0
+2025-08-04,Bread,Bakery,Manual Entry,MAN-20250804,loaf,2.64,1.41,0.51,0.72,58.79,5,2025-08-09,Pantry,0
+2025-10-18,Potato ,Vegetables,Manual Entry,MAN-20251018,kg,3.48,1.78,1.14,0.56,261.91,30,2025-11-17,Pantry,0.0
+2025-03-31,Milk,Dairy,Receipt OCR,RCT-20250331,L,2.92,2.36,0.3,0.26,159.48,7,2025-04-07,Refrigerator,0
+2025-04-12,Curd,Dairy,Receipt OCR,RCT-20250412,kg,1.86,1.14,0.24,0.48,130.96,7,2025-04-19,Refrigerator,0.0
+2025-10-20,Onion,Vegetables,Manual Entry,MAN-20251020,kg,2.77,1.65,,0.65,189.26,30,2025-11-19,Pantry,1.0
+2025-03-16,Rice,Grains,Receipt OCR,RCT-20250316,kg,4.81,1.71,1.07,2.03,578.92,90,2025-06-14,Pantry,0
+2025-09-24,Wheat Flour,Grains,Receipt OCR,RCT-20250924,kg,3.84,1.45,none,0.95,308.54,90,2025-12-23,Pantry,0.0
+2025-11-11,spinach,Vegetables,Manual Entry,MAN-20251111,kg,1.34,0.94,0.16,0.23,131.3,5,2025-11-16,Refrigerator,0.0
+2025-05-27,Wheat Flour,Grains,Manual Entry,MAN-20250527,kg,3.65,1.7,1.14,0.8,-216.48,90,2025-08-25,Pantry,0.0
+2025-11-02,Dal,Pulses,Receipt OCR,RCT-20251102,kg,2.56,0.89,1.04,0.64,117.66,180,2026-05-01,Pantry,0
+2025-04-09,Sugar,Essentials,Receipt OCR,RCT-20250409,kg,2.36,0.39,1.17,0.8,124.32,180,2025-10-06,Pantry,0
+2025-11-03,Onion,Vegetables,Receipt OCR,RCT-20251103,kg,2.48,1.51,0.4,0.57,293.19,30,2025-12-03,Pantry,0
+2025-07-25,  Dal ,Pulses,Receipt OCR,RCT-20250725,kg,3.32,0.91,1.35,1.06,412.59,180,2026-01-21,Pantry,0.0
+2025-01-07,Spinach,Vegetables,Manual Entry,MAN-20250107,kg,1.36,0.52,0.48,0.36,37.15,5,2025-01-12,Refrigerator,0
+2025-03-05,Milk,Dairy,Receipt OCR,RCT-20250305,L,2.66,2.14,0.19,0.33,442.74,7,2025-03-12,Refrigerator,0
+2025-03-16,Tomato,Vegetables,Receipt OCR,RCT-20250316,kg,2.32,1.19,0.26,0.88,43.33,7,2025-03-23,Refrigerator,0
+2025-08-12,Carrot,Vegetables,Receipt OCR,RCT-20250812,kg,1.66,1.15,0.19,0.31,121.71,14,2025-08-26,Refrigerator,0
+2025-06-09,Bread,Bakery,Receipt OCR,RCT-20250609,loaf,2.35,1.36,0.31,0.68,295.9,5,2025-06-14,Pantry,0
+2025-05-24,Tomato,Vegetables,Manual Entry,MAN-20250524,kg,1.87,1.46,0.1,0.31,187.89,7,2025-05-31,Refrigerator,0
+2025-02-03,Biscuit,Snacks,Receipt OCR,RCT-20250203,pack,1.83,0.82,0.68,0.33,258.01,60,2025-04-04,Pantry,0
+not recorded,Eggs,Protein,Receipt OCR,RCT-20251214,dozen,1.88,1.37,0.22,0.3,87.02,21,2026-01-04,Refrigerator,0.0
+2025-02-27,Potato,Vegetables,Receipt OCR,RCT-20250227,kg,3.82,1.44,1.65,0.73,79.57,30,2025-03-29,Pantry,0.0
+2025-06-06,Milk,Dairy,Receipt OCR,RCT-20250606,L,3.12,2.19,0.54,0.39,435.21,7,2025-06-13,Refrigerator,0
+2025-05-22,Orange,Fruits,Manual Entry,MAN-20250522,kg,1.82,0.91,0.32,0.59,133.62,14,2025-06-05,Refrigerator,0
+2025-05-01,Cooking Oil,Essentials,Receipt OCR,RCT-20250501,L,2.49,0.41,0.87,1.21,233.98,180,2025-10-28,Pantry,0
+2025-12-14,Orange,Fruits,Receipt OCR,RCT-20251214,kg,1.69,1.01,0.28,0.39,251.12,14,2025-12-28,Refrigerator,0
+2025-01-04,Dal,Pulses,Receipt OCR,RCT-20250104,kg,2.93,1.07,1.27,0.59,413.09,180,2025-07-03,Pantry,0
+2025-06-09,Cooking Oil,Essentials,Receipt OCR,RCT-20250609,L,1.84,0.35,0.75,0.73,64.88,180,2025-12-06,Pantry,0
+2025-12-21,Banana ,Fruits,Receipt OCR,RCT-20251221,dozen,2.14,1.33,0.22,0.58,102.55,6,2025-12-27,Pantry,0.0
+2025-10-04,Apple,Fruits,Manual Entry,MAN-20251004,kg,1.95,0.94,0.51,0.49,144.6,14,2025-10-18,Refrigerator,0
+2025-12-28,Dal,Pulses,Receipt OCR,RCT-20251228,kg,3.1,1.0,1.14,0.96,402.67,180,2026-06-26,Pantry,0
+2025-09-29,Bread,Bakery,Receipt OCR,RCT-20250929,loaf,2.08,1.25,0.57,0.25,106.04,5,2025-10-04,Pantry,0
+2025-11-27,Curd,Dairy,Receipt OCR,RCT-20251127,kg,2.61,1.17,0.51,0.92,60.72,,2025-12-04,Refrigerator,0.0
+2025-03-29,Wheat Flour,Grains,Manual Entry,MAN-20250329,kg,3.29,1.62,0.56,1.1,243.72,90,2025-06-27,Pantry,0
+2025-10-06,Eggs,Protein,Receipt OCR,RCT-20251006,dozen,19.7,12.1,4.1,3.5,2072.2,21,2025-10-27,Refrigerator,0.0
+2025-08-05,Apple,Fruits,Receipt OCR,RCT-20250805,kg,2.16,1.01,0.38,0.77,276.3,14,2025-08-19,Refrigerator,0
+2025-08-19,Wheat Flour,Grains,Manual Entry,MAN-20250819,kg,3.57,1.8,0.63,1.15,160.11,90,2025-11-17,Pantry,0
+2025-01-05,Chicken,Protein,Receipt OCR,RCT-20250105,kg,17.37,14.85,0.54,1.98,2478.6,3,2025-01-08,Refrigerator,0.0
+2025-02-28,Milk,Dairy,Receipt OCR,RCT-20250228,L,3.89,2.8,0.44,0.65,₹120,7,2025-03-07,Refrigerator,0.0
+2025-03-04,Curd,Dairy,Receipt OCR,RCT-20250304,kg,1.72,1.21,0.18,0.33,64.18,7,2025-03-11,Refrigerator,0
+2025-01-22,Potato,Vegetables,Receipt OCR,RCT-20250122,kg,1.91,1.66,0.09,0.16,410.94,30,2025-02-21,Pantry,0
+2025-10-17,Sugar,Essentials,Receipt OCR,RCT-20251017,kg,2.29,0.44,0.99,0.85,163.12,180,2026-04-15,Pantry,0
+2025-02-18,Rice,Grains,Receipt OCR,RCT-20250218,kg,5.08,"1,5",1.67,1.29,304.99,90,2025-05-19,Pantry,0.0
+2025-08-21,Cooking Oil,Essentials,Receipt OCR,RCT-20250821,L,2.1,0.32,1.07,0.71,120.8,180,2026-02-17,Pantry,0
+2025-12-16,Carrot,Vegetables,Receipt OCR,RCT-20251216,kg,1.96,0.91,0.33,0.73,133.92,14,2025-12-30,Refrigerator,0
+2025-04-25,Curd,Dairy,Receipt OCR,RCT-20250425,kg,2.55,1.32,0.42,0.82,71.61,7,2025-05-02,Refrigerator,0
+2025-01-27,Sugar,Essentials,Receipt OCR,RCT-20250127,kg,2.36,0.48,1.09,0.78,189.12,180,2025-07-26,Pantry,0
+2025-03-18,Dal,Pulses,Manual Entry,MAN-20250318,kg,3.65,0.91,0.58,2.17,,180,2025-09-14,Pantry,0.0
+2025-03-31,Milk,Dairy,Receipt OCR,RCT-20250331,L,2.92,2.36,0.3,0.26,159.48,7,2025-04-07,Refrigerator,0.0
+2025-04-06,Sugar,Essentials,Receipt OCR,RCT-20250406,kg,1.45,0.55,0.22,0.68,298.13,180,2025-10-03,Pantry,0
 2025-11-30,Chicken,Protein,Manual Entry,MAN-20251130,kg,2.5,2.04,0.23,0.23,125.13,3,2025-12-03,Refrigerator,0
-2025-08-17,Tomato,Vegetables,Manual Entry,MAN-20250817,kg,2.16,1.23,0.57,0.36,142.98,7,2025-08-24,Refrigerator,0
-2025-03-08, TOMATO ,Vegetables,Manual Entry,MAN-20250308,kg,2.2,1.15,0.22,0.82,148.92,7,2025-03-15,Refrigerator,0.0
-2025-12-11,Rice,Grains,Receipt OCR,RCT-20251211,kg,4.98,1.89,0.94,2.16,394.28,90,2026-03-11,Pantry,0
-2025-07-14,Wheat Flour,Grains,Receipt OCR,RCT-20250714,kg,3.27,1.63,0.48,1.17,85.18,90,2025-10-12,Pantry,0
-2025-11-10,Rice,Grains,Receipt OCR,RCT-20251110,kg,3.58,1.76,1.08,0.75,584.48,90,2026-02-08,Pantry,0
-2025-12-01,Wheat Flour,Grains,Manual Entry,MAN-20251201,kg,3.52,1.72,0.71,1.1,162.55,90,2026-03-01,Pantry,0
-2025-04-27,Banana,Fruits,Receipt OCR,RCT-20250427,dozen,1.86,1.14,0.42,0.3,99.54,6,2025-05-03,Pantry,0
-2025-02-05,Eggs,Protein,Receipt OCR,RCT-20250205,dozen,2.26,1.17,0.33,0.76,172.03,21,2025-02-26,Refrigerator,0.0
-2025-01-12,Dal,Pulses,Manual Entry,MAN-20250112,kg,3.13,1.04,1.1,0.99,274.83,180,2025-07-11,Pantry,0
-2025-07-03,Tomato,Vegetables,Receipt OCR,RCT-20250703,kg,1.85,1.04,0.32,0.49,204.67,7,2025-07-10,Refrigerator,0
-2025-08-29,Curd,Dairy,Receipt OCR,RCT-20250829,kg,1.82,1.27,0.25,0.3,209.82,7,2025-09-05,Refrigerator,0
-2025-12-02,Curd,Dairy,Receipt OCR,RCT-20251202,kg,2.23,1.54,0.38,0.3,275.21,7,2025-12-09,Refrigerator,0
-2025-03-23,Sugar,Essentials,Receipt OCR,RCT-20250323,kg,2.19,0.43,0.83,0.93,256.55,180,2025-09-19,Pantry,0
-2025-10-01,Onion ,Vegetables,Receipt OCR,RCT-20251001,kg,3.89,2.32,0.98,0.6,430.06,30,2025-10-31,Pantry,1.0
-2025-11-08,Apple,Fruits,Receipt OCR,RCT-20251108,kg,1.84,1.0,0.57,0.27,85.3,14,2025-11-22,Refrigerator,0
-2025-02-19,Carrot,Vegetables,Receipt OCR,RCT-20250219,kg,1.71,1.12,0.38,0.21,52.8,14,2025-03-05,Refrigerator,0
-2025-07-31,Curd,Dairy,Receipt OCR,RCT-20250731,kg,2.44,1.12,0.88,0.43,62.31,7,2025-08-07,Refrigerator,0
-2025-10-01,Cooking Oil,Essentials,Receipt OCR,RCT-20251001,L,2.53,0.47,1.28,0.78,160.98,180,2026-03-30,Pantry,1
-2025-12-06,  Milk ,Dairy,Receipt OCR,RCT-20251206,L,2.54,2.54,0.0,0.0,130.73,7,2025-12-13,Refrigerator,0.0
-2025-10-23,Orange,Fruits,Receipt OCR,RCT-20251023,kg,2.01,1.23,0.16,0.62,199.29,14,2025-11-06,Refrigerator,0
-2025-02-19,Carrot,Vegetables,Receipt OCR,RCT-20250219,kg,1.71,1.12,0.38,0.21,52.8,14,2025-03-05,Refrigerator,0.0
-2025-02-04,Dal,Pulses,Receipt OCR,RCT-20250204,kg,3.05,0.82,1.12,1.11,155.69,180,2025-08-03,Pantry,0
-2025-07-10,BISCUIT,Snacks,Manual Entry,MAN-20250710,pack,2.09,0.59,0.89,0.62,186.14,60,2025-09-08,Pantry,0.0
-2025-08-16,Banana,Fruits,Receipt OCR,RCT-20250816,dozen,1.98,1.21,0.51,0.25,171.94,6,2025-08-22,Pantry,0
-2025-03-13,Milk,Dairy,Receipt OCR,RCT-20250313,L,2.69,2.03,0.39,0.27,132.89,7,2025-03-20,Refrigerator,0
-2025-09-15,Cooking Oil,Essentials,Receipt OCR,RCT-20250915,L,1.95,0.41,0.97,0.57,118.27,180,2026-03-14,Pantry,0
-2025-10-20,Wheat Flour,Grains,Manual Entry,MAN-20251020,kg,3.13,1.91,0.24,0.97,497.48,90,2026-01-18,Pantry,1
-2025-05-18,Tomato,Vegetables,Receipt OCR,RCT-20250518,kg,2.48,1.38,0.49,0.61,47.5,7,2025-05-25,Refrigerator,0
-2025-10-31,Orange,Fruits,Receipt OCR,RCT-20251031,kg,2.12,1.02,0.51,0.59,244.72,14,2025-11-14,Refrigerator,0
-2025-07-17,Orange,Fruits,Receipt OCR,RCT-20250717,kg,2.01,"1,5",0.29,0.68,116.13,14,2025-07-31,Refrigerator,0.0
-2025-05-05,Wheat Flour,Grains,Receipt OCR,RCT-20250505,kg,3.23,1.57,0.82,0.85,343.11,90,2025-08-03,Pantry,0
-2025-08-30,Orange,Fruits,Receipt OCR,RCT-20250830,kg,2.46,1.11,0.34,1.01,52.48,14,2025-09-13,Refrigerator,0
-2025-05-30,Apple,Fruits,Receipt OCR,RCT-20250530,kg,1.76,0.91,0.25,0.6,189.44,14,2025-06-13,Refrigerator,0
-2025-06-23,biscuit,Snacks,Manual Entry,MAN-20250623,pack,2.26,0.84,0.92,0.5,207.37,60,2025-08-22,Pantry,0.0
-2025-10-27,Cheese,Dairy,Receipt OCR,RCT-20251027,kg,0.86,0.55,0.18,0.13,22.55,30,2025-11-26,Refrigerator,0
-2025-01-21,Curd,Dairy,Receipt OCR,RCT-20250121,kg,2.39,1.23,0.35,0.8,184.32,7,2025-01-28,Refrigerator,0
-2025-07-29,Onion,Vegetables,Manual Entry,MAN-20250729,kg,2.95,1.4,0.63,0.92,436.54,30,2025-08-28,Pantry,0
-2025-06-03,Eggs,Protein,Receipt OCR,RCT-20250603,dozen,2.12,1.21,0.5,0.42,272.71,,2025-06-24,Refrigerator,0.0
-2025-03-11,Milk,Dairy,Receipt OCR,RCT-20250311,L,2.81,2.08,0.31,0.42,171.65,7,2025-03-18,Refrigerator,0
-2025-10-06,Tomato,Vegetables,Receipt OCR,RCT-20251006,kg,2.21,1.44,0.36,0.41,269.71,7,2025-10-13,Refrigerator,0
-2025-11-21,ONION,Vegetables,Manual Entry,MAN-20251121,kg,2.23,1.35,0.59,0.29,162.49,30,2025-12-21,Pantry,0.0
-2025-04-17,Wheat Flour,Grains,Receipt OCR,RCT-20250417,kg,4.96,1.66,0.69,2.61,242.12,90,2025-07-16,Pantry,0
-2025-04-11,Curd,Dairy,Receipt OCR,RCT-20250411,kg,1.95,-1.41,0.35,0.19,139.83,7,2025-04-18,Refrigerator,0.0
-2025-04-11,Cheese,Dairy,Receipt OCR,RCT-20250411,kg,0.97,0.6,0.1,0.27,140.63,30,2025-05-11,Refrigerator,0
-2025-01-27,Potato,Vegetables,Receipt OCR,RCT-20250127,kg,3.13,1.66,0.71,0.76,302.06,30,2025-02-26,Pantry,0
-2025-05-20,Spinach,Vegetables,Receipt OCR,RCT-20250520,kg,1.31,0.68,0.24,0.39,63.84,5,2025-05-25,Refrigerator,0.0
-2025-05-29,Dal,Pulses,Receipt OCR,RCT-20250529,kg,2.98,1.17,0.4,1.41,357.58,180,2025-11-25,Pantry,0
-2025-07-03,Tomato,Vegetables,Receipt OCR,RCT-20250703,kg,1.85,1.04,0.32,0.49,204.67,7,2025-07-10,Refrigerator,0.0
-2025-12-01, POTATO ,Vegetables,Manual Entry,MAN-20251201,kg,2.32,1.55,0.19,0.59,344.63,30,2025-12-31,Pantry,0.0
-2025-10-30,Bread,Bakery,Receipt OCR,RCT-20251030,loaf,2.11,1.35,0.46,0.3,241.27,5,2025-11-04,Pantry,
-2025-11-03,Banana,Fruits,Receipt OCR,RCT-20251103,dozen,2.33,1.11,0.3,0.92,293.47,6,2025-11-09,Pantry,0
-2025-04-19,Cheese,Dairy,Receipt OCR,RCT-20250419,kg,10.2,7.08,0.96,2.16,499.32,30,2025-05-19,Refrigerator,0.0
-2025-12-10,Cooking Oil,Essentials,Manual Entry,MAN-20251210,L,2.32,0.36,1.25,0.71,277.35,180,2026-06-08,Pantry,0
-2025-07-20,Wheat Flour,Grains,Receipt OCR,RCT-20250720,kg,2.65,1.61,0.6,0.43,352.75,90,2025-10-18,Pantry,0
-2025-01-29,Curd ,Dairy,Receipt OCR,RCT-20250129,kg,1.95,1.45,0.33,0.17,138.1,7,2025-02-05,Refrigerator,0.0
-2025-02-15,Milk,Dairy,Receipt OCR,RCT-20250215,L,35.3,25.7,6.5,3.1,2806.4,7,2025-02-22,Refrigerator,0.0
-2025-06-08,Orange,Fruits,Receipt OCR,RCT-20250608,kg,1.38,1.02,-0.12,0.23,210.55,14,2025-06-22,Refrigerator,0.0
-2025-12-16,Banana,Fruits,Receipt OCR,RCT-20251216,dozen,2.29,1.08,0.74,0.46,102.74,6,2025-12-22,Pantry,0
-2025-10-11,Spinach,Vegetables,Manual Entry,MAN-20251011,kg,1.38,0.73,0.15,0.5,186.94,5,2025-10-16,Refrigerator,0
-2025-05-06,Biscuit,Snacks,Receipt OCR,RCT-20250506,pack,1.82,0.88,0.19,0.75,168.82,60,2025-07-05,Pantry,0
-2025-04-19,Orange,Fruits,Receipt OCR,RCT-20250419,kg,1.96,1.07,0.28,0.62,137.15,14,2025-04-16,Refrigerator,0.0
-2025-09-02,Cheese,Dairy,Manual Entry,MAN-20250902,kg,1.01,0.49,0.28,0.25,142.32,30,2025-10-02,Refrigerator,0
-2025-05-15,Bread,Bakery,Receipt OCR,RCT-20250515,loaf,2.14,1.02,0.77,0.34,269.42,5,2025-05-12,Pantry,0.0
-2025-02-18,Eggs,Protein,Receipt OCR,RCT-20250218,dozen,1.82,1.36,0.26,0.2,149.2,21,2025-03-11,Refrigerator,0
-2025-11-27,Wheat Flour,Grains,Receipt OCR,RCT-20251127,kg,4.11,1.59,0.51,2.01,218.1,90,2026-02-25,Pantry,0.0
-2025-01-27,Cheese,Dairy,Receipt OCR,RCT-20250127,kg,0.97,0.57,0.14,0.26,53.71,30,2025-02-26,Refrigerator,0
-2025-09-08,Bread,Bakery,Manual Entry,MAN-20250908,loaf,1.91,1.09,0.2,0.62,259.93,5,2025-09-13,Pantry,0
-2025-11-06,Onion,Vegetables,Manual Entry,MAN-20251106,kg,2.7,1.53,0.27,0.89,436.45,30,2025-12-06,Pantry,0
-2025-10-03,Tomato,Vegetables,Manual Entry,MAN-20251003,kg,2.14,1.34,0.39,0.41,88.39,7,2025-10-10,Refrigerator,0
-2025-07-29,Spinach,Vegetables,Manual Entry,MAN-20250729,kg,1.21,0.76,none,0.16,172.76,5,2025-08-03,Refrigerator,0.0
-2025-05-11,Eggs,Protein,Receipt OCR,RCT-20250511,dozen,1.68,1.44,0.15,0.09,156.36,21,2025-06-01,Refrigerator,0
-2025-04-04,Dal,Pulses,Receipt OCR,RCT-20250404,kg,2.57,0.89,0.79,0.89,235.17,180,2025-10-01,Pantry,0
-2025-10-18,Banana,Fruits,Manual Entry,MAN-20251018,dozen,2.7,0.93,1.07,0.7,199.3,6,2025-10-24,Pantry,0
-2025-05-09,Sugar,Essentials,Receipt OCR,RCT-20250509,kg,2.28,0.51,0.94,0.82,295.33,180,2025-11-05,Pantry,0
-2025-12-24,Biscuit,Snacks,Receipt OCR,RCT-20251224,pack,2.34,0.64,0.75,0.95,,60,2026-02-22,Pantry,0.0
-2025-11-29,Cooking Oil,Essentials,Receipt OCR,RCT-20251129,L,1.8,0.48,0.88,0.44,239.32,180,2026-05-28,Pantry,0
-2025-03-16,Bread,Bakery,Receipt OCR,RCT-20250316,loaf,2.19,0.79,0.5,0.9,229.6,5,2025-03-21,Pantry,0
-2025-11-11,Curd,Dairy,Manual Entry,MAN-20251111,kg,1.34,1.34,0.0,0.0,174.08,7,2025-11-18,Refrigerator,0.0
-2025-12-08,Wheat Flour,Grains,Receipt OCR,RCT-20251208,kg,4.15,1.41,0.81,1.93,244.64,90,2026-03-08,Pantry,0
-2025-05-24,Curd,Dairy,Manual Entry,MAN-20250524,kg,2.54,1.39,0.54,0.62,152.9,7,2025-05-31,Refrigerator,0
-2025-06-02,Wheat Flour,Grains,Manual Entry,MAN-20250602,kg,3.86,1.47,1.49,0.91,214.42,90,2025-08-31,Pantry,0
-2025-06-22,Apple,Fruits,Manual Entry,MAN-20250622,kg,1.4,1.0,0.12,0.28,235.02,14,2025-07-06,Refrigerator,0
-2025-07-07,Wheat Flour,Grains,Manual Entry,MAN-20250707,kg,3.59,1.38,0.89,1.32,595.73,90,2025-10-05,Pantry,0
-2025-09-01,Apple,Fruits,Receipt OCR,RCT-20250901,kg,2.45,1.35,0.23,0.87,113.44,14,2025-09-15,Refrigerator,0
-2025-11-21,Banana,Fruits,Manual Entry,MAN-20251121,dozen,1.98,0.9,0.25,0.84,62.94,6,2025-11-27,Pantry,0
-2025-01-02,Bread,Bakery,Receipt OCR,RCT-20250102,loaf,1.76,1.13,0.42,0.21,250.11,5,2025-01-07,Pantry,0
-2025-06-02, WHEAT FLOUR ,Grains,Manual Entry,MAN-20250602,kg,3.86,1.47,1.49,0.91,214.42,90,2025-08-31,Pantry,0.0
-2025-06-07,Milk,Dairy,Receipt OCR,RCT-20250607,L,3.24,1.8,0.94,0.49,439.62,7,2025-06-14,Refrigerator,0
-2025-11-06,Eggs,Protein,Manual Entry,MAN-20251106,dozen,1.51,1.35,0.07,0.1,145.48,21,2025-11-27,Refrigerator,0
-2025-10-03,Orange,Fruits,Manual Entry,MAN-20251003,kg,1.68,,0.19,0.41,119.37,14,2025-10-17,Refrigerator,0.0
-2025-02-05,Eggs,Protein,Receipt OCR,RCT-20250205,dozen,2.26,1.17,0.33,0.76,172.03,21,2025-02-26,Refrigerator,0
-2025-01-18,Cheese ,Dairy,Receipt OCR,RCT-20250118,kg,0.7,0.52,0.07,0.11,107.03,30,2025-02-17,Refrigerator,0.0
-2025-09-12,Chicken,Protein,Receipt OCR,RCT-20250912,kg,1.76,1.38,0.18,0.21,60.96,3,2025-09-15,Refrigerator,0
-2025-10-10,Orange,Fruits,Receipt OCR,RCT-20251010,kg,1.96,0.92,0.64,0.39,77.7,14,2025-10-24,Refrigerator,0
+2025-09-11,Carrot,Vegetables,Receipt OCR,RCT-20250911,kg,2.35,1.03,0.87,0.45,166.31,14,2025-09-25,Refrigerator,0
+2025-01-09,Cooking Oil,Essentials,Manual Entry,MAN-20250109,L,2.38,0.36,0.86,1.16,98.4,180,2025-07-08,Pantry,0
+2025-02-28,Tomato,Vegetables,Receipt OCR,RCT-20250228,kg,2.11,1.51,0.22,0.37,250.59,7,2025-03-07,Refrigerator,0
+2025-10-20,Dal,Pulses,Manual Entry,MAN-20251020,kg,2.91,1.23,0.55,1.14,112.46,180,2026-04-18,Pantry,1
+2025-02-24,Curd,Dairy,Receipt OCR,RCT-20250224,kg,2.3,1.21,0.54,0.55,142.35,7,2025-03-03,Refrigerator,0
+,Onion,Vegetables,Receipt OCR,RCT-20250416,kg,2.97,1.59,0.55,0.84,390.15,30,2025-05-16,Pantry,0.0
+2025-05-09,Banana,Fruits,Receipt OCR,RCT-20250509,dozen,1.71,1.02,0.46,0.23,82.83,6,2025-05-15,Pantry,0
+2025-02-13,Cooking Oil,Essentials,Receipt OCR,RCT-20250213,L,1.67,0.38,0.73,0.55,133.72,180,2025-08-12,Pantry,0
+2025-06-17,Rice,Grains,Receipt OCR,RCT-20250617,kg,4.75,2.17,0.53,2.05,648.2,90,2025-09-15,Pantry,0
+2025-02-10,Carrot,Vegetables,Manual Entry,MAN-20250210,kg,1.86,0.86,0.66,0.34,56.07,14,2025-02-24,Refrigerator,0
+2025-05-28,Spinach,Vegetables,Receipt OCR,RCT-20250528,kg,1.76,0.88,0.36,0.53,113.66,5,2025-06-02,Refrigerator,0
+2025-06-06,Apple,Fruits,Receipt OCR,RCT-20250606,kg,2.42,1.09,0.68,0.65,292.0,14,2025-06-20,Refrigerator,0
+2025-03-28,Tomato,Vegetables,Receipt OCR,RCT-20250328,kg,2.12,1.24,0.52,0.37,195.15,7,2025-04-04,Refrigerator,0
+2025-11-02,Chicken,Protein,Receipt OCR,RCT-20251102,kg,1.87,1.66,0.11,0.1,286.37,3,2025-11-05,Refrigerator,0
+2025-01-04,Wheat Flour,Grains,Receipt OCR,RCT-20250104,kg,4.41,1.21,0.69,2.51,99.42,90,2025-04-04,Pantry,0
+2025-05-25,Eggs,Protein,Manual Entry,MAN-20250525,dozen,1.95,1.41,0.19,0.34,84.84,21,2025-06-15,Refrigerator,0
+2025-04-21,orange,Fruits,Manual Entry,MAN-20250421,kg,1.3,0.93,0.14,0.23,206.41,14,2025-05-05,Refrigerator,0.0
+2025-06-20,Curd,Dairy,Manual Entry,MAN-20250620,kg,1.56,1.16,0.1,0.3,167.37,7,2025-06-27,Refrigerator,0
+2025-12-15,Banana,Fruits,Manual Entry,MAN-20251215,dozen,1.87,0.97,0.27,0.63,49.93,6,2025-12-21,Pantry,0
+2025-11-07,Wheat Flour,Grains,Manual Entry,MAN-20251107,kg,4.03,1.35,0.98,1.71,473.2,90,2026-02-05,Pantry,0
+2025-08-29,Dal,Pulses,Receipt OCR,RCT-20250829,kg,2.38,1.15,0.28,0.95,397.57,180,2026-02-25,Pantry,0
+2025-04-06,Dal,Pulses,Receipt OCR,RCT-20250406,kg,2.83,,0.92,0.83,188.31,180,2025-10-03,Pantry,0.0
+2025-08-24,Cheese,Dairy,Manual Entry,MAN-20250824,kg,0.96,0.5,0.31,0.14,117.7,30,2025-09-23,Refrigerator,0
+2025-02-21,Banana,Fruits,Receipt OCR,RCT-20250221,dozen,2.08,1.2,0.39,0.49,296.59,6,2025-02-27,Pantry,0
+2025-07-17,Potato,Vegetables,Receipt OCR,RCT-20250717,kg,2.58,1.7,0.2,0.68,205.71,30,2025-08-16,Pantry,0
+2025-09-01,Dal,Pulses,Receipt OCR,RCT-20250901,kg,3.09,1.01,1.02,1.06,380.27,180,2025-08-29,Pantry,0.0
+2025-08-19,Banana,Fruits,Manual Entry,MAN-20250819,dozen,2.34,1.15,0.47,0.72,42.93,6,2025-08-25,Pantry,0
+2025-03-08,Orange,Fruits,Manual Entry,MAN-20250308,kg,1.89,1.02,0.22,0.65,41.02,14,2025-03-22,Refrigerator,0
+2025-04-26,Biscuit,Snacks,Receipt OCR,RCT-20250426,pack,2.41,0.57,0.78,1.06,186.85,60,2025-06-25,Pantry,0
+2025-03-25,Spinach,Vegetables,Manual Entry,MAN-20250325,kg,2.0,0.67,0.29,1.03,151.19,5,2025-03-30,Refrigerator,0
+2025-05-01,Apple,Fruits,Receipt OCR,RCT-20250501,kg,2.1,1.06,0.4,0.65,230.87,14,2025-05-15,Refrigerator,0
+2025-03-15,Cheese,Dairy,Receipt OCR,RCT-20250315,kg,0.78,0.44,0.14,0.19,126.34,30,2025-04-14,Refrigerator,0
+2025-03-06,Orange,Fruits,Receipt OCR,RCT-20250306,kg,1.8,0.81,0.32,0.68,45.11,14,2025-03-20,Refrigerator,0
+2025-09-30,Sugar,Essentials,Receipt OCR,RCT-20250930,kg,2.71,0.48,1.04,1.18,186.24,180,2026-03-29,Pantry,0
+2025-12-11,Bread,Bakery,Receipt OCR,RCT-20251211,loaf,2.19,1.23,0.37,0.59,83.3,5,2025-12-16,Pantry,0
+2025-07-16,Potato,Vegetables,Receipt OCR,RCT-20250716,kg,3.47,1.66,0.96,0.85,273.37,30,2025-08-15,Pantry,0
+2025-03-18,Apple,Fruits,Manual Entry,MAN-20250318,kg,1.93,0.92,0.58,0.43,183.18,14,2025-04-01,Refrigerator,0
+2025-08-20,Carrot,Vegetables,Receipt OCR,RCT-20250820,kg,2.42,1.29,0.36,0.77,83.45,14,2025-09-03,Refrigerator,1
+2025-12-04,Dal,Pulses,Receipt OCR,RCT-20251204,kg,3.48,0.86,0.83,1.79,274.55,180,2026-06-02,Pantry,0
+2025-05-18,Wheat Flour,Grains,Receipt OCR,RCT-20250518,kg,4.19,1.65,1.0,1.54,301.4,90,2025-08-16,Pantry,0
+2025-11-09,Biscuit,Snacks,Manual Entry,MAN-20251109,pack,1.3,0.8,0.15,0.34,184.93,60,2026-01-08,Pantry,0
+2025-10-25,Biscuit,Snacks,Manual Entry,MAN-20251025,pack,2.04,0.68,0.49,0.87,177.15,60,2025-12-24,Pantry,0
+2025-09-20,Cooking Oil,Essentials,Receipt OCR,RCT-20250920,L,19.44,3.36,5.92,10.16,1522.64,180,2026-03-19,Pantry,0.0
+2025-09-20,MILK,Dairy,Receipt OCR,RCT-20250920,L,2.24,2.24,0.0,0.0,359.95,7,2025-09-27,Refrigerator,0.0
+2025-07-11,Cooking Oil,Essentials,Receipt OCR,RCT-20250711,L,2.27,0.42,1.06,0.79,169.19,180,2026-01-07,Pantry,0
+2025-02-22,Orange,Fruits,Manual Entry,MAN-20250222,kg,2.08,1.1,0.59,0.39,57.95,14,2025-03-08,Refrigerator,0
+2025-05-20,Orange,Fruits,Receipt OCR,RCT-20250520,kg,2.07,1.13,0.4,0.53,78.91,14,2025-06-03,Refrigerator,0.0
+2025-12-16,Potato,Vegetables,Receipt OCR,RCT-20251216,kg,2.29,1.16,0.49,0.63,395.93,30,2025-12-13,Pantry,0.0
+2025-12-10,Orange,Fruits,Manual Entry,MAN-20251210,kg,2.08,1.04,0.25,0.79,102.15,14,2025-12-24,Refrigerator,0
+2025-03-25,Potato,Vegetables,Manual Entry,MAN-20250325,kg,3.23,1.34,0.86,1.02,138.06,30,2025-04-24,Pantry,0
+2025-01-28,Banana,Fruits,Manual Entry,MAN-20250128,dozen,2.19,1.02,0.81,0.36,196.91,6,2025-02-03,Pantry,0
+2025-11-25,Curd,Dairy,Manual Entry,MAN-20251125,kg,2.07,1.12,0.65,0.3,263.74,7,2025-12-02,Refrigerator,0
+2025-07-12,Curd,Dairy,Receipt OCR,RCT-20250712,kg,-2.01,1.13,0.41,0.47,173.76,7,2025-07-19,Refrigerator,0.0
+2025-12-07,Potato,Vegetables,Receipt OCR,RCT-20251207,kg,2.63,1.62,0.63,0.38,224.18,30,2026-01-06,Pantry,0
+2025-10-20,Dal,Pulses,Manual Entry,MAN-20251020,kg,2.91,1.23,0.55,1.14,112.46,180,2026-04-18,Pantry,1.0
+2025-07-28,Apple,Fruits,Manual Entry,MAN-20250728,kg,2.35,1.12,0.86,0.38,180.74,14,2025-08-11,Refrigerator,0
+2025-04-07,Eggs,Protein,Receipt OCR,RCT-20250407,dozen,1.91,1.14,0.18,0.59,189.32,21,2025-04-28,Refrigerator,0
+2025-04-12,Curd,Dairy,Receipt OCR,RCT-20250412,kg,1.86,1.14,0.24,0.48,130.96,7,2025-04-19,Refrigerator,0
+2025-01-16,Dal,Pulses,Receipt OCR,RCT-20250116,kg,3.74,1.12,1.33,1.28,240.76,180,2025-07-15,Pantry,0
+2025-02-13,Cooking Oil,Essentials,Receipt OCR,RCT-20250213,L,1.67,0.38,0.73,0.55,133.72,180,2025-08-12,Pantry,0.0
+2025-04-25, CURD ,Dairy,Receipt OCR,RCT-20250425,kg,2.55,1.32,0.42,0.82,71.61,7,2025-05-02,Refrigerator,0.0
+2025-02-06,Apple,Fruits,Manual Entry,MAN-20250206,kg,1.54,1.07,0.25,0.22,251.88,14,2025-02-20,Refrigerator,0
+yesterday,Milk,Dairy,Receipt OCR,RCT-20250808,L,3.29,1.86,0.47,0.96,134.19,7,2025-08-15,Refrigerator,0.0
+2025-03-16,Rice,Grains,Receipt OCR,RCT-20250316,kg,4.81,1.71,1.07,2.03,578.92,90,2025-06-14,Pantry,0.0
+2025-08-20,Bread,Bakery,Receipt OCR,RCT-20250820,loaf,1.96,1.45,0.24,0.27,194.68,5,2025-08-25,Pantry,1
+2025-09-12,  Apple ,Fruits,Receipt OCR,RCT-20250912,kg,1.95,0.85,0.5,0.6,178.24,14,2025-09-26,Refrigerator,0.0
+2025-01-10,Cheese,Dairy,Receipt OCR,RCT-20250110,kg,1.19,0.38,0.23,0.59,43.65,30,2025-02-09,Refrigerator,0
+2025-01-25,Biscuit,Snacks,Receipt OCR,RCT-20250125,pack,1.88,0.74,0.45,0.69,149.68,60,2025-03-26,Pantry,0
+2025-08-03,Dal,Pulses,Manual Entry,MAN-20250803,kg,3.1,0.96,0.82,1.33,403.13,180,2026-01-30,Pantry,0
+2025-04-30,Sugar,Essentials,Receipt OCR,RCT-20250430,kg,2.48,0.46,1.21,0.81,285.75,180,2025-10-27,Pantry,0
+2025-12-08,Curd,Dairy,Receipt OCR,RCT-20251208,kg,2.21,1.36,0.3,0.56,118.02,7,2025-12-15,Refrigerator,0
 2025-06-04,Orange,Fruits,Manual Entry,MAN-20250604,kg,1.72,1.08,0.41,0.22,281.44,14,2025-06-18,Refrigerator,0
-2025-09-19,Cheese,Dairy,Receipt OCR,RCT-20250919,kg,0.92,0.49,0.19,0.25,126.39,30,2025-10-19,Refrigerator,0
-2025-11-07,Curd,Dairy,Manual Entry,MAN-20251107,kg,1.87,1.27,0.17,0.43,262.89,7,2025-11-14,Refrigerator,0
-2025-01-16,Cooking Oil,Essentials,Receipt OCR,RCT-20250116,L,2.48,0.36,0.84,1.28,156.66,180,2025-07-15,Pantry,0
-2025-01-04,Bread,Bakery,Receipt OCR,RCT-20250104,loaf,1.86,1.56,0.08,0.22,175.78,5,2025-01-09,Pantry,0
-not recorded,Bread,Bakery,Receipt OCR,RCT-20250719,loaf,1.8,1.02,0.48,0.3,211.46,5,2025-07-24,Pantry,0.0
-2025-03-09,Bread,Bakery,Manual Entry,MAN-20250309,loaf,2.26,1.54,0.19,0.53,257.38,5,2025-03-14,Pantry,0
-2025-04-09,Banana,Fruits,Receipt OCR,RCT-20250409,dozen,1.82,1.04,0.34,0.44,126.01,6,2025-04-15,Pantry,0
-2025-10-20,Wheat Flour,Grains,Manual Entry,MAN-20251020,kg,3.13,1.91,0.24,0.97,497.48,90,2026-01-18,Pantry,1.0
-2025-01-29,Apple,Fruits,Receipt OCR,RCT-20250129,kg,2.29,1.19,0.38,0.72,75.52,14,2025-02-12,Refrigerator,0
-2025-11-11,Curd,Dairy,Manual Entry,MAN-20251111,kg,1.34,1.34,0.0,0.0,174.08,7,2025-11-18,Refrigerator,0
-2025-08-12,Apple,Fruits,Receipt OCR,RCT-20250812,kg,2.04,1.07,0.58,0.4,214.93,a week,2025-08-26,Refrigerator,0.0
-2025-12-15,Banana,Fruits,Manual Entry,MAN-20251215,dozen,1.87,0.97,0.27,0.63,,6,2025-12-21,Pantry,0.0
+2025/1/1/1,Eggs,Protein,Receipt OCR,RCT-20250516,dozen,1.38,1.17,0.06,0.15,103.56,21,2025-06-06,Refrigerator,0.0
+2025-01-27,Sugar,Essentials,Receipt OCR,RCT-20250127,kg,2.36,0.48,1.09,0.78,189.12,180,2025-07-26,Pantry,0.0
+2025-11-04,Bread,Bakery,Receipt OCR,RCT-20251104,loaf,2.25,1.27,0.34,0.65,102.98,5,2025-11-09,Pantry,0
+2025-08-22,Sugar,Essentials,Receipt OCR,RCT-20250822,kg,1.67,0.48,0.34,0.85,278.88,180,2026-02-18,Pantry,0
+2025-08-06,Dal,Pulses,Manual Entry,MAN-20250806,kg,3.29,0.91,1.32,1.06,,180,2026-02-02,Pantry,0.0
+2025-04-06,Orange,Fruits,Receipt OCR,RCT-20250406,kg,2.26,1.06,0.49,0.71,239.64,14,2025-04-20,Refrigerator,0
+2025-06-13,Bread,Bakery,Receipt OCR,RCT-20250613,loaf,2.23,1.12,0.27,0.84,241.02,5,2025-06-18,Pantry,0
+2025-11-22,Chicken,Protein,Receipt OCR,RCT-20251122,kg,1.78,1.65,0.08,0.05,148.67,3,2025-11-25,Refrigerator,
+2025-05-04,Onion,Vegetables,Receipt OCR,RCT-20250504,kg,3.24,1.77,0.86,0.61,227.25,30,2025-06-03,Pantry,0
+2025-02-06,Cooking Oil,Essentials,Manual Entry,MAN-20250206,L,1.63,0.46,0.76,0.41,270.91,180,2025-08-05,Pantry,0
+2025-07-09,Eggs,Protein,Receipt OCR,RCT-20250709,dozen,2.08,1.25,0.34,0.49,295.27,21,2025-07-30,Refrigerator,0
+2025-11-03,Potato,Vegetables,Receipt OCR,RCT-20251103,kg,2.98,1.5,0.68,0.81,143.36,30,2025-12-03,Pantry,0
+2025-04-02,Spinach,Vegetables,Manual Entry,MAN-20250402,kg,1.15,0.74,0.13,0.28,32.25,5,2025-04-07,Refrigerator,0
+2025-07-07,Apple,Fruits,Manual Entry,MAN-20250707,kg,2.21,1.14,0.33,0.74,145.1,14,2025-07-21,Refrigerator,0
+2025-08-01,Eggs,Protein,Receipt OCR,RCT-20250801,dozen,1.81,1.24,0.36,0.21,53.03,21,2025-07-29,Refrigerator,1.0
+2025-02-11,Tomato ,Vegetables,Receipt OCR,RCT-20250211,kg,1.43,1.17,0.06,0.2,53.72,7,2025-02-18,Refrigerator,0.0
+2025-08-30,Biscuit,Snacks,Receipt OCR,RCT-20250830,pack,two,0.92,0.23,0.69,238.29,60,2025-10-29,Pantry,0.0
+2025-05-24,Banana,Fruits,Manual Entry,MAN-20250524,dozen,1.99,1.13,0.31,0.55,212.92,6,2025-05-30,Pantry,0
+2025-03-08,Wheat Flour,Grains,Manual Entry,MAN-20250308,kg,3.8,1.71,0.77,1.32,335.8,90,2025-06-06,Pantry,0
+2025-05-09,Carrot,Vegetables,Receipt OCR,RCT-20250509,kg,1.85,0.92,0.43,0.5,188.12,14,2025-05-23,Refrigerator,0
+2025-10-08,Milk,Dairy,Receipt OCR,RCT-20251008,L,2.7,2.13,0.37,0.2,211.06,7,2025-10-15,Refrigerator,0
+2025-07-02,Wheat Flour,Grains,Receipt OCR,RCT-20250702,kg,4.75,1.53,1.51,1.71,348.77,90,2025-09-30,Pantry,0
+2025-12-01,Bread,Bakery,Manual Entry,MAN-20251201,loaf,2.5,1.22,0.43,0.85,284.07,5,2025-12-06,Pantry,0
+2025-12-31,Orange,Fruits,Receipt OCR,RCT-20251231,kg,1.97,0.82,0.46,0.69,203.58,14,2026-01-14,Refrigerator,0
+31/02/2025,Biscuit,Snacks,Manual Entry,MAN-20250502,pack,2.43,0.86,1.02,0.55,278.02,60,2025-07-01,Pantry,0.0
+2025-12-24,Spinach,Vegetables,Receipt OCR,RCT-20251224,kg,1.26,-0.76,0.27,0.24,198.08,5,2025-12-29,Refrigerator,0.0
+2025-01-06,Wheat Flour,Grains,Receipt OCR,RCT-20250106,kg,4.13,1.5,0.62,2.01,368.0,90,2025-04-06,Pantry,0
+2025-02-12,Biscuit,Snacks,Receipt OCR,RCT-20250212,pack,2.02,0.77,0.66,0.59,218.89,60,2025-04-13,Pantry,0
+2025-05-29,Onion,Vegetables,Receipt OCR,RCT-20250529,kg,2.76,1.84,0.3,0.62,60.55,30,2025-06-28,Pantry,0
+2025-05-13,Curd,Dairy,Receipt OCR,RCT-20250513,kg,2.28,1.56,0.25,0.47,43.55,7,2025-05-20,Refrigerator,0
+2025-12-17,Rice,Grains,Receipt OCR,RCT-20251217,kg,67.5,28.95,9.3,29.25,7919.25,90,2026-03-17,Pantry,0.0
+2025-08-31,Chicken,Protein,Receipt OCR,RCT-20250831,kg,1.78,1.75,0.01,0.02,258.75,3,2025-09-03,Refrigerator,0
+2025-04-09,Eggs,Protein,Receipt OCR,RCT-20250409,dozen,1.91,0.96,0.2,0.74,143.28,21,2025-04-30,Refrigerator,0
+2025-11-24,Rice,Grains,Manual Entry,MAN-20251124,kg,5.3,2.02,0.7,2.59,573.18,90,2026-02-22,Pantry,0
+2025-13-45,Onion,Vegetables,Receipt OCR,RCT-20250929,kg,3.22,1.51,0.65,1.06,433.82,30,2025-10-29,Pantry,0.0
+2025-04-19,Sugar,Essentials,Receipt OCR,RCT-20250419,kg,2.09,0.51,0.58,1.0,170.83,180,2025-10-16,Pantry,0
+2025-05-04, CHEESE ,Dairy,Receipt OCR,RCT-20250504,kg,1.04,0.43,0.22,0.39,43.17,30,2025-06-03,Refrigerator,0.0
+2025-07-18,Wheat Flour,Grains,Receipt OCR,RCT-20250718,kg,4.58,1.48,1.59,-1.52,594.9,90,2025-10-16,Pantry,0.0
+2025-02-27,Potato,Vegetables,Receipt OCR,RCT-20250227,kg,3.82,1.44,1.65,0.73,79.57,30,2025-03-29,Pantry,0
+2025-06-23,Cooking Oil,Essentials,Manual Entry,MAN-20250623,L,1.38,0.41,0.67,0.3,123.12,180,2025-12-20,Pantry,0
+2025-09-11,Wheat Flour,Grains,Receipt OCR,RCT-20250911,kg,3.96,1.26,1.76,0.93,247.76,90,2025-12-10,Pantry,0
+2025-06-06,Eggs,Protein,Receipt OCR,RCT-20250606,dozen,1.64,1.35,0.06,0.22,283.27,21,2025-06-27,Refrigerator,0
+2025-05-22, ORANGE ,Fruits,Manual Entry,MAN-20250522,kg,1.82,0.91,0.32,0.59,133.62,14,2025-06-05,Refrigerator,0.0
+2025-12-02,Onion,Vegetables,Receipt OCR,RCT-20251202,kg,33.6,20.04,8.28,5.28,4724.4,30,2026-01-01,Pantry,0.0
+2025-12-06,CHICKEN,Protein,Receipt OCR,RCT-20251206,kg,1.69,1.55,0.05,0.08,42.47,3,2025-12-09,Refrigerator,0.0
+2025-01-24,Cheese,Dairy,Manual Entry,MAN-20250124,kg,0.93,0.51,0.12,0.3,131.25,30,2025-02-23,Refrigerator,0
+2025-04-19,Eggs,Protein,Receipt OCR,RCT-20250419,dozen,2.38,1.25,0.66,0.48,213.4,21,2025-05-10,Refrigerator,0
+2025-08-30,Banana,Fruits,Receipt OCR,RCT-20250830,dozen,2.37,1.25,0.71,0.42,47.44,6,2025-09-05,Pantry,0
+2025-08-15,Tomato,Vegetables,Manual Entry,MAN-20250815,kg,1.49,1.38,0.04,0.07,237.72,7,2025-08-22,Refrigerator,1
+2025-04-22,Wheat Flour,Grains,Receipt OCR,RCT-20250422,kg,3.68,1.58,0.45,1.64,407.26,90,2025-07-21,Pantry,0
+2025-08-06,chicken,Protein,Manual Entry,MAN-20250806,kg,2.42,1.24,0.37,0.8,286.69,3,2025-08-09,Refrigerator,0.0
+2025-03-30,Tomato,Vegetables,Receipt OCR,RCT-20250330,kg,1.74,1.35,0.21,0.18,113.66,7,2025-03-27,Refrigerator,0.0
+2025-09-30,Dal,Pulses,Receipt OCR,RCT-20250930,kg,2.87,1.1,0.54,1.23,237.95,180,2026-03-29,Pantry,0
+2025-12-23,Eggs,Protein,Receipt OCR,RCT-20251223,dozen,2.28,1.25,0.56,0.48,92.48,21,2026-01-13,Refrigerator,0
+2025-09-20,Orange,Fruits,Receipt OCR,RCT-20250920,kg,2.47,0.91,0.35,1.22,73.55,14,2025-10-04,Refrigerator,0.0
+2025-06-16,Bread,Bakery,Manual Entry,MAN-20250616,loaf,2.15,1.33,0.45,0.38,124.72,a week,2025-06-21,Pantry,0.0
+2025-09-01,Milk,Dairy,Receipt OCR,RCT-20250901,L,2.73,2.05,0.36,0.32,154.71,7,2025-09-08,Refrigerator,0
+2025-03-13,Onion,Vegetables,Receipt OCR,RCT-20250313,kg,2.77,1.47,0.75,0.55,432.52,30,2025-04-12,Pantry,0
+2025-06-10,Cooking Oil,Essentials,Manual Entry,MAN-20250610,L,1.38,0.41,0.19,0.77,120.07,180,2025-12-07,Pantry,0
+2025-12-02,Dal,Pulses,Receipt OCR,RCT-20251202,kg,3.09,1.04,0.92,1.14,436.53,180,2026-05-31,Pantry,0
+2025-07-17,Potato,Vegetables,Receipt OCR,RCT-20250717,kg,2.58,1.7,0.2,0.68,205.71,30,2025-08-16,Pantry,0.0
+2025-05-20,Orange,Fruits,Receipt OCR,RCT-20250520,kg,2.07,1.13,0.4,0.53,78.91,14,2025-06-03,Refrigerator,0
+2025-12-11,Milk,Dairy,Receipt OCR,RCT-20251211,L,2.68,1.78,0.47,0.43,61.79,7,2025-12-18,Refrigerator,0
+2025-02-07,Bread,Bakery,Receipt OCR,RCT-20250207,loaf,2.1,1.41,0.25,0.45,210.13,5,2025-02-12,Pantry,0
+2025-05-22,Apple,Fruits,Manual Entry,MAN-20250522,kg,2.31,1.03,0.87,0.42,215.59,14,2025-06-05,Refrigerator,0
+2025-05-04,Cheese,Dairy,Receipt OCR,RCT-20250504,kg,1.04,0.43,0.22,0.39,43.17,30,2025-06-03,Refrigerator,0
+2025-09-20,Wheat Flour,Grains,Receipt OCR,RCT-20250920,kg,4.16,1.49,0.68,1.99,132.89,90,2025-12-19,Pantry,0
+2025-12-16,Tomato,Vegetables,Receipt OCR,RCT-20251216,kg,21.78,11.66,4.29,5.83,1436.82,7,2025-12-23,Refrigerator,0.0
+2025-10-23,Milk,Dairy,Receipt OCR,RCT-20251023,L,3.98,2.36,1.09,0.52,314.35,7,2025-10-30,Refrigerator,0
+2025-10-04,Milk,Dairy,Manual Entry,MAN-20251004,L,2.87,2.84,-0.01,0.02,279.05,7,2025-10-11,Refrigerator,0.0
+2025-10-17,Milk,Dairy,Receipt OCR,RCT-20251017,L,2.66,2.41,0.17,0.08,129.96,7,2025-10-24,Refrigerator,0
+2025-02-22,Bread,Bakery,Manual Entry,MAN-20250222,loaf,1.88,1.43,0.24,0.22,72.2,5,2025-02-27,Pantry,0
+2025-09-20,Orange,Fruits,Receipt OCR,RCT-20250920,kg,2.47,0.91,0.35,1.22,73.55,14,2025-10-04,Refrigerator,0
+2025-04-06,Bread,Bakery,Receipt OCR,RCT-20250406,loaf,2.05,1.25,0.4,0.4,148.88,5,2025-04-11,Pantry,0
+2025-10-29,Rice,Grains,Receipt OCR,RCT-20251029,kg,4.7,1.78,1.44,1.48,,90,2026-01-27,Pantry,0.0
+2025-07-15,Orange,Fruits,Manual Entry,MAN-20250715,kg,2.41,0.97,0.62,0.82,78.66,14,2025-07-29,Refrigerator,0

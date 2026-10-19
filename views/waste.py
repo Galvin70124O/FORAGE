@@ -3,9 +3,21 @@
 import pandas as pd
 import streamlit as st
 
+from stats import describe_strength
 from ui import charts
-from ui.components import fmt_date, fmt_pct, formula, kpi_row, number, percent_bar, section, table
+from ui.components import (
+    fmt_date,
+    fmt_pct,
+    formula,
+    kpi_row,
+    methods,
+    number,
+    percent_bar,
+    section,
+    table,
+)
 from ui.components import rupees as rupees_column
+from views import risk_section
 from views.common import UNIT_NOTE, begin, not_available
 from waste import (
     SHORT_SHELF_LIFE_DAYS,
@@ -17,8 +29,7 @@ from waste import (
     rupee_summary,
     waste_vs_shelf_life,
 )
-from stats import describe_strength
-from views import risk_section
+
 
 def personal_expiring(as_of, days):
     """Expiring stock from the user's purchases, in the same columns as the demo table."""
@@ -36,6 +47,8 @@ def personal_expiring(as_of, days):
 
 source, df = begin("Waste & Expiry", "How much food is wasted, which foods and categories waste most, "
                    "and which stock is close to its expiry date.")
+methods(['Waste rate = wasted ÷ purchased per food; expiring stock = purchase date + shelf life for what is still on hand.',
+         'The waste-risk model predicts from facts known when food is bought whether more than 30% of a purchase will be thrown away. ROC-AUC 0.5 = guessing, 1 = perfect; recall = share of high-waste purchases it catches.'])
 
 if source in ("m5", "instacart") and df is not None:
     reason = ("M5 records retail unit sales. It has no household stock, consumption, waste or expiry dates."

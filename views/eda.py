@@ -2,6 +2,7 @@
 
 import streamlit as st
 
+from services.data import source_tests
 from stats import (
     correlation_matrix,
     describe_strength,
@@ -10,8 +11,7 @@ from stats import (
     strongest_correlations,
 )
 from ui import charts
-from ui.components import number, section, table
-from services.data import source_tests
+from ui.components import methods, number, section, table
 from views import tests_section
 from views.common import UNIT_NOTE, begin
 
@@ -56,6 +56,8 @@ def instacart_config(df):
 
 source, df = begin("EDA", "Descriptive statistics, category frequencies, correlations and the main patterns "
                    "in the selected source.")
+methods(['Descriptive statistics summarise each variable: the mode is the most frequent value, the IQR is the spread of the middle half. Pearson r runs from −1 to 1 and does not show cause.',
+         "Each hypothesis test asks whether a difference could be chance (H0). p < 0.05 means it is unlikely to be chance; the effect size (Cohen's d, η², Cramér's V) says how big it is."])
 
 if df is not None:
     configs = {"demo": household_config, "personal": household_config, "m5": m5_config, "instacart": instacart_config}

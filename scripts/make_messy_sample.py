@@ -1,7 +1,7 @@
 """Generate data/samples/messy_food_data.csv: ~200 raw demo-format rows with deliberate problems.
 
 Run from the project root:  python scripts/make_messy_sample.py
-The output is deterministic (seed 2026). It is used by Data Quality > "Try the
+The output is deterministic (seed 42). It is used by Data Quality > "Try the
 cleaning pipeline" and by tests/test_cleaning.py. Each injected problem is
 listed in PROBLEMS with the number of rows it affects.
 """
@@ -29,8 +29,8 @@ PROBLEMS = {
 
 
 def main() -> None:
-    rng = np.random.default_rng(2026)
-    base = pd.read_csv(SOURCE).sample(n=200, random_state=2026).reset_index(drop=True).astype(object)
+    rng = np.random.default_rng(42)
+    base = pd.read_csv(SOURCE).sample(n=200, random_state=42).reset_index(drop=True).astype(object)
     rows = base.iloc[:150].copy()
     pool = base.iloc[150:].reset_index(drop=True)
     take = iter(range(len(pool)))
@@ -66,7 +66,7 @@ def main() -> None:
         extra.append(row)
 
     messy = pd.concat([rows, pd.DataFrame(extra)], ignore_index=True)
-    messy = messy.sample(frac=1, random_state=7).reset_index(drop=True)
+    messy = messy.sample(frac=1, random_state=42).reset_index(drop=True)
     TARGET.parent.mkdir(parents=True, exist_ok=True)
     messy.to_csv(TARGET, index=False)
     print(f"Wrote {len(messy)} rows to {TARGET.relative_to(ROOT)}")

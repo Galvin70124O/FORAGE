@@ -7,7 +7,7 @@ import streamlit as st
 
 from services.data import SOURCES
 from ui import charts
-from ui.components import empty_state, kpi_row, section, table
+from ui.components import empty_state, kpi_row, methods, section, table
 from views.common import begin
 
 CAPABILITIES = pd.DataFrame({
@@ -54,6 +54,9 @@ def rupee_charts(monthly: pd.Series, by_food: pd.Series, *, illustrative: bool) 
 
 source, df = begin("Overview", "Where food is bought, used and wasted, and what to do next. FORAGE is framed by "
                    "UN SDG target 12.3: halve per-capita food waste by 2030.", feature=None)
+methods(['Each figure compares this month with last month; arrows show the direction and colour is never the only cue.',
+         "Waste rate = wasted ÷ purchased for each food, averaged across foods. ₹ wasted = wasted quantity × the food's median price per unit.",
+         'Forecast accuracy = 1 − WAPE: one minus the total absolute forecast error divided by total actual demand.'])
 
 if source == "personal" and (df is None or df.empty):
     if df is not None:
