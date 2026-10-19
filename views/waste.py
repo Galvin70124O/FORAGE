@@ -13,6 +13,7 @@ from waste import (
     food_waste,
     overall_waste,
     perishable_waste_by_category,
+    rupee_summary,
     waste_vs_shelf_life,
 )
 from stats import describe_strength
@@ -52,16 +53,41 @@ elif df is not None:
     else:
         soon_3, soon_7 = expiring_stock(df, as_of, 3), expiring_stock(df, as_of, 7)
 
+    rupees = rupee_summary(df)
+    illustrative = source == "demo"
+    rupee_label = "₹ wasted" + (" · illustrative (synthetic prices)" if illustrative else "")
     kpi_row([
-        ("Waste rate", fmt_pct(headline["rate"]), "Mean of the food-level rates (wasted ÷ purchased)."),
-        ("Pooled waste rate", fmt_pct(headline["pooled_rate"]), "All waste ÷ all purchases. Mixes units, shown for reference."),
+        (rupee_label, f"₹{rupees['total']:,.0f}",
+         "Wasted quantity × the food's median price per unit (total price ÷ quantity bought)."),
+        ("Waste rate", fmt_pct(headline["rate"]), "Mean of the food-level rates (wasted ÷ purchased). "
+         f"Pooled across all units: {fmt_pct(headline['pooled_rate'])}."),
         ("Highest-waste food", f"{top['Food']}", f"{fmt_pct(top['Waste_Rate'])} of purchases wasted."),
         ("Highest-waste category", categories.index[0], f"{fmt_pct(categories.iloc[0]['Waste_Rate'])} on average."),
         ("Expiring in 7 days", f"{len(soon_7)} foods", f"Foods with stock that expires by {fmt_date(as_of + pd.Timedelta(days=7))}."),
     ])
-    formula("waste rate = wasted ÷ purchased × 100     where purchased = consumed + wasted + remaining")
+    formula("waste rate = wasted ÷ purchased × 100     ₹ wasted = wasted × (price paid ÷ quantity bought)")
     st.caption("Waste is the recorded quantity wasted, never purchased − consumed (that would count stock still "
-               "on hand). " + UNIT_NOTE)
+               "on hand). " + UNIT_NOTE + (" In the demo data, Price is the total paid for each purchase, so the "
+               "price per unit is Price ÷ quantity purchased; prices are synthetic, so ₹ figures are illustrative."
+               if illustrative else ""))
+
+    st.header("Waste in rupees")
+    if rupees["unpriced_foods"]:
+        st.caption("No price recorded for: " + ", ".join(rupees["unpriced_foods"]) + " (left out of ₹ figures).")
+    left, right = st.columns([1.2, 1], gap="large")
+    with left:
+        section("₹ wasted per month", "illustrative (synthetic prices)" if illustrative else "From your own prices")
+        charts.line(rupees["monthly"].rename_axis("Month").reset_index(), "Month", "Rupees", x_title="Month",
+                    y_title="₹ wasted", y_format=",.0f", slot=1, x_format="%b %Y", height=280)
+    with right:
+        section("₹ wasted by category", "illustrative (synthetic prices)" if illustrative else None)
+        charts.bar(rupees["by_category"].rename_axis("Category").reset_index(), "Category", "Rupees",
+                   value_title="₹ wasted", slot=1, value_format=",.0f", height=280)
+    section("₹ wasted by food", "illustrative (synthetic prices)" if illustrative else None)
+    charts.bar(rupees["by_food"].rename_axis("Food").reset_index(), "Food", "Rupees", value_title="₹ wasted",
+               slot=1, value_format=",.0f", height=max(240, 22 * len(rupees["by_food"])))
+
+    st.header("Waste by quantity")
 
     left, right = st.columns([1.2, 1], gap="large")
     with left:

@@ -149,3 +149,36 @@ def expiring_stock(df: pd.DataFrame, as_of: pd.Timestamp, within_days: int) -> p
                  Earliest_Expiry=("Expiry", "min"), Days_Left=("Days_Left", "min"))
             .reset_index().sort_values(["Days_Left", "Remaining"], ascending=[True, False])
             .reset_index(drop=True))
+
+
+# --- Waste in rupees --------------------------------------------------------
+# Demo data: `Price` is the TOTAL paid for a purchase, so the price per unit
+# is Price / Quantity_Purchased. Each food is valued at the median of its
+# per-unit prices, because wasted food may come from an earlier purchase than
+# the record it is logged on. My data supplies `Unit_Price` the same way
+# (total paid / quantity bought, median per food).
+
+def unit_prices(df: pd.DataFrame) -> pd.Series:
+    """Median price per unit for each food (₹ per kg, L, piece...)."""
+    if "Unit_Price" in df:
+        return df.groupby("Food")["Unit_Price"].median()
+    priced = df[(df["Quantity_Purchased"] > 0) & df["Price"].notna()]
+    return (priced["Price"] / priced["Quantity_Purchased"]).groupby(priced["Food"]).median()
+
+
+def rupees_wasted(df: pd.DataFrame) -> pd.Series:
+    """₹ wasted per record = wasted quantity x the food's median price per unit."""
+    require_waste_columns(df)
+    return df["Quantity_Wasted"] * df["Food"].map(unit_prices(df))
+
+
+def rupee_summary(df: pd.DataFrame) -> dict:
+    value = df.assign(Rupees=rupees_wasted(df))
+    monthly = value.groupby(value["Date"].dt.to_period("M").dt.to_timestamp())["Rupees"].sum()
+    return {
+        "total": float(value["Rupees"].sum()),
+        "monthly": monthly.rename("Rupees"),
+        "by_category": value.groupby("Category")["Rupees"].sum().sort_values(ascending=False),
+        "by_food": value.groupby("Food")["Rupees"].sum().sort_values(ascending=False),
+        "unpriced_foods": sorted(set(df["Food"]) - set(unit_prices(df).dropna().index)),
+    }

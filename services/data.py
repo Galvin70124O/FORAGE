@@ -118,3 +118,17 @@ def demo_cleaning_summary() -> dict:
 @st.cache_data
 def raw_demo() -> pd.DataFrame:
     return pd.read_csv(RAW_DATA_PATH)
+
+
+@st.cache_data(show_spinner="Simulating households over the test period...")
+def demo_backtest() -> tuple[pd.DataFrame, pd.DataFrame, float, int]:
+    """(summary, per-food results, recorded waste % in the data, days simulated) for the demo data."""
+    from backtest import demo_frame, run_backtest, summarise
+    from waste import unit_prices
+
+    records, result = load_demo(), demo_forecast()
+    frame = demo_frame(records, result["tested"], result["best_model"], unit_prices=unit_prices(records))
+    results = run_backtest(frame)
+    test = records[records["Date"] >= result["cutoff"]]
+    reference = (test.groupby("Food")["Quantity_Wasted"].sum() / test.groupby("Food")["Quantity_Purchased"].sum()).mean() * 100
+    return summarise(results), results, float(reference), int(frame["Date"].nunique())

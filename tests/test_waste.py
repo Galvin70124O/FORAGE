@@ -101,3 +101,30 @@ def test_waste_is_never_computed_for_public_sources(columns, func):
 def test_registry_prohibits_waste_for_public_sources(source):
     dataset = get_dataset(source)
     assert "waste" in dataset["prohibits"] and "waste" not in dataset["supports"]
+
+
+def test_demo_price_is_a_total_so_unit_price_divides_by_quantity():
+    from waste import rupee_summary, rupees_wasted, unit_prices
+    df = pd.DataFrame({"Date": pd.to_datetime(["2025-01-05", "2025-01-20", "2025-02-03"]),
+                       "Food": ["Milk", "Milk", "Rice"], "Category": ["Dairy", "Dairy", "Grains"],
+                       "Quantity_Purchased": [2.0, 1.0, 5.0], "Price": [120.0, 70.0, 300.0],
+                       "Quantity_Wasted": [0.5, 0.0, 1.0]})
+    assert unit_prices(df).to_dict() == {"Milk": pytest.approx(65.0), "Rice": pytest.approx(60.0)}  # median(60, 70)
+    assert rupees_wasted(df).tolist() == pytest.approx([32.5, 0.0, 60.0])
+    summary = rupee_summary(df)
+    assert summary["total"] == pytest.approx(92.5)
+    assert summary["monthly"].tolist() == pytest.approx([32.5, 60.0])
+    assert summary["by_category"].index[0] == "Grains"
+
+
+def test_rupees_use_supplied_unit_prices_for_my_data():
+    from waste import rupees_wasted
+    df = pd.DataFrame({"Date": pd.to_datetime(["2026-03-01"]), "Food": ["Milk"], "Category": ["Dairy"],
+                       "Quantity_Purchased": [0.0], "Price": [None], "Quantity_Wasted": [0.5], "Unit_Price": [62.5]})
+    assert rupees_wasted(df).tolist() == pytest.approx([31.25])
+
+
+def test_rupees_are_never_computed_for_public_sources():
+    from waste import rupees_wasted
+    with pytest.raises(WasteNotSupported):
+        rupees_wasted(pd.DataFrame(columns=M5_COLUMNS))

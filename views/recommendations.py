@@ -3,7 +3,8 @@
 import pandas as pd
 import streamlit as st
 
-from services.data import demo_recommendations
+from services.data import demo_backtest, demo_recommendations
+from views import backtest_section
 from ui import charts
 from ui.components import fmt_date, formula, kpi_row, number, section, table, text
 from views.common import begin
@@ -31,46 +32,69 @@ source, df = begin("Recommendations", "What to act on next, derived from the sel
 
 if df is not None:
     if source == "demo":
-        plan, high_waste, short_life = demo_recommendations()
-        model = plan["Forecast_Model"].iloc[0]
-        buy = plan["Recommended_Purchase_Quantity"] > 0
-        kpi_row([("Plan for", fmt_date(plan["Forecast_Date"].iloc[0])),
-                 ("Foods to buy", f"{int(buy.sum())}"), ("Already covered", f"{int((~buy).sum())}"),
-                 ("Foods with alerts", f"{int(plan['Alerts'].ne('No alert').sum())}")])
+        plan_tab, backtest_tab = st.tabs(["Purchase plan", "Backtest: does it work?"])
+        with plan_tab:
+            plan, high_waste, short_life = demo_recommendations()
+            model = plan["Forecast_Model"].iloc[0]
+            buy = plan["Recommended_Purchase_Quantity"] > 0
+            kpi_row([("Plan for", fmt_date(plan["Forecast_Date"].iloc[0])),
+                     ("Foods to buy", f"{int(buy.sum())}"), ("Already covered", f"{int((~buy).sum())}"),
+                     ("Foods with alerts", f"{int(plan['Alerts'].ne('No alert').sum())}")])
 
-        st.markdown(f"Forecast model: **{model}**, selected on the Forecasting page.")
-        section("How the quantities are calculated")
-        formula("usable stock = in stock × (1 − waste rate)")
-        formula("buy = max(0, predicted demand − usable stock)")
-        st.caption(f"Predicted demand is the next-day forecast from {model}, the model with the lowest error on the "
-                   "Forecasting page, refit on all history. In stock is the remaining quantity on the last recorded "
-                   "day. Discounting it by the food's own waste rate assumes stock is wasted at the same rate as "
-                   "past purchases. Alerts: High waste = waste rate in the top quarter of "
-                   f"foods (≥ {high_waste:.1f}%); Low stock = usable stock below demand; Expires soon = stock expiring "
-                   f"within {short_life:.0f} days (the shortest quarter).")
+            st.markdown(f"Forecast model: **{model}**, selected on the Forecasting page.")
+            section("How the quantities are calculated")
+            formula("usable stock = in stock × (1 − waste rate)")
+            formula("buy = max(0, predicted demand − usable stock)")
+            st.caption(f"Predicted demand is the next-day forecast from {model}, the model with the lowest error on the "
+                       "Forecasting page, refit on all history. In stock is the remaining quantity on the last recorded "
+                       "day. Discounting it by the food's own waste rate assumes stock is wasted at the same rate as "
+                       "past purchases. Alerts: High waste = waste rate in the top quarter of "
+                       f"foods (≥ {high_waste:.1f}%); Low stock = usable stock below demand; Expires soon = stock expiring "
+                       f"within {short_life:.0f} days (the shortest quarter).")
 
-        section("Purchase plan", "Sorted by quantity to buy; quantities are in each food's own unit")
-        shown = plan.assign(Alerts=plan["Alerts"].map(short_alerts))
-        table(shown[list(PLAN_COLUMNS)], PLAN_COLUMNS, max_rows=None)
-        choice = st.selectbox("Explain a recommendation", plan["Food"], key="explain_food")
-        st.write(plan.set_index("Food").loc[choice, "Reason"])
-        st.download_button("Download plan as CSV", plan.to_csv(index=False).encode("utf-8"),
-                           file_name="forage_purchase_plan.csv", mime="text/csv")
+            section("Purchase plan", "Sorted by quantity to buy; quantities are in each food's own unit")
+            shown = plan.assign(Alerts=plan["Alerts"].map(short_alerts))
+            table(shown[list(PLAN_COLUMNS)], PLAN_COLUMNS, max_rows=None)
+            choice = st.selectbox("Explain a recommendation", plan["Food"], key="explain_food")
+            st.write(plan.set_index("Food").loc[choice, "Reason"])
+            st.download_button("Download plan as CSV", plan.to_csv(index=False).encode("utf-8"),
+                               file_name="forage_purchase_plan.csv", mime="text/csv")
+
+        with backtest_tab:
+            summary, _, reference, days = demo_backtest()
+            section("Would a household following FORAGE waste less?",
+                    f"Simulated over the {days}-day forecast test period, one food at a time")
+            backtest_section.render(summary, days, reference=reference, illustrative=True)
 
     elif source == "personal":
-        from pantry import buy_list, expected_stock, stock_batches
-        from services.personal import gate, personal_data
-        buys, checks = personal_data()
-        today = pd.Timestamp.today().normalize()
-        stock = expected_stock(buys, checks, today)
-        plan = buy_list(stock, stock_batches(buys, stock), today, 7)
-        shown, reliable, note = gate("buy_list")
-        section("How the quantities are calculated")
-        formula("need = your usual daily use (last 4 pantry-check periods) × 7 days")
-        formula("buy = max(0, need − stock that will still be good during the week)")
-        (st.caption if reliable else st.warning)(note)
-        table(plan, {"Need": number("Need (7 days)"), "Usable_Stock": number("Good stock"), "Buy": number("Buy")},
-              max_rows=15)
+        plan_tab, backtest_tab = st.tabs(["Buy list", "Backtest: does it work?"])
+        with plan_tab:
+            from pantry import buy_list, expected_stock, stock_batches
+            from services.personal import gate, personal_data
+            buys, checks = personal_data()
+            today = pd.Timestamp.today().normalize()
+            stock = expected_stock(buys, checks, today)
+            plan = buy_list(stock, stock_batches(buys, stock), today, 7)
+            shown, reliable, note = gate("buy_list")
+            section("How the quantities are calculated")
+            formula("need = your usual daily use (last 4 pantry-check periods) × 7 days")
+            formula("buy = max(0, need − stock that will still be good during the week)")
+            (st.caption if reliable else st.warning)(note)
+            table(plan, {"Need": number("Need (7 days)"), "Usable_Stock": number("Good stock"), "Buy": number("Buy")},
+                  max_rows=15)
+
+        with backtest_tab:
+            from backtest import personal_frame, run_backtest, summarise
+            shown, reliable, note = gate("backtest")
+            frame = personal_frame(buys, checks) if shown else pd.DataFrame()
+            if frame.empty:
+                st.write("The backtest needs at least 3 weeks of purchases and pantry checks. " + note)
+            else:
+                if not reliable:
+                    st.warning(note)
+                st.caption("Daily use is each period's derived consumption spread evenly over its days, "
+                           "because pantry checks do not record which day food was eaten.")
+                backtest_section.render(summarise(run_backtest(frame)), int(frame["Date"].nunique()))
 
     elif source == "m5":
         recent_end = df["Date"].max()
