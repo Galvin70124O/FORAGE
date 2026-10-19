@@ -3,7 +3,8 @@
 import pandas as pd
 import streamlit as st
 
-from services.data import demo_backtest, demo_recommendations
+from recommendations import weekly_plan
+from services.data import demo_backtest, demo_recommendations, demo_week, load_demo
 from views import backtest_section
 from ui import charts
 from ui.components import fmt_date, formula, kpi_row, number, section, table, text
@@ -59,6 +60,19 @@ if df is not None:
             st.write(plan.set_index("Food").loc[choice, "Reason"])
             st.download_button("Download plan as CSV", plan.to_csv(index=False).encode("utf-8"),
                                file_name="forage_purchase_plan.csv", mime="text/csv")
+
+            week = demo_week()
+            records = load_demo()
+            weekly = weekly_plan(plan, week["latest"], records.groupby("Food")["Expiry_Days"].median())
+            section("Weekly plan: one shop for the next 7 days",
+                    f"From the 7-day forecast ({week['best']}, chosen on the Forecasting page)")
+            formula("buy now = max(0, 7-day forecast × days it keeps (up to 7) ÷ 7 − usable stock)")
+            table(weekly, {"Quantity_Unit": "Unit", "Week_Forecast": number("7-day forecast"),
+                           "Usable_Remaining_Stock": number("Usable stock"), "Covers_Days": number("Covers (days)", "%d"),
+                           "Buy_Now": number("Buy now"), "Shop_Again_In_Days": number("Shop again in (days)", "%d")},
+                  max_rows=None)
+            st.caption("Foods that keep fewer than 7 days are bought for as long as they last, with a reminder to "
+                       "shop again; this is the weekly policy simulated in the Backtest tab.")
 
         with backtest_tab:
             summary, _, reference, days = demo_backtest()

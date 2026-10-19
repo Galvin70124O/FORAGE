@@ -41,6 +41,13 @@ def impute_price(train: pd.DataFrame, test: pd.DataFrame) -> tuple[pd.DataFrame,
     return train.assign(Price=train["Price"].fillna(median)), test.assign(Price=test["Price"].fillna(median)), median
 
 
+def m5_models() -> dict:
+    return {
+        "Linear Regression": LinearRegression(),
+        "Random Forest": RandomForestRegressor(n_estimators=120, min_samples_leaf=2, random_state=42, n_jobs=-1),
+    }
+
+
 def forecast_retail_demand(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
     """Evaluate two baselines and two models on a later, unseen M5 period."""
     data = create_m5_features(df)
@@ -48,10 +55,7 @@ def forecast_retail_demand(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame
         raise ValueError("The M5 derived extract has insufficient history for forecasting.")
     train, test, cutoff = chronological_split(data)
     train, test, price_median = impute_price(train, test)
-    models = {
-        "Linear Regression": LinearRegression(),
-        "Random Forest": RandomForestRegressor(n_estimators=120, min_samples_leaf=2, random_state=42, n_jobs=-1),
-    }
+    models = m5_models()
     comparison, predictions = evaluate_models(train, test, TARGET, FEATURES, models, M5_BASELINES, clip_at_zero=True)
     best_model = select_best_model(comparison)
     test = test.copy()

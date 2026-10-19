@@ -49,6 +49,8 @@ def line(data: pd.DataFrame, x: str, y: str, *, y_title: str, x_title: str | Non
     tooltip = [alt.Tooltip(f"{x}:{x_type}", title=x_title or x, **({"format": x_format} if x_format else {})),
                alt.Tooltip(f"{y}:Q", title=y_title, format=y_format)]
     x_axis = alt.Axis(format=x_format, labelOverlap=True) if x_format else alt.Axis(labelOverlap=True)
+    if x_type == "O":
+        x_axis = alt.Axis(labelAngle=0, labelOverlap=True)
     encoding = dict(x=alt.X(f"{x}:{x_type}", title=x_title, axis=x_axis),
                     y=alt.Y(f"{y}:Q", title=y_title, scale=alt.Scale(zero=zero, nice=True, padding=8)))
     if series:

@@ -179,6 +179,22 @@ def generate_recommendations(raw_df=None, model_name=None):
     ), high_waste_threshold, short_life_threshold
 
 
+def weekly_plan(plan: pd.DataFrame, week_forecast: pd.Series, shelf_life: pd.Series) -> pd.DataFrame:
+    """One shop for the next 7 days from the 7-day forecast.
+
+    need = 7-day forecast; for a food that keeps fewer than 7 days, only the
+    part of the week it lasts for is bought now (need x shelf life / 7) and the
+    plan says when to shop again. buy now = max(0, that need - usable stock).
+    """
+    out = plan[["Food", "Quantity_Unit", "Usable_Remaining_Stock"]].copy()
+    out["Week_Forecast"] = out["Food"].map(week_forecast).clip(lower=0)
+    life = out["Food"].map(shelf_life)
+    out["Covers_Days"] = life.clip(upper=7)
+    out["Buy_Now"] = (out["Week_Forecast"] * out["Covers_Days"] / 7 - out["Usable_Remaining_Stock"]).clip(lower=0)
+    out["Shop_Again_In_Days"] = life.where(life < 7)
+    return out.sort_values("Buy_Now", ascending=False).reset_index(drop=True)
+
+
 def main():
     """Print and save explainable next-day purchase recommendations."""
     recommendations, high_waste_threshold, short_life_threshold = generate_recommendations()

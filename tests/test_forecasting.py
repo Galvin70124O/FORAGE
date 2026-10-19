@@ -144,3 +144,12 @@ def test_m5_forecast_includes_baselines_and_picks_lowest_mae():
     assert meta["best_model"] == comparison.sort_values("MAE").iloc[0]["Model"]
     assert tested["Date"].min() == meta["cutoff"]
     assert (tested["Predicted_Sales"] >= 0).all()
+
+
+def test_weekly_plan_buys_only_what_keeps_and_says_when_to_shop_again():
+    plan = pd.DataFrame({"Food": ["Milk", "Rice"], "Quantity_Unit": ["L", "kg"], "Usable_Remaining_Stock": [1.0, 0.5]})
+    week = pd.Series({"Milk": 14.0, "Rice": 3.5})
+    out = recommendations.weekly_plan(plan, week, pd.Series({"Milk": 3, "Rice": 90})).set_index("Food")
+    assert out.loc["Milk", "Buy_Now"] == pytest.approx(14 * 3 / 7 - 1.0)  # 3 days' worth minus stock
+    assert out.loc["Milk", "Shop_Again_In_Days"] == 3
+    assert out.loc["Rice", "Buy_Now"] == pytest.approx(3.0) and pd.isna(out.loc["Rice", "Shop_Again_In_Days"])
