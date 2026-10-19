@@ -118,7 +118,8 @@ def test_unlocking_and_sample_notes():
     assert cover["periods"] == 2 and cover["purchases"] == 2 and cover["days"] == 8 and cover["weeks"] == 1
     shown, reliable, note = unlocked("waste", cover)
     assert shown and not reliable and "Not reliable yet" in note
-    assert unlocked("forecast", cover)[0] is False
+    shown, _, note = unlocked("forecast", cover)  # needs 3 weeks, has 1
+    assert shown is False and note.startswith("Not enough data yet (need 2 more weeks)")
     assert "not reliable yet" in sample_note(12, 30, "days")
     assert sample_note(40, 30, "days") == "n = 40 days"
 

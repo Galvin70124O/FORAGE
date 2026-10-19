@@ -10,6 +10,7 @@ import sys
 import streamlit as st
 
 PROJECT_ROOT = Path(__file__).resolve().parent
+ASSETS = PROJECT_ROOT / "assets"
 SRC_DIR = PROJECT_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
@@ -39,18 +40,12 @@ def build_pages(signed_in: bool) -> dict[str, list]:
     }
 
 
-def render_sidebar(pages: dict[str, list], signed_in: bool) -> None:
+def render_sidebar(signed_in: bool) -> None:
+    """Below Streamlit's own page navigation: the Insights source, the account and a footer."""
     sources = [key for key in SOURCES if key != "personal" or signed_in]
     if st.session_state.get("source") not in sources:
         st.session_state["source"] = "demo"
     with st.sidebar:
-        st.markdown('<p class="fg-brand">FORAGE</p><p class="fg-tagline">Household food demand and waste</p>',
-                    unsafe_allow_html=True)
-        for section, entries in pages.items():
-            st.caption(section)
-            for page in entries:
-                st.page_link(page)
-        st.divider()
         st.radio("Insights data source", sources, format_func=SOURCES.get, key="source",
                  help="Every Insights page uses only the selected source. Sources are never combined.")
         st.caption("Demo data is synthetic and for illustration only. M5 and Instacart are public datasets.")
@@ -61,13 +56,16 @@ def render_sidebar(pages: dict[str, list], signed_in: bool) -> None:
 
 
 def main() -> None:
-    st.set_page_config(page_title="FORAGE", layout="wide", initial_sidebar_state="expanded")
+    # "auto": expanded on desktop, collapsed on phones (the native navigation closes itself after a tap).
+    st.set_page_config(page_title="FORAGE", page_icon=str(ASSETS / "forage_icon.svg"), layout="wide",
+                       initial_sidebar_state="auto")
+    st.logo(str(ASSETS / "forage_wordmark.svg"), icon_image=str(ASSETS / "forage_icon.svg"), size="large")
     apply_styles()
     st.session_state.setdefault("source", "demo")
     signed_in = personal_available()
     pages = build_pages(signed_in)
-    navigation = st.navigation(pages, position="hidden")
-    render_sidebar(pages, signed_in)
+    navigation = st.navigation(pages, position="sidebar")
+    render_sidebar(signed_in)
     navigation.run()
 
 

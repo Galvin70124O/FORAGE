@@ -76,7 +76,7 @@ def altair_theme() -> str:
 CSS = """
 <style>
 /* Layout: ~1200 px content width, 8 px spacing grid. */
-.block-container { padding-top: 2rem; padding-bottom: 4rem; max-width: 1232px; }
+.block-container { padding-top: 3.5rem; padding-bottom: 4rem; max-width: 1232px; }
 [data-testid="stVerticalBlock"] { gap: 1rem; }
 h1 { letter-spacing: -0.015em; margin: 0 !important; padding: 0 !important; }
 h2 { letter-spacing: -0.005em; padding-top: 0.5rem !important; }
@@ -100,11 +100,10 @@ hr { margin: 0.5rem 0 !important; }
   border-radius: 999px; border: 1px solid var(--fg-border); margin-right: 0.5rem; vertical-align: 1px; }
 [data-testid="stMetricValue"] { font-size: 1.65rem; font-weight: 600; }
 [data-testid="stMetricLabel"] p { font-size: 0.8rem; opacity: 0.8; }
-[data-testid="stSidebarNav"] { display: none; }
 /* Hide only the Deploy button, the footer and Streamlit branding; the main menu (theme switch) stays. */
 [data-testid="stAppDeployButton"], .stDeployButton, footer, [data-testid="stDecoration"] { display: none !important; }
 @media (max-width: 640px) {
-  .block-container { padding-left: 1rem; padding-right: 1rem; padding-top: 1rem; }
+  .block-container { padding-left: 1rem; padding-right: 1rem; padding-top: 4.5rem; }
   .fg-pill { float: none; margin: 0.5rem 0 0 0; }
   [data-testid="stMetricValue"] { font-size: 1.35rem; }
   h1 { font-size: 1.5rem !important; }

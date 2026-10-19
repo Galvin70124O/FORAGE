@@ -8,6 +8,7 @@ import streamlit as st
 
 from pantry import read_import
 from services.data import set_source
+from services import personal
 from services.personal import queue_toast, require_user, toast_pending
 from ui.components import kpi_row, number, page_header, section, table
 
@@ -18,7 +19,7 @@ TEMPLATES = {"purchases": TEMPLATE_DIR / "purchases_template.csv",
 page_header("My data", pill="My data", purpose="Everything you have logged. Edit or delete entries, and export or import CSV files.")
 db, uid = require_user()
 toast_pending()
-buys, checks, foods = db.purchases(uid), db.checks(uid), db.foods(uid)
+buys, checks, foods = personal.purchases(uid), personal.checks(uid), personal.foods(uid)
 
 kpi_row([("Purchases", f"{len(buys):,}"), ("Pantry checks", f"{len(checks):,}"), ("Foods", f"{len(foods):,}")])
 st.button("Analyse my data in Insights", on_click=set_source, args=("personal",),

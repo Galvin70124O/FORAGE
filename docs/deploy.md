@@ -38,9 +38,13 @@ The second one uses the exact subdomain you choose in step 4. Add every team mem
 5. **Advanced settings → Secrets**: paste:
 
 ```toml
+ALLOWED_EMAILS = ["you@gmail.com", "teammate@gmail.com"]
+
 [auth]
 redirect_uri = "https://<your-app>.streamlit.app/oauth2callback"
 cookie_secret = "<a new random string: python -c \"import secrets; print(secrets.token_hex(32))\">"
+
+[auth.google]
 client_id = "<Google OAuth client ID>"
 client_secret = "<Google OAuth client secret>"
 server_metadata_url = "https://accounts.google.com/.well-known/openid-configuration"
@@ -53,7 +57,7 @@ url = "<Neon pooled connection string>"
 
 ## 5. Check the live app
 
-- The sidebar shows **Sign in with Google**. After signing in it shows your name and **Log out**, and the "Your food" pages work.
+- The sidebar shows **Continue with Google**. After signing in it shows your name and **Log out**, and the "Your food" pages work.
 - Log a purchase, then a pantry check, and confirm they appear under **My data**. Restart the app from the Cloud menu (**⋮ → Reboot**) and confirm they are still there, because they live in Neon.
 - The Insights pages work without signing in. M5 and Instacart show "available in the local version" (see `docs/data_licences.md`).
 - If Neon has been idle, the first request shows **Waking up the database…** for a few seconds.

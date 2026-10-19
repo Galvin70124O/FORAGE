@@ -1,6 +1,6 @@
 # Google sign-in for FORAGE
 
-FORAGE uses Streamlit's built-in OpenID Connect login (`st.login`, `st.user`, `st.logout`) with Google. Users are identified by their Google email. Without an `[auth]` section in the secrets, the app runs as a single local user instead.
+FORAGE uses Streamlit's built-in OpenID Connect login (`st.login("google")`, `st.user`, `st.logout()`) with Google. Only emails listed in `ALLOWED_EMAILS` get in; anyone else sees "Access not enabled for this account". Users are identified by their Google email. Without an `[auth]` section in the secrets, the app runs as a single local user instead.
 
 ## 1. Create a Google Cloud project
 
@@ -29,9 +29,13 @@ FORAGE uses Streamlit's built-in OpenID Connect login (`st.login`, `st.user`, `s
 Locally, copy `.streamlit/secrets.example.toml` to `.streamlit/secrets.toml` (git-ignored) and fill in:
 
 ```toml
+ALLOWED_EMAILS = ["you@gmail.com", "teammate@gmail.com"]
+
 [auth]
 redirect_uri = "http://localhost:8501/oauth2callback"
 cookie_secret = "<output of: python -c \"import secrets; print(secrets.token_hex(32))\">"
+
+[auth.google]
 client_id = "<Client ID>"
 client_secret = "<Client secret>"
 server_metadata_url = "https://accounts.google.com/.well-known/openid-configuration"
@@ -41,7 +45,7 @@ On Streamlit Community Cloud, paste the same block into **App settings → Secre
 
 ## 5. Check it
 
-Run `python -m streamlit run app.py`. The sidebar shows **Sign in with Google**. After signing in, it shows your name and **Log out**. If Google reports `redirect_uri_mismatch`, the URI in the secrets doesn't exactly match one in step 3. Check the scheme, the port and the `/oauth2callback` path.
+Run `python -m streamlit run app.py`. The sidebar shows **Continue with Google**. After signing in, it shows your name and **Log out**. If Google reports `redirect_uri_mismatch`, the URI in the secrets doesn't exactly match one in step 3. Check the scheme, the port and the `/oauth2callback` path.
 
 Notes:
 - `[auth]` also needs a database (`[connections.sql]`, see `docs/deploy.md`). With sign-in but no database, personal pages stay closed and the Insights pages still work.

@@ -4,6 +4,8 @@ import pandas as pd
 import streamlit as st
 
 from pantry import parse_bill
+from services.personal import foods as cached_foods
+from services.personal import purchases as cached_purchases
 from services.personal import queue_toast, require_user, toast_pending
 from ui.components import fmt_date, page_header, section, table, number
 
@@ -13,8 +15,8 @@ page_header("I bought…", pill="My data", purpose="Log a purchase: pick the foo
 db, uid = require_user()
 toast_pending()
 
-buys = db.purchases(uid)
-foods = db.foods(uid)
+buys = cached_purchases(uid)
+foods = cached_foods(uid)
 known = foods.set_index("name") if not foods.empty else pd.DataFrame()
 frequent = buys["food"].value_counts().head(8).index.tolist() if not buys.empty else []
 
@@ -27,7 +29,9 @@ def pick_chip() -> None:
 if frequent:
     st.pills("Buy again", frequent, key="bought_chip", on_change=pick_chip)
 
-options = sorted(foods["name"]) if not foods.empty else []
+# Most recently bought first, then the rest alphabetically: the usual pick is at the top on a phone.
+recent = buys.sort_values(["date", "id"], ascending=False)["food"].drop_duplicates().tolist() if not buys.empty else []
+options = recent + sorted(set(foods["name"]) - set(recent)) if not foods.empty else []
 food = st.selectbox("Food", options, index=None, accept_new_options=True, key="bought_food",
                     placeholder="Type a food, e.g. Milk")
 last = buys[buys["food"].str.lower() == str(food).lower()].iloc[-1] if food and not buys.empty and \

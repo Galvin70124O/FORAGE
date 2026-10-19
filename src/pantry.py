@@ -254,17 +254,36 @@ def coverage(purchases: pd.DataFrame, checks: pd.DataFrame) -> dict:
             "foods": int(table["Food"].nunique()) if not table.empty else 0, "days": span, "weeks": span // 7}
 
 
+def weeks_to_go(key: str, shortfall: int, cover: dict) -> int:
+    """Shortfall in weeks, periods or purchases expressed as weeks at the user's own pace.
+
+    Before there is a pace to measure, assume one pantry check a week covering 5 foods and 5 purchases a week.
+    """
+    if shortfall <= 0:
+        return 0
+    if key == "weeks":
+        return shortfall
+    weeks = max(cover.get("weeks", 0), 1)
+    per_week = cover.get(key, 0) / weeks if cover.get(key, 0) else 5
+    return max(1, -(-shortfall // max(int(per_week), 1)))
+
+
 def unlocked(feature: str, cover: dict) -> tuple[bool, bool, str]:
-    """(shown, reliable, note) for a personal analysis given the sample sizes."""
+    """(shown, reliable, note) for a personal analysis given the sample sizes (B6)."""
     rule = UNLOCK[feature]
     need_key, need = rule["needs"]
     good_key, good = rule["reliable"]
     have, have_good = cover.get(need_key, 0), cover.get(good_key, 0)
     if have < need:
-        return False, False, f"Needs {need} {need_key.replace('_', ' ')}; you have {have}."
+        weeks = weeks_to_go(need_key, need - have, cover)
+        return False, False, (f"Not enough data yet (need {weeks} more week{'s' if weeks != 1 else ''}): "
+                              f"this needs {need} {need_key}, you have {have}.")
     reliable = have_good >= good
     note = f"Based on {cover.get('periods', 0)} periods, {cover.get('purchases', 0)} purchases, {cover.get('weeks', 0)} weeks"
-    return True, reliable, note if reliable else f"{note}. Not reliable yet: needs at least {good} {good_key}."
+    if reliable:
+        return True, True, note
+    weeks = weeks_to_go(good_key, good - have_good, cover)
+    return True, False, f"{note}. Not reliable yet (need {weeks} more week{'s' if weeks != 1 else ''})."
 
 
 # --- bill / grocery-order text ------------------------------------------------

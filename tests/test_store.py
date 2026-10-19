@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
-from identity import LOCAL_EMAIL, mode, resolve_identity
+from identity import ALLOWED, LOCAL_EMAIL, NOT_ALLOWED, SIGN_IN, access, allowed_emails, mode, resolve_identity
 from store import NotFound, Store
 
 
@@ -131,8 +131,9 @@ def test_a_dropped_connection_is_retried_once(store, monkeypatch):
     assert store.foods(user).empty and calls["n"] == 2
 
 
-AUTH = {"auth": {"client_id": "x", "client_secret": "y", "redirect_uri": "z", "cookie_secret": "c",
-                 "server_metadata_url": "m"}}
+AUTH = {"auth": {"redirect_uri": "z", "cookie_secret": "c",
+                 "google": {"client_id": "x", "client_secret": "y", "server_metadata_url": "m"}},
+        "ALLOWED_EMAILS": ["a@b.com", "Team.Mate@gmail.com"]}
 SQL = {"connections": {"sql": {"url": "postgresql+psycopg://example"}}}
 
 
@@ -165,3 +166,25 @@ def test_deleting_a_user_removes_only_their_rows(store, two_users):
     assert store.purchases(alice).empty and store.checks(alice).empty and store.foods(alice).empty
     assert store.get_setting(alice, "k") is None
     assert store.purchases(bob)["food"].tolist() == ["Rice"]
+
+
+def test_allowlist_decides_access_after_sign_in():
+    assert access(AUTH, {"is_logged_in": True, "email": "A@B.com"})[0] == ALLOWED
+    assert access(AUTH, {"is_logged_in": True, "email": "team.mate@gmail.com"})[0] == ALLOWED
+    status, person = access(AUTH, {"is_logged_in": True, "email": "stranger@gmail.com", "name": "S"})
+    assert status == NOT_ALLOWED and person.email == "stranger@gmail.com"
+    assert resolve_identity(AUTH, {"is_logged_in": True, "email": "stranger@gmail.com"}) is None
+    assert access(AUTH, None) == (SIGN_IN, None)
+
+
+def test_missing_allowlist_fails_closed_and_accepts_a_comma_string():
+    no_list = {"auth": AUTH["auth"]}
+    assert access(no_list, {"is_logged_in": True, "email": "a@b.com"})[0] == NOT_ALLOWED
+    assert allowed_emails({"ALLOWED_EMAILS": "x@y.com, Z@w.com"}) == {"x@y.com", "z@w.com"}
+
+
+def test_indexes_on_user_and_date_exist_after_setup(store):
+    from sqlalchemy import inspect
+    names = {ix["name"] for table in ("purchases", "pantry_checks") for ix in inspect(store.engine).get_indexes(table)}
+    assert {"ix_purchases_user_date", "ix_pantry_checks_user_date"} <= names
+    store.create_tables()  # still idempotent with indexes present

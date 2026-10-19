@@ -14,6 +14,8 @@ from pantry import (
     unlocked,
     wasted_value,
 )
+from services.personal import checks as personal_checks
+from services.personal import purchases as personal_purchases
 from services.personal import require_user, toast_pending
 from ui.components import empty_state, fmt_date, kpi_row, number, page_header, section, table
 
@@ -43,7 +45,7 @@ with st.container(horizontal=True):
     st.page_link("views/bought.py", label="I bought…", icon=":material/add_shopping_cart:")
     st.page_link("views/pantry.py", label="Pantry check", icon=":material/kitchen:")
 
-buys, checks = db.purchases(uid), db.checks(uid)
+buys, checks = personal_purchases(uid), personal_checks(uid)
 if buys.empty:
     empty_state("Start by logging what you buy",
                 "Each time you shop, add it under I bought… (it takes three taps). Then once a week, do a pantry "
@@ -69,7 +71,7 @@ kpi_row([
     ("₹ wasted this month", f"₹{month_value:,.0f}" if waste_shown else "–",
      "Thrown away at pantry checks this month × what you paid per unit."),
     ("Waste rate", f"{waste_rate:.1f}%" if waste_rate is not None else "–", "Thrown away ÷ food available, all periods."),
-    ("Expiring in 3 days", f"{len(soon)}"),
+    ("Expiring in 3 days", f"{soon['Food'].nunique()} foods"),
     ("Spent this month", f"₹{buys.loc[buys['date'] >= today.replace(day=1), 'total_price'].sum():,.0f}"),
 ])
 st.caption(waste_note)
@@ -80,6 +82,8 @@ with left:
     if soon.empty:
         st.write("Nothing expires in the next 3 days.")
     else:
+        soon = soon.groupby(["Food", "Unit"], as_index=False).agg(
+            Quantity=("Quantity", "sum"), Expiry=("Expiry", "min"), Days_Left=("Days_Left", "min")).sort_values("Days_Left")
         table(soon[["Food", "Quantity", "Unit", "Expiry", "Days_Left"]], {
             "Quantity": number("Amount", "%.2f"), "Expiry": st.column_config.DateColumn("Expires", format="D MMM"),
             "Days_Left": number("Days left", "%d")}, max_rows=6)

@@ -104,7 +104,7 @@ if df is not None:
             shown, reliable, note = gate("tests")
             st.caption(PERIOD_NOTE + " The weekend vs weekday t-test is therefore not run on My data.")
             if not shown:
-                st.write("Statistical tests need at least 12 completed pantry-check periods. " + note)
+                st.write(note)
             else:
                 if not reliable:
                     st.warning(note)

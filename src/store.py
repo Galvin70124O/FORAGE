@@ -24,6 +24,7 @@ import pandas as pd
 from sqlalchemy import (
     Column,
     DateTime,
+    Index,
     Float,
     ForeignKey,
     Integer,
@@ -98,6 +99,13 @@ settings = Table(
     Column("value", Text),
 )
 
+# Every personal query filters by user and usually sorts by date.
+INDEXES = [
+    Index("ix_purchases_user_date", purchases.c.user_id, purchases.c.date),
+    Index("ix_pantry_checks_user_date", pantry_checks.c.user_id, pantry_checks.c.date),
+    Index("ix_foods_user", foods.c.user_id),
+]
+
 PURCHASE_COLUMNS = ["id", "date", "food", "category", "quantity", "unit", "total_price", "shelf_life_days"]
 CHECK_COLUMNS = ["id", "date", "food", "category", "unit", "remaining", "wasted", "shelf_life_days"]
 
@@ -144,7 +152,9 @@ class Store:
     # schema -----------------------------------------------------------------
     def create_tables(self) -> None:
         """Create any missing tables; safe to run any number of times."""
-        metadata.create_all(self.engine, checkfirst=True)
+        metadata.create_all(self.engine, checkfirst=True)  # CREATE TABLE IF NOT EXISTS
+        for index in INDEXES:  # also add indexes to tables created by an older version
+            index.create(self.engine, checkfirst=True)
 
     # users ------------------------------------------------------------------
     @with_retry

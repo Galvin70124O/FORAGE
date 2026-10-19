@@ -106,7 +106,7 @@ if df is not None:
             shown, reliable, note = gate("backtest")
             frame = personal_frame(buys, checks) if shown else pd.DataFrame()
             if frame.empty:
-                st.write("The backtest needs at least 3 weeks of purchases and pantry checks. " + note)
+                st.write(note)
             else:
                 if not reliable:
                     st.warning(note)

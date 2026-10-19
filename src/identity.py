@@ -5,9 +5,11 @@ Modes:
     single_user no [auth]: one local user. With no database configured the data
                 goes to a local SQLite file ("demo mode", temporary online).
 
-The local single user is the only identity that does not come from Google, and
-`resolve_identity` makes it impossible whenever [auth] is present: then the
-only way in is a signed-in Google account.
+When [auth] is set, access needs BOTH a signed-in Google account AND its email
+in ALLOWED_EMAILS (a list in the secrets). A missing or empty allowlist lets
+nobody in, so a misconfigured deployment fails closed. The local single user is
+the only identity that does not come from Google, and `access` makes it
+impossible whenever [auth] is present.
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ from typing import Mapping
 
 LOCAL_EMAIL = "local-user@forage.local"
 LOCAL_NAME = "Local user"
+SIGN_IN, NOT_ALLOWED, ALLOWED = "sign_in", "not_allowed", "allowed"
 
 
 @dataclass(frozen=True)
@@ -35,6 +38,13 @@ def database_configured(secrets: Mapping) -> bool:
     return "sql" in connections
 
 
+def allowed_emails(secrets: Mapping) -> set[str]:
+    raw = secrets.get("ALLOWED_EMAILS", []) if hasattr(secrets, "get") else []
+    if isinstance(raw, str):
+        raw = raw.replace(";", ",").split(",")
+    return {str(email).strip().lower() for email in raw if str(email).strip()}
+
+
 def mode(secrets: Mapping) -> str:
     if auth_configured(secrets) and database_configured(secrets):
         return "online"
@@ -43,14 +53,20 @@ def mode(secrets: Mapping) -> str:
     return "single_user"
 
 
-def resolve_identity(secrets: Mapping, user: Mapping | None) -> Identity | None:
-    """The current user, or None if they must sign in first.
+def access(secrets: Mapping, user: Mapping | None) -> tuple[str, Identity | None]:
+    """(status, identity): status is "allowed", "sign_in" or "not_allowed".
 
-    `user` is st.user as a mapping (is_logged_in, email, name). When [auth] is
-    configured nothing but a signed-in user with an email is accepted.
+    `user` is st.user as a mapping (is_logged_in, email, name).
     """
-    if auth_configured(secrets):
-        if user and user.get("is_logged_in") and user.get("email"):
-            return Identity(email=str(user["email"]).lower(), name=str(user.get("name") or user["email"]))
-        return None
-    return Identity(email=LOCAL_EMAIL, name=LOCAL_NAME, local=True)
+    if not auth_configured(secrets):
+        return ALLOWED, Identity(email=LOCAL_EMAIL, name=LOCAL_NAME, local=True)
+    if not (user and user.get("is_logged_in") and user.get("email")):
+        return SIGN_IN, None
+    person = Identity(email=str(user["email"]).strip().lower(), name=str(user.get("name") or user["email"]))
+    return (ALLOWED, person) if person.email in allowed_emails(secrets) else (NOT_ALLOWED, person)
+
+
+def resolve_identity(secrets: Mapping, user: Mapping | None) -> Identity | None:
+    """The person who may use the personal pages, or None (must sign in, or not on the allowlist)."""
+    status, person = access(secrets, user)
+    return person if status == ALLOWED else None
