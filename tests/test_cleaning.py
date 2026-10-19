@@ -106,3 +106,25 @@ def test_name_variants_are_unified_to_the_most_common_spelling():
     names, changed = normalise_names(pd.Series(["Milk", " milk", "MILK ", "Milk", "Brown  Bread"]))
     assert names.tolist() == ["Milk", "Milk", "Milk", "Milk", "Brown Bread"]
     assert changed.tolist() == [False, True, True, False, True]
+
+
+def test_messy_sample_problems_are_each_caught_by_the_right_rule():
+    from pathlib import Path
+    sample = Path(__file__).resolve().parent.parent / "data" / "samples" / "messy_food_data.csv"
+    cleaned, summary, audit = clean_records(pd.read_csv(sample), audit=True)
+    assert summary["rows_read"] == 208
+    assert summary["names_fixed"] == 15                      # 12 variants + 3 that become duplicates
+    assert summary["duplicates_removed"] == 13                # 10 exact + 3 after tidying names
+    assert summary["missing_or_unparseable_removed"] == 18    # 8 missing + 5 bad dates + 5 text in numbers
+    assert summary["invalid_values_removed"] == 5             # negative quantities / price
+    assert summary["expiry_before_purchase_removed"] == 4
+    assert summary["unbalanced_removed"] == 0 and summary["inconsistent_expiry_removed"] == 0
+    removed = sum(v for k, v in summary.items() if k.endswith("_removed"))
+    assert summary["rows_read"] - removed == summary["rows_kept"] == len(cleaned) == 168
+    # outliers are flagged, never removed: the six huge purchases are still in the output
+    flagged = audit[audit["Action"] == "Flagged (kept)"]
+    assert summary["outliers_flagged"] == len(flagged) >= 6
+    big = cleaned["Quantity_Purchased"] > 4 * cleaned["Quantity_Purchased"].median()
+    assert big.sum() >= 6  # the injected huge purchases survive cleaning
+    assert set(audit["Action"]) == {"Fixed", "Removed", "Flagged (kept)"}
+    assert cleaned["Food"].str.strip().eq(cleaned["Food"]).all() and not cleaned["Food"].str.isupper().any()

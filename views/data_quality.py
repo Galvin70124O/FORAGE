@@ -4,20 +4,29 @@ import pandas as pd
 import streamlit as st
 
 from data_quality import column_profile, iqr_outliers
-from services.data import demo_cleaning_summary, quality_report, raw_demo
+from services.data import demo_cleaning_summary, messy_sample_cleaning, quality_report, raw_demo
 from ui.components import date, empty_state, fmt_num, formula, kpi_row, number, section, table, text
 from views.common import begin
 from waste import balance_check
 
 CLEANING_STEPS = [
-    ("rows_read", "Rows read from raw file", "–"),
-    ("duplicates_removed", "Exact duplicate rows", "Removed"),
-    ("missing_or_unparseable_removed", "Missing or unparseable date / number", "Removed, not imputed"),
-    ("invalid_values_removed", "Impossible values (negative quantity or price, purchase of 0, flag not 0/1)", "Removed"),
+    ("rows_read", "Rows read from the file", "–"),
+    ("names_fixed", "Food or category name with odd case or spacing", "Fixed (tidied)"),
+    ("duplicates_removed", "Exact duplicate row (after tidying names)", "Removed"),
+    ("missing_or_unparseable_removed", "Missing or unreadable date or number", "Removed, not imputed"),
+    ("invalid_values_removed", "Impossible value (negative quantity or price, purchase of 0, flag not 0/1)", "Removed"),
+    ("expiry_before_purchase_removed", "Expiry date before the purchase date", "Removed"),
     ("unbalanced_removed", "Purchased ≠ consumed + wasted + remaining (beyond ±0.011 rounding)", "Removed"),
     ("inconsistent_expiry_removed", "Expiry date ≠ purchase date + shelf-life days", "Removed"),
+    ("outliers_flagged", "IQR outlier in purchased, consumed, wasted or price", "Flagged, kept"),
     ("rows_kept", "Rows kept for analysis", "–"),
 ]
+STEP_COLUMNS = {"Check": text("Check", "large"), "Rows": number("Rows", "%d"), "Action": text("Action", "small")}
+
+
+def steps_table(summary: dict) -> pd.DataFrame:
+    return pd.DataFrame([{"Check": label, "Rows": summary.get(key, 0), "Action": action}
+                         for key, label, action in CLEANING_STEPS])
 HOUSEHOLD_NUMERIC = ["Quantity_Purchased", "Quantity_Consumed", "Quantity_Wasted", "Remaining_Quantity",
                      "Price", "Expiry_Days"]
 
@@ -78,8 +87,9 @@ if source == "personal":
             outlier_table(frame, ["Quantity_Purchased", "Quantity_Consumed", "Quantity_Wasted", "Daily_Consumption"])
 elif df is not None:
     if source == "demo":
-        balance = balance_check(df)
-        if source == "demo":
+        dataset_tab, pipeline_tab = st.tabs(["Demo dataset", "Try the cleaning pipeline"])
+        with dataset_tab:
+            balance = balance_check(df)
             summary = demo_cleaning_summary()
             removed = summary["rows_read"] - summary["rows_kept"]
             kpi_row([("Rows read", f"{summary['rows_read']:,}"), ("Rows removed", f"{removed:,}"),
@@ -90,13 +100,10 @@ elif df is not None:
             left, right = st.columns([1.7, 1], gap="large")
             with left:
                 section("Cleaning steps", "Each removed row is counted once, under the first rule it fails.")
-                steps = pd.DataFrame([{"Check": label, "Rows": summary[key], "Action": action}
-                                      for key, label, action in CLEANING_STEPS])
-                table(steps, {"Check": text("Check", "large"), "Rows": number("Rows", "%d"),
-                              "Action": text("Action", "small")})
-                st.caption("No values are filled in. Blank text fields become the label “Unknown”. "
-                           "Duplicates, missing values and failures are all zero in this file because the demo "
-                           "data is generated; the unit tests exercise every rule on deliberately messy input.")
+                table(steps_table(summary), STEP_COLUMNS, max_rows=None)
+                st.caption("No values are filled in. Blank text fields become the label “Unknown”. The demo file "
+                           "is generated, so it has no problems to remove; the next tab runs the same pipeline on a "
+                           "deliberately messy sample.")
             with right:
                 section("Stock balance", "Every record must satisfy:")
                 formula("purchased = consumed + wasted + remaining")
@@ -105,13 +112,33 @@ elif df is not None:
                          "(rounding to two decimals in the source).")
                 st.caption("Waste is the recorded quantity wasted. It is not computed as purchased − consumed, "
                            "because that would count food still in stock as waste.")
+            section("Columns", "Type, missing values and distinct values in the cleaned data")
+            profile_table(df)
+            section("Outliers (IQR rule)",
+                    "Values outside Q1 − 1.5×IQR to Q3 + 1.5×IQR. They are flagged for review and kept, "
+                    "because large purchases can be genuine.")
+            outlier_table(df, HOUSEHOLD_NUMERIC)
 
-        section("Columns", "Type, missing values and distinct values in the cleaned data")
-        profile_table(df.drop(columns=["Record_ID"], errors="ignore"))
-        section("Outliers (IQR rule)",
-                "Values outside Q1 − 1.5×IQR to Q3 + 1.5×IQR. They are flagged for review and kept, "
-                "because large purchases can be genuine.")
-        outlier_table(df, HOUSEHOLD_NUMERIC)
+        with pipeline_tab:
+            messy, cleaned, summary, audit = messy_sample_cleaning()
+            st.write(f"`data/samples/messy_food_data.csv` has {len(messy)} rows with deliberate problems: duplicates, "
+                     "inconsistent case and spacing in food names, missing values, bad dates, negative quantities, "
+                     "text in numeric columns, expiry dates before the purchase date and a few huge purchases. "
+                     "It is generated by `scripts/make_messy_sample.py` (seeded, so it is the same every time).")
+            kpi_row([("Rows in", f"{summary['rows_read']:,}"), ("Fixed", f"{summary['names_fixed']:,}"),
+                     ("Removed", f"{summary['rows_read'] - summary['rows_kept']:,}"),
+                     ("Flagged and kept", f"{summary['outliers_flagged']:,}"), ("Rows out", f"{summary['rows_kept']:,}")])
+            section("Before and after, per rule", "Rules run in this order; a removed row is counted once")
+            table(steps_table(summary), STEP_COLUMNS, max_rows=None)
+            section("Example rows", "Row = line number in the CSV file")
+            for action in ("Fixed", "Removed", "Flagged (kept)"):
+                examples = audit[audit["Action"] == action].groupby("Rule").head(2)
+                st.markdown(f"**{action}** ({(audit['Action'] == action).sum()} rows)")
+                table(examples[["Row", "Food", "Rule", "Detail"]], {
+                    "Row": number("Row", "%d"), "Food": "Food as written", "Rule": text("Rule", "medium"),
+                    "Detail": text("What was wrong", "large")}, max_rows=10)
+            st.download_button("Download the messy sample", messy.to_csv(index=False).encode("utf-8"),
+                               "messy_food_data.csv", "text/csv")
 
     else:
         report = quality_report(source) or {}

@@ -11,6 +11,8 @@ from stats import (
 )
 from ui import charts
 from ui.components import number, section, table
+from services.data import source_tests
+from views import tests_section
 from views.common import UNIT_NOTE, begin
 
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -92,6 +94,22 @@ if df is not None:
             if source in ("demo", "personal"):
                 st.caption("Correlations between raw quantities partly reflect that some foods are bought in larger "
                            "amounts than others.")
+
+    st.header("Statistical tests")
+    if source == "personal":
+        from hypothesis import household_tests
+        from services.personal import gate
+        from views.common import PERIOD_NOTE
+        shown, reliable, note = gate("tests")
+        st.caption(PERIOD_NOTE + " The weekend vs weekday t-test is therefore not run on My data.")
+        if not shown:
+            st.write("Statistical tests need at least 12 completed pantry-check periods. " + note)
+        else:
+            if not reliable:
+                st.warning(note)
+            tests_section.render(household_tests(df, daily=False), source=source)
+    else:
+        tests_section.render(source_tests(source), source=source)
 
     st.header("Patterns")
     if source == "personal":

@@ -132,3 +132,26 @@ def demo_backtest() -> tuple[pd.DataFrame, pd.DataFrame, float, int]:
     test = records[records["Date"] >= result["cutoff"]]
     reference = (test.groupby("Food")["Quantity_Wasted"].sum() / test.groupby("Food")["Quantity_Purchased"].sum()).mean() * 100
     return summarise(results), results, float(reference), int(frame["Date"].nunique())
+
+
+@st.cache_data(show_spinner="Running hypothesis tests...")
+def source_tests(source: str) -> list:
+    """Hypothesis tests for a public or demo source (My data is computed per request)."""
+    from hypothesis import household_tests, instacart_tests, m5_tests
+
+    if source == "demo":
+        return household_tests(load_demo())
+    if source == "m5":
+        return m5_tests(load_m5())
+    return instacart_tests(load_instacart())
+
+
+MESSY_SAMPLE = DEMO_PATH.parent / "samples" / "messy_food_data.csv"
+
+
+@st.cache_data(show_spinner="Running the cleaning pipeline...")
+def messy_sample_cleaning():
+    """(raw messy sample, cleaned rows, per-rule summary, per-row audit log)."""
+    messy = pd.read_csv(MESSY_SAMPLE)
+    cleaned, summary, audit = clean_records(messy, audit=True)
+    return messy, cleaned, summary, audit
