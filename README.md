@@ -9,17 +9,19 @@ It is framed by UN SDG target 12.3: halve per-capita food waste by 2030. Fundame
 
 ## Features
 
-**Your food** (sign in with Google; personal and private):
+FORAGE has two modes, switched at the bottom of the sidebar. The choice is remembered for the session.
 
-- **Home:** ₹ wasted this month, waste rate, stock expiring in 3 days, food likely to be wasted at your usual pace, and what to buy this week.
-- **I bought…:**
-  - repeat chips for your 8 most frequent purchases, so a chip and Save logs a purchase
-  - a food picker with recent items first, quantity steppers, and a date that defaults to today
-  - paste-a-bill parsing, confirmed in a table before anything is saved
-- **Pantry check:** a one-food form (two steppers) or the whole pantry, prefilled with what you should still have. Impossible entries are rejected with the arithmetic shown.
+**Kitchen** (the default once signed in): built so someone non-technical can use it daily on a phone with no explanation, in plain language, in **English, हिन्दी or தமிழ்** (sidebar).
+
+- **Home:** what to use first ("Use the spinach today"), food you may not finish in time, how many things to buy this week ("You have enough rice, skip it this week") and "About ₹450 of food was thrown away this month".
+- **I bought…:** big tiles for your usual foods plus search, everyday amounts ("½ kg", "1 litre", "2 packets") stored in the food's base unit, a custom amount, **Repeat last purchase** and **Repeat last week**, the date defaulting to today, one Save button and a clear success message. You can also paste a shopping bill.
+- **Pantry check:** four big buttons per food, **Full / Half / Almost empty / Finished**, as shares of what you had, plus "Thrown any away?" and an optional exact amount. **Check everything** goes one food at a time with a progress count.
+- **Shopping list:** what to buy this week in everyday amounts, a tick box per item, copyable text and **Send on WhatsApp**.
 - **My data:** edit and delete entries (deletes ask for confirmation), export CSVs, and import CSVs, which skips rows you already have.
+- **First visit:** a skippable 3-screen walkthrough (log what you buy → check your pantry weekly → get a smart shopping list), shown once per user.
+- **Install on your phone:** steps for Android Chrome and iPhone Safari are in the sidebar.
 
-**Insights** (open to everyone), on the source chosen in the sidebar:
+**Project insights** (the default for visitors, open without signing in), on the source chosen in the sidebar. A **Source & licence** note per dataset gives the attribution.
 
 | Page | What it shows |
 | --- | --- |
@@ -53,24 +55,28 @@ Every analysis page has a **Methods** note explaining the technique in plain wor
 ## Architecture
 
 ```text
-app.py                     page config, logo, st.navigation (Your food / Insights), sidebar source + account
+app.py                     page config, logo, two modes (Kitchen / Project insights) with their own navigation and sidebar
 views/                     one file per page; *_section.py are shared renderers
 services/
   data.py                  cached loaders and model results (st.cache_resource), precomputed-result lookup
   overview.py              dashboard KPIs, charts and actions
   session.py               secrets, mode, Google sign-in + allowlist, st.connection("sql")
   personal.py              signed-in user, cached personal reads (ttl 60 s, cleared after writes)
-ui/                        theme (registered Altair theme, CSS), charts, components
+ui/                        theme (registered Altair theme, CSS), charts, components, kitchen (tiles, walkthrough, language)
 src/                       analysis logic: pure functions, no Streamlit, unit-tested
   store.py                 the ONLY database module: every query filtered by user
   identity.py              who may use the personal pages (allowlist, local user only without [auth])
   pantry.py                purchases + checks -> periods, stock, expiry, buy list, bill parser, CSV import
+  kitchen.py               everyday amounts, pantry levels, repeat purchases, shopping list share text
+  i18n.py                  Kitchen labels and messages in English, Hindi and Tamil
+  public_data.py           data/public/ bundles: Instacart aggregates, manifest with licence and hashes
   clean_data.py, data_quality.py, stats.py, hypothesis.py, waste.py
   prediction.py, m5_forecasting.py, horizon.py (7-day + rolling origin), recommendations.py, backtest.py
   waste_risk.py (classifier), explain.py (importance, residuals), basket.py (FP-growth), artifacts.py
 scripts/                   init_db, check_database, precompute_demo, export_results, make_messy_sample,
-                           crawl_pages, cloud_simulation
-data/                      demo CSVs, messy sample, logging templates, precomputed demo results
+                           build_public_artifacts, crawl_pages, cloud_simulation
+data/                      demo CSVs, messy sample, logging templates, precomputed demo results,
+                           public/ (aggregated M5 and Instacart results for the online app)
 docs/                      deploy.md, google_login_setup.md, data_licences.md
 tests/                     pytest suite
 ```
@@ -90,17 +96,18 @@ To use sign-in and Neon locally, copy `.streamlit/secrets.example.toml` to `.str
 
 ## How to log (for the team)
 
-1. **Every time you shop**, open **I bought…**: tap a chip or pick the food, check the quantity and the *total* price paid, then Save. A new food asks once for its category and shelf life.
-2. **Once a week** (more often is better), open **Pantry check**. For each food, enter what is left and what you threw away. The amounts are prefilled with what you should still have.
-3. That's all. Consumption, waste, expiry warnings, buy lists and forecasts are worked out from these two records.
+1. **Every time you shop**, open **I bought…**: tap the food, tap how much ("1 kg", "1 litre"…), optionally type the *total* price paid, then Save. **Repeat last purchase** and **Repeat last week** save typing. A new food asks once for its type and how many days it stays good.
+2. **Once a week** (more often is better), open **Pantry check** and tap **Check everything**. For each food, say whether you threw any away, then tap Full, Half, Almost empty or Finished. **Exact amount** is there if you prefer numbers.
+3. That's all. Consumption, waste, expiry warnings, the **Shopping list** (shareable on WhatsApp) and forecasts are worked out from these two records.
 4. Bulk entry: fill `data/templates/purchases_template.csv` or `pantry_checks_template.csv`, then use **My data → Import**. Rows you already have are skipped, so teammates can merge their files.
 
 ## Tests and checks
 
 ```powershell
-python -m pytest                      # 124 tests
+python -m pytest                      # 187 tests
 python scripts/export_results.py      # outputs/results.json + report charts (git-ignored)
 python scripts/precompute_demo.py     # after changing demo data or model code; a test fails if it is stale
+python scripts/build_public_artifacts.py  # where the raw M5/Instacart extracts exist: refresh data/public/
 python scripts/cloud_simulation.py    # fresh clone + fresh venv from requirements.txt, every page crawled
 ```
 
@@ -110,6 +117,8 @@ The tests cover:
 - **Forecasting:** leakage tests for lags, rolling means, the chronological split, the 7-day target and every rolling fold.
 - **Models and outputs:** the backtest simulator on hand-computed cases, classifier thresholds, association rules on a hand-checked basket, and the bill parser.
 - **Security:** per-user database isolation for read, update and delete; the allowlist; and that the local user can't be enabled when `[auth]` is set.
+- **Kitchen mode:** everyday amounts and pantry levels, repeat purchases, the share text, every string in all three languages with matching placeholders and no jargon, the walkthrough stored once per user, and every Kitchen page run in every language against a temporary database.
+- **Published results:** `data/public/` manifests and hashes, size under 10 MB, no Instacart IDs or order rows, numbers matching `outputs/results.json`, and every Insights page rendering with the raw files hidden (`FORAGE_PUBLIC_ONLY=1`).
 
 The crawler and cloud simulation need Playwright: `pip install playwright` and `python -m playwright install chromium`.
 
