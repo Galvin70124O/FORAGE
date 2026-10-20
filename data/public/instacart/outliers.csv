@@ -1,0 +1,5 @@
+Column,Lower bound,Upper bound,Outliers,Outliers (%)
+Order_Hour,1,25,1693,0.5401973172
+Days_Since_Prior_Order,-11.5,32.5,0,0
+Add_To_Cart_Order,-9,23,13084,4.17480313
+Order_Number,-22,50,19899,6.349312708

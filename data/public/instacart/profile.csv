@@ -1,0 +1,14 @@
+Column,Type,Missing,Missing (%),Distinct
+Order_ID,int32,0,0,31749
+User_ID,int32,0,0,2000
+Order_Set,category,0,0,2
+Order_Number,int16,0,0,100
+Order_Day_Of_Week,int8,0,0,7
+Order_Hour,int8,0,0,24
+Days_Since_Prior_Order,float32,19681,6.279753928,31
+Product_ID,int32,0,0,21017
+Product_Name,category,0,0,21017
+Aisle,category,0,0,134
+Department,category,0,0,21
+Add_To_Cart_Order,int16,0,0,89
+Reordered,int8,0,0,2

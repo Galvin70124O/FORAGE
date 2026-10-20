@@ -1,0 +1,457 @@
+If,Then,Support,Confidence,Lift,Antecedents,Consequents
+Sparkling Lemon Water,Lime Sparkling Water,0.006310403638,0.3788395904,16.3328147,Sparkling Lemon Water,Lime Sparkling Water
+Lime Sparkling Water,Sparkling Lemon Water,0.006310403638,0.2720588235,16.3328147,Lime Sparkling Water,Sparkling Lemon Water
+Lime Sparkling Water,Sparkling Water Grapefruit,0.008641273451,0.3725490196,9.810085711,Lime Sparkling Water,Sparkling Water Grapefruit
+Sparkling Water Grapefruit,Lime Sparkling Water,0.008641273451,0.2275449102,9.810085711,Sparkling Water Grapefruit,Lime Sparkling Water
+Sparkling Water Grapefruit,Sparkling Lemon Water,0.005741898806,0.1511976048,9.077016615,Sparkling Water Grapefruit,Sparkling Lemon Water
+Sparkling Lemon Water,Sparkling Water Grapefruit,0.005741898806,0.3447098976,9.077016615,Sparkling Lemon Water,Sparkling Water Grapefruit
+Bunched Cilantro,Limes,0.007504263786,0.3676880223,4.652972886,Bunched Cilantro,Limes
+Limes,Bunched Cilantro,0.007504263786,0.09496402878,4.652972886,Limes,Bunched Cilantro
+Organic White Onions,Organic Garlic,0.005173393974,0.2870662461,4.624079916,Organic White Onions,Organic Garlic
+Organic Garlic,Organic White Onions,0.005173393974,0.08333333333,4.624079916,Organic Garlic,Organic White Onions
+Organic Italian Parsley Bunch,Organic Small Bunch Celery,0.005400795907,0.1708633094,4.595543748,Organic Italian Parsley Bunch,Organic Small Bunch Celery
+Organic Small Bunch Celery,Organic Italian Parsley Bunch,0.005400795907,0.1452599388,4.595543748,Organic Small Bunch Celery,Organic Italian Parsley Bunch
+Organic Small Bunch Celery,Organic Cucumber,0.008129619102,0.2186544343,4.282997214,Organic Small Bunch Celery,Organic Cucumber
+Organic Cucumber,Organic Small Bunch Celery,0.008129619102,0.1592427617,4.282997214,Organic Cucumber,Organic Small Bunch Celery
+Organic Garnet Sweet Potato (Yam),Organic Zucchini,0.005059693007,0.2084309133,3.787499758,Organic Garnet Sweet Potato (Yam),Organic Zucchini
+Organic Zucchini,Organic Garnet Sweet Potato (Yam),0.005059693007,0.09194214876,3.787499758,Organic Zucchini,Organic Garnet Sweet Potato (Yam)
+Organic Blueberries,Raspberries,0.005514496873,0.1092342342,3.767510157,Organic Blueberries,Raspberries
+Raspberries,Organic Blueberries,0.005514496873,0.1901960784,3.767510157,Raspberries,Organic Blueberries
+Organic Cilantro,Limes,0.01063104036,0.2912772586,3.686019409,Organic Cilantro,Limes
+Limes,Organic Cilantro,0.01063104036,0.1345323741,3.686019409,Limes,Organic Cilantro
+Organic Baby Carrots,Original Hummus,0.005571347356,0.1335149864,3.669575954,Organic Baby Carrots,Original Hummus
+Original Hummus,Organic Baby Carrots,0.005571347356,0.153125,3.669575954,Original Hummus,Organic Baby Carrots
+Organic Small Bunch Celery,Michigan Organic Kale,0.005514496873,0.1483180428,3.66420558,Organic Small Bunch Celery,Michigan Organic Kale
+Michigan Organic Kale,Organic Small Bunch Celery,0.005514496873,0.1362359551,3.66420558,Michigan Organic Kale,Organic Small Bunch Celery
+Organic Ginger Root,Organic Garlic,0.006537805571,0.2254901961,3.632209294,Organic Ginger Root,Organic Garlic
+Organic Garlic,Organic Ginger Root,0.006537805571,0.1053113553,3.632209294,Organic Garlic,Organic Ginger Root
+Jalapeno Peppers,Limes,0.00528709494,0.2784431138,3.523607461,Jalapeno Peppers,Limes
+Limes,Jalapeno Peppers,0.00528709494,0.06690647482,3.523607461,Limes,Jalapeno Peppers
+Organic Yellow Onion,Organic Garlic,0.01233655486,0.2121212121,3.416860917,Organic Yellow Onion,Organic Garlic
+Organic Garlic,Organic Yellow Onion,0.01233655486,0.1987179487,3.416860917,Organic Garlic,Organic Yellow Onion
+Organic Tomato Cluster,Organic Yellow Onion,0.006196702672,0.1946428571,3.346791649,Organic Tomato Cluster,Organic Yellow Onion
+Organic Yellow Onion,Organic Tomato Cluster,0.006196702672,0.1065493646,3.346791649,Organic Yellow Onion,Organic Tomato Cluster
+Raspberries,Strawberries,0.006196702672,0.2137254902,3.266230558,Raspberries,Strawberries
+Strawberries,Raspberries,0.006196702672,0.09470026064,3.266230558,Strawberries,Raspberries
+Organic Italian Parsley Bunch,Organic Garlic,0.006367254122,0.2014388489,3.244788784,Organic Italian Parsley Bunch,Organic Garlic
+Organic Garlic,Organic Italian Parsley Bunch,0.006367254122,0.1025641026,3.244788784,Organic Garlic,Organic Italian Parsley Bunch
+Organic Raspberries,Organic Hass Avocado + Organic Strawberries,0.006196702672,0.07569444444,3.147672051,Organic Raspberries,Organic Hass Avocado | Organic Strawberries
+Organic Hass Avocado + Organic Strawberries,Organic Raspberries,0.006196702672,0.2576832151,3.147672051,Organic Hass Avocado | Organic Strawberries,Organic Raspberries
+Organic Lemon,Organic Garlic,0.008925525867,0.1900726392,3.061701212,Organic Lemon,Organic Garlic
+Organic Garlic,Organic Lemon,0.008925525867,0.1437728938,3.061701212,Organic Garlic,Organic Lemon
+Bag of Organic Bananas + Organic Strawberries,Organic Raspberries,0.009721432632,0.2471098266,3.018515173,Bag of Organic Bananas | Organic Strawberries,Organic Raspberries
+Organic Raspberries,Bag of Organic Bananas + Organic Strawberries,0.009721432632,0.11875,3.018515173,Organic Raspberries,Bag of Organic Bananas | Organic Strawberries
+Organic Lemon,Organic Cucumber,0.007163160887,0.1525423729,2.987995923,Organic Lemon,Organic Cucumber
+Organic Cucumber,Organic Lemon,0.007163160887,0.140311804,2.987995923,Organic Cucumber,Organic Lemon
+Organic Red Bell Pepper,Organic Yellow Onion,0.005230244457,0.1706864564,2.934872696,Organic Red Bell Pepper,Organic Yellow Onion
+Organic Yellow Onion,Organic Red Bell Pepper,0.005230244457,0.0899315738,2.934872696,Organic Yellow Onion,Organic Red Bell Pepper
+Fresh Cauliflower,Organic Zucchini,0.005855599773,0.1591962906,2.892833421,Fresh Cauliflower,Organic Zucchini
+Organic Zucchini,Fresh Cauliflower,0.005855599773,0.1064049587,2.892833421,Organic Zucchini,Fresh Cauliflower
+Bag of Organic Bananas + Organic Hass Avocado,Organic Raspberries,0.008186469585,0.2352941176,2.874183007,Bag of Organic Bananas | Organic Hass Avocado,Organic Raspberries
+Organic Raspberries,Bag of Organic Bananas + Organic Hass Avocado,0.008186469585,0.1,2.874183007,Organic Raspberries,Bag of Organic Bananas | Organic Hass Avocado
+Organic Garnet Sweet Potato (Yam),Large Lemon,0.005514496873,0.2271662763,2.767212466,Organic Garnet Sweet Potato (Yam),Large Lemon
+Large Lemon,Organic Garnet Sweet Potato (Yam),0.005514496873,0.06717451524,2.767212466,Large Lemon,Organic Garnet Sweet Potato (Yam)
+Banana + Large Lemon,Organic Avocado,0.00545764639,0.241813602,2.716156615,Banana | Large Lemon,Organic Avocado
+Organic Avocado,Banana + Large Lemon,0.00545764639,0.06130268199,2.716156615,Organic Avocado,Banana | Large Lemon
+Organic Hass Avocado,Bag of Organic Bananas + Organic Raspberries,0.008186469585,0.07578947368,2.709627728,Organic Hass Avocado,Bag of Organic Bananas | Organic Raspberries
+Bag of Organic Bananas + Organic Raspberries,Organic Hass Avocado,0.008186469585,0.2926829268,2.709627728,Bag of Organic Bananas | Organic Raspberries,Organic Hass Avocado
+Cucumber Kirby,Large Lemon,0.01176805003,0.2188160677,2.665494896,Cucumber Kirby,Large Lemon
+Large Lemon,Cucumber Kirby,0.01176805003,0.1433518006,2.665494896,Large Lemon,Cucumber Kirby
+Organic Bartlett Pear,Organic Strawberries,0.007333712337,0.3897280967,2.638690231,Organic Bartlett Pear,Organic Strawberries
+Organic Strawberries,Organic Bartlett Pear,0.007333712337,0.04965357968,2.638690231,Organic Strawberries,Organic Bartlett Pear
+Organic Red Onion,Organic Garlic,0.006026151222,0.1625766871,2.618794804,Organic Red Onion,Organic Garlic
+Organic Garlic,Organic Red Onion,0.006026151222,0.09706959707,2.618794804,Organic Garlic,Organic Red Onion
+Organic Hass Avocado + Organic Raspberries,Organic Strawberries,0.006196702672,0.3851590106,2.60775481,Organic Hass Avocado | Organic Raspberries,Organic Strawberries
+Organic Strawberries,Organic Hass Avocado + Organic Raspberries,0.006196702672,0.04195535027,2.60775481,Organic Strawberries,Organic Hass Avocado | Organic Raspberries
+Organic Lemon,Organic Hass Avocado,0.01318931211,0.2808716707,2.600280362,Organic Lemon,Organic Hass Avocado
+Organic Hass Avocado,Organic Lemon,0.01318931211,0.1221052632,2.600280362,Organic Hass Avocado,Organic Lemon
+Organic Hass Avocado + Organic Raspberries,Bag of Organic Bananas,0.008186469585,0.5088339223,2.597326957,Organic Hass Avocado | Organic Raspberries,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Hass Avocado + Organic Raspberries,0.008186469585,0.0417875798,2.597326957,Bag of Organic Bananas,Organic Hass Avocado | Organic Raspberries
+Yellow Onions,Large Lemon,0.006424104605,0.212406015,2.587411222,Yellow Onions,Large Lemon
+Large Lemon,Yellow Onions,0.006424104605,0.07825484765,2.587411222,Large Lemon,Yellow Onions
+Bag of Organic Bananas + Organic Strawberries,Organic Whole Milk,0.006878908471,0.1748554913,2.476415533,Bag of Organic Bananas | Organic Strawberries,Organic Whole Milk
+Organic Whole Milk,Bag of Organic Bananas + Organic Strawberries,0.006878908471,0.09742351047,2.476415533,Organic Whole Milk,Bag of Organic Bananas | Organic Strawberries
+Organic Grape Tomatoes,Organic Cucumber,0.005230244457,0.1262002743,2.472007601,Organic Grape Tomatoes,Organic Cucumber
+Organic Cucumber,Organic Grape Tomatoes,0.005230244457,0.1024498886,2.472007601,Organic Cucumber,Organic Grape Tomatoes
+Organic Strawberries + Organic Whole Milk,Bag of Organic Bananas,0.006878908471,0.484,2.470562972,Organic Strawberries | Organic Whole Milk,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Strawberries + Organic Whole Milk,0.006878908471,0.0351131747,2.470562972,Bag of Organic Bananas,Organic Strawberries | Organic Whole Milk
+Organic Red Onion,Limes,0.00722001137,0.1947852761,2.464944609,Organic Red Onion,Limes
+Limes,Organic Red Onion,0.00722001137,0.09136690647,2.464944609,Limes,Organic Red Onion
+Organic Raspberries,Organic Kiwi,0.00528709494,0.06458333333,2.458919553,Organic Raspberries,Organic Kiwi
+Organic Kiwi,Organic Raspberries,0.00528709494,0.2012987013,2.458919553,Organic Kiwi,Organic Raspberries
+Large Lemon,Banana + Organic Avocado,0.00545764639,0.06648199446,2.406210458,Large Lemon,Banana | Organic Avocado
+Banana + Organic Avocado,Large Lemon,0.00545764639,0.1975308642,2.406210458,Banana | Organic Avocado,Large Lemon
+Organic Small Bunch Celery,Organic Yellow Onion,0.005116543491,0.1376146789,2.366219161,Organic Small Bunch Celery,Organic Yellow Onion
+Organic Yellow Onion,Organic Small Bunch Celery,0.005116543491,0.08797653959,2.366219161,Organic Yellow Onion,Organic Small Bunch Celery
+Organic Blackberries,Organic Raspberries,0.005116543491,0.1931330472,2.35917382,Organic Blackberries,Organic Raspberries
+Organic Raspberries,Organic Blackberries,0.005116543491,0.0625,2.35917382,Organic Raspberries,Organic Blackberries
+Organic Cilantro,Organic Garlic,0.005343945424,0.1464174455,2.358500793,Organic Cilantro,Organic Garlic
+Organic Garlic,Organic Cilantro,0.005343945424,0.08608058608,2.358500793,Organic Garlic,Organic Cilantro
+Organic Baby Carrots,Cucumber Kirby,0.00528709494,0.1267029973,2.35592571,Organic Baby Carrots,Cucumber Kirby
+Cucumber Kirby,Organic Baby Carrots,0.00528709494,0.09830866808,2.35592571,Cucumber Kirby,Organic Baby Carrots
+Bag of Organic Bananas + Organic Raspberries,Organic Strawberries,0.009721432632,0.3475609756,2.353193826,Bag of Organic Bananas | Organic Raspberries,Organic Strawberries
+Organic Strawberries,Bag of Organic Bananas + Organic Raspberries,0.009721432632,0.06581986143,2.353193826,Organic Strawberries,Bag of Organic Bananas | Organic Raspberries
+2% Reduced Fat Milk,Banana,0.006310403638,0.4784482759,2.331275671,2% Reduced Fat Milk,Banana
+Banana,2% Reduced Fat Milk,0.006310403638,0.03074792244,2.331275671,Banana,2% Reduced Fat Milk
+Limes,Large Lemon,0.01500852757,0.1899280576,2.313597322,Limes,Large Lemon
+Large Lemon,Limes,0.01500852757,0.1828254848,2.313597322,Large Lemon,Limes
+Organic Lemon,Organic Yellow Onion,0.006083001706,0.1295399516,2.227378053,Organic Lemon,Organic Yellow Onion
+Organic Yellow Onion,Organic Lemon,0.006083001706,0.1045943304,2.227378053,Organic Yellow Onion,Organic Lemon
+Michigan Organic Kale,Large Lemon,0.007333712337,0.1811797753,2.207030642,Michigan Organic Kale,Large Lemon
+Large Lemon,Michigan Organic Kale,0.007333712337,0.08933518006,2.207030642,Large Lemon,Michigan Organic Kale
+Bag of Organic Bananas + Organic Whole Milk,Organic Strawberries,0.006878908471,0.3252688172,2.2022627,Bag of Organic Bananas | Organic Whole Milk,Organic Strawberries
+Organic Strawberries,Bag of Organic Bananas + Organic Whole Milk,0.006878908471,0.04657428791,2.2022627,Organic Strawberries,Bag of Organic Bananas | Organic Whole Milk
+Organic Whole Milk,Organic Whole String Cheese,0.005571347356,0.07890499195,2.199586067,Organic Whole Milk,Organic Whole String Cheese
+Organic Whole String Cheese,Organic Whole Milk,0.005571347356,0.1553090333,2.199586067,Organic Whole String Cheese,Organic Whole Milk
+Organic Raspberries + Organic Strawberries,Organic Hass Avocado,0.006196702672,0.2374727669,2.198497879,Organic Raspberries | Organic Strawberries,Organic Hass Avocado
+Organic Hass Avocado,Organic Raspberries + Organic Strawberries,0.006196702672,0.05736842105,2.198497879,Organic Hass Avocado,Organic Raspberries | Organic Strawberries
+Organic Large Extra Fancy Fuji Apple,Organic Whole Milk,0.006822057987,0.1550387597,2.195758279,Organic Large Extra Fancy Fuji Apple,Organic Whole Milk
+Organic Whole Milk,Organic Large Extra Fancy Fuji Apple,0.006822057987,0.09661835749,2.195758279,Organic Whole Milk,Organic Large Extra Fancy Fuji Apple
+Green Bell Pepper,Limes,0.005230244457,0.1722846442,2.180206397,Green Bell Pepper,Limes
+Limes,Green Bell Pepper,0.005230244457,0.06618705036,2.180206397,Limes,Green Bell Pepper
+Organic Cucumber,Organic Yellow Onion,0.006424104605,0.1258351893,2.163676422,Organic Cucumber,Organic Yellow Onion
+Organic Yellow Onion,Organic Cucumber,0.006424104605,0.110459433,2.163676422,Organic Yellow Onion,Organic Cucumber
+Organic Raspberries,Organic Strawberries,0.0260943718,0.31875,2.158126443,Organic Raspberries,Organic Strawberries
+Organic Strawberries,Organic Raspberries,0.0260943718,0.1766743649,2.158126443,Organic Strawberries,Organic Raspberries
+Bag of Organic Bananas + Organic Strawberries,Organic Hass Avocado,0.0091529278,0.2326589595,2.153932157,Bag of Organic Bananas | Organic Strawberries,Organic Hass Avocado
+Organic Hass Avocado,Bag of Organic Bananas + Organic Strawberries,0.0091529278,0.08473684211,2.153932157,Organic Hass Avocado,Bag of Organic Bananas | Organic Strawberries
+Organic D'Anjou Pears,Organic Strawberries,0.007731665719,0.3133640553,2.121660405,Organic D'Anjou Pears,Organic Strawberries
+Organic Strawberries,Organic D'Anjou Pears,0.007731665719,0.05234795997,2.121660405,Organic Strawberries,Organic D'Anjou Pears
+Organic Sticks Low Moisture Part Skim Mozzarella String Cheese,Banana,0.008129619102,0.4307228916,2.0987301,Organic Sticks Low Moisture Part Skim Mozzarella String Cheese,Banana
+Banana,Organic Sticks Low Moisture Part Skim Mozzarella String Cheese,0.008129619102,0.03961218837,2.0987301,Banana,Organic Sticks Low Moisture Part Skim Mozzarella String Cheese
+Red Peppers,Large Lemon,0.005002842524,0.1669829222,2.034092522,Red Peppers,Large Lemon
+Large Lemon,Red Peppers,0.005002842524,0.06094182825,2.034092522,Large Lemon,Red Peppers
+Organic Zucchini,Organic Yellow Onion,0.006480955088,0.117768595,2.024975158,Organic Zucchini,Organic Yellow Onion
+Organic Yellow Onion,Organic Zucchini,0.006480955088,0.1114369501,2.024975158,Organic Yellow Onion,Organic Zucchini
+Organic Blueberries,Organic Strawberries,0.01506537806,0.2984234234,2.020503471,Organic Blueberries,Organic Strawberries
+Organic Strawberries,Organic Blueberries,0.01506537806,0.1020015396,2.020503471,Organic Strawberries,Organic Blueberries
+Organic Large Extra Fancy Fuji Apple,Organic Raspberries,0.007276861853,0.165374677,2.020097617,Organic Large Extra Fancy Fuji Apple,Organic Raspberries
+Organic Raspberries,Organic Large Extra Fancy Fuji Apple,0.007276861853,0.08888888889,2.020097617,Organic Raspberries,Organic Large Extra Fancy Fuji Apple
+Organic Baby Spinach,Organic Kiwi,0.006480955088,0.05251036389,1.999258227,Organic Baby Spinach,Organic Kiwi
+Organic Kiwi,Organic Baby Spinach,0.006480955088,0.2467532468,1.999258227,Organic Kiwi,Organic Baby Spinach
+Organic Cucumber,Organic Garlic,0.006310403638,0.1236080178,1.991085195,Organic Cucumber,Organic Garlic
+Organic Garlic,Organic Cucumber,0.006310403638,0.1016483516,1.991085195,Organic Garlic,Organic Cucumber
+Organic Hass Avocado,Organic Tomato Cluster,0.006822057987,0.06315789474,1.983834586,Organic Hass Avocado,Organic Tomato Cluster
+Organic Tomato Cluster,Organic Hass Avocado,0.006822057987,0.2142857143,1.983834586,Organic Tomato Cluster,Organic Hass Avocado
+Large Lemon + Organic Avocado,Banana,0.00545764639,0.4050632911,1.973701743,Large Lemon | Organic Avocado,Banana
+Banana,Large Lemon + Organic Avocado,0.00545764639,0.02659279778,1.973701743,Banana,Large Lemon | Organic Avocado
+Organic Blueberries,Organic Raspberries,0.008129619102,0.161036036,1.967099912,Organic Blueberries,Organic Raspberries
+Organic Raspberries,Organic Blueberries,0.008129619102,0.09930555556,1.967099912,Organic Raspberries,Organic Blueberries
+Organic Avocado,Organic Red Onion,0.006480955088,0.07279693487,1.963954117,Organic Avocado,Organic Red Onion
+Organic Red Onion,Organic Avocado,0.006480955088,0.1748466258,1.963954117,Organic Red Onion,Organic Avocado
+Bag of Organic Bananas + Organic Baby Spinach,Organic Hass Avocado,0.005571347356,0.2103004292,1.946939237,Bag of Organic Bananas | Organic Baby Spinach,Organic Hass Avocado
+Organic Hass Avocado,Bag of Organic Bananas + Organic Baby Spinach,0.005571347356,0.05157894737,1.946939237,Organic Hass Avocado,Bag of Organic Bananas | Organic Baby Spinach
+Organic Hass Avocado + Organic Strawberries,Bag of Organic Bananas,0.0091529278,0.3806146572,1.942835699,Organic Hass Avocado | Organic Strawberries,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Hass Avocado + Organic Strawberries,0.0091529278,0.04672083575,1.942835699,Bag of Organic Bananas,Organic Hass Avocado | Organic Strawberries
+Organic Red Bell Pepper,Organic Strawberries,0.008698123934,0.2838589981,1.921893679,Organic Red Bell Pepper,Organic Strawberries
+Organic Strawberries,Organic Red Bell Pepper,0.008698123934,0.05889145497,1.921893679,Organic Strawberries,Organic Red Bell Pepper
+Organic Raspberries + Organic Strawberries,Bag of Organic Bananas,0.009721432632,0.3725490196,1.901664903,Organic Raspberries | Organic Strawberries,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Raspberries + Organic Strawberries,0.009721432632,0.04962275102,1.901664903,Bag of Organic Bananas,Organic Raspberries | Organic Strawberries
+Organic Fuji Apple,Banana,0.01699829449,0.3878080415,1.889624224,Organic Fuji Apple,Banana
+Banana,Organic Fuji Apple,0.01699829449,0.08282548476,1.889624224,Banana,Organic Fuji Apple
+Organic Navel Orange,Bag of Organic Bananas,0.007731665719,0.3695652174,1.886434177,Organic Navel Orange,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Navel Orange,0.007731665719,0.03946604759,1.886434177,Bag of Organic Bananas,Organic Navel Orange
+Carrots,Limes,0.005741898806,0.1474452555,1.865871974,Carrots,Limes
+Limes,Carrots,0.005741898806,0.0726618705,1.865871974,Limes,Carrots
+Organic Garlic,Organic Hass Avocado,0.01250710631,0.2014652015,1.865143628,Organic Garlic,Organic Hass Avocado
+Organic Hass Avocado,Organic Garlic,0.01250710631,0.1157894737,1.865143628,Organic Hass Avocado,Organic Garlic
+Bag of Organic Bananas,Clementines,0.00545764639,0.02785838654,1.856170527,Bag of Organic Bananas,Clementines
+Clementines,Bag of Organic Bananas,0.00545764639,0.3636363636,1.856170527,Clementines,Bag of Organic Bananas
+Large Lemon,Organic Avocado,0.01347356453,0.1641274238,1.843551331,Large Lemon,Organic Avocado
+Organic Avocado,Large Lemon,0.01347356453,0.1513409962,1.843551331,Organic Avocado,Large Lemon
+Organic Strawberries,Organic Whole String Cheese,0.009664582149,0.06543494996,1.824089968,Organic Strawberries,Organic Whole String Cheese
+Organic Whole String Cheese,Organic Strawberries,0.009664582149,0.2694136292,1.824089968,Organic Whole String Cheese,Organic Strawberries
+Organic Raspberries,Organic Hass Avocado,0.01608868675,0.1965277778,1.81943348,Organic Raspberries,Organic Hass Avocado
+Organic Hass Avocado,Organic Raspberries,0.01608868675,0.1489473684,1.81943348,Organic Hass Avocado,Organic Raspberries
+Limes,Organic Avocado,0.01279135873,0.1618705036,1.818200612,Limes,Organic Avocado
+Organic Avocado,Limes,0.01279135873,0.1436781609,1.818200612,Organic Avocado,Limes
+Fresh Cauliflower,Organic Raspberries,0.005400795907,0.1468315301,1.793587927,Fresh Cauliflower,Organic Raspberries
+Organic Raspberries,Fresh Cauliflower,0.005400795907,0.06597222222,1.793587927,Organic Raspberries,Fresh Cauliflower
+Organic Peeled Whole Baby Carrots,Organic Baby Spinach,0.005912450256,0.2212765957,1.792839852,Organic Peeled Whole Baby Carrots,Organic Baby Spinach
+Organic Baby Spinach,Organic Peeled Whole Baby Carrots,0.005912450256,0.04790419162,1.792839852,Organic Baby Spinach,Organic Peeled Whole Baby Carrots
+Organic Lemon,Limes,0.006651506538,0.1416464891,1.792490463,Organic Lemon,Limes
+Limes,Organic Lemon,0.006651506538,0.08417266187,1.792490463,Limes,Organic Lemon
+Organic Large Extra Fancy Fuji Apple,Organic Strawberries,0.01159749858,0.2635658915,1.784497318,Organic Large Extra Fancy Fuji Apple,Organic Strawberries
+Organic Strawberries,Organic Large Extra Fancy Fuji Apple,0.01159749858,0.07852193995,1.784497318,Organic Strawberries,Organic Large Extra Fancy Fuji Apple
+Organic Zucchini,Organic Baby Spinach,0.01210915293,0.2200413223,1.782831349,Organic Zucchini,Organic Baby Spinach
+Organic Baby Spinach,Organic Zucchini,0.01210915293,0.09811146937,1.782831349,Organic Baby Spinach,Organic Zucchini
+Organic Strawberries,Bag of Organic Bananas + Organic Hass Avocado,0.0091529278,0.06197074673,1.781152671,Organic Strawberries,Bag of Organic Bananas | Organic Hass Avocado
+Bag of Organic Bananas + Organic Hass Avocado,Organic Strawberries,0.0091529278,0.2630718954,1.781152671,Bag of Organic Bananas | Organic Hass Avocado,Organic Strawberries
+Asparagus,Large Lemon,0.005116543491,0.145631068,1.773996181,Asparagus,Large Lemon
+Large Lemon,Asparagus,0.005116543491,0.06232686981,1.773996181,Large Lemon,Asparagus
+Granny Smith Apples,Banana,0.00562819784,0.3626373626,1.766978174,Granny Smith Apples,Banana
+Banana,Granny Smith Apples,0.00562819784,0.02742382271,1.766978174,Banana,Granny Smith Apples
+Organic Large Extra Fancy Fuji Apple,Bag of Organic Bananas,0.01512222854,0.3436692506,1.754249019,Organic Large Extra Fancy Fuji Apple,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Large Extra Fancy Fuji Apple,0.01512222854,0.07719094602,1.754249019,Bag of Organic Bananas,Organic Large Extra Fancy Fuji Apple
+Organic Baby Arugula,Large Lemon,0.005002842524,0.1433224756,1.7458742,Organic Baby Arugula,Large Lemon
+Large Lemon,Organic Baby Arugula,0.005002842524,0.06094182825,1.7458742,Large Lemon,Organic Baby Arugula
+Organic Whole String Cheese,Organic Avocado,0.005571347356,0.1553090333,1.744499295,Organic Whole String Cheese,Organic Avocado
+Organic Avocado,Organic Whole String Cheese,0.005571347356,0.0625798212,1.744499295,Organic Avocado,Organic Whole String Cheese
+Organic Raspberries,Bag of Organic Bananas,0.02797043775,0.3416666667,1.744026891,Organic Raspberries,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Raspberries,0.02797043775,0.142774231,1.744026891,Bag of Organic Bananas,Organic Raspberries
+Organic Baby Spinach,Organic Broccoli,0.005571347356,0.04514048825,1.733670717,Organic Baby Spinach,Organic Broccoli
+Organic Broccoli,Organic Baby Spinach,0.005571347356,0.2139737991,1.733670717,Organic Broccoli,Organic Baby Spinach
+Cucumber Kirby,Organic Baby Spinach,0.01148379761,0.2135306554,1.730080253,Cucumber Kirby,Organic Baby Spinach
+Organic Baby Spinach,Cucumber Kirby,0.01148379761,0.09304467987,1.730080253,Organic Baby Spinach,Cucumber Kirby
+Limes,Organic Garlic,0.008470722001,0.1071942446,1.726691175,Limes,Organic Garlic
+Organic Garlic,Limes,0.008470722001,0.1364468864,1.726691175,Organic Garlic,Limes
+Organic Yellow Onion,Organic Hass Avocado,0.01080159181,0.1857282502,1.71945259,Organic Yellow Onion,Organic Hass Avocado
+Organic Hass Avocado,Organic Yellow Onion,0.01080159181,0.1,1.71945259,Organic Hass Avocado,Organic Yellow Onion
+Organic Garnet Sweet Potato (Yam),Organic Baby Spinach,0.005116543491,0.2107728337,1.707735673,Organic Garnet Sweet Potato (Yam),Organic Baby Spinach
+Organic Baby Spinach,Organic Garnet Sweet Potato (Yam),0.005116543491,0.04145555044,1.707735673,Organic Baby Spinach,Organic Garnet Sweet Potato (Yam)
+Organic Cucumber,Organic Raspberries,0.007106310404,0.1391982183,1.700344902,Organic Cucumber,Organic Raspberries
+Organic Raspberries,Organic Cucumber,0.007106310404,0.08680555556,1.700344902,Organic Raspberries,Organic Cucumber
+Organic Italian Parsley Bunch,Organic Hass Avocado,0.005798749289,0.1834532374,1.698390761,Organic Italian Parsley Bunch,Organic Hass Avocado
+Organic Hass Avocado,Organic Italian Parsley Bunch,0.005798749289,0.05368421053,1.698390761,Organic Hass Avocado,Organic Italian Parsley Bunch
+Organic Avocado,Organic Large Extra Fancy Fuji Apple,0.006651506538,0.07471264368,1.697926876,Organic Avocado,Organic Large Extra Fancy Fuji Apple
+Organic Large Extra Fancy Fuji Apple,Organic Avocado,0.006651506538,0.1511627907,1.697926876,Organic Large Extra Fancy Fuji Apple,Organic Avocado
+Small Hass Avocado,Banana,0.007845366686,0.3476070529,1.693741845,Small Hass Avocado,Banana
+Banana,Small Hass Avocado,0.007845366686,0.03822714681,1.693741845,Banana,Small Hass Avocado
+Organic Zucchini,Organic Garlic,0.005741898806,0.104338843,1.680696198,Organic Zucchini,Organic Garlic
+Organic Garlic,Organic Zucchini,0.005741898806,0.09249084249,1.680696198,Organic Garlic,Organic Zucchini
+Whole Milk,Banana,0.006822057987,0.3448275862,1.680198682,Whole Milk,Banana
+Banana,Whole Milk,0.006822057987,0.03324099723,1.680198682,Banana,Whole Milk
+Red Peppers,Organic Baby Spinach,0.006196702672,0.2068311195,1.675798891,Red Peppers,Organic Baby Spinach
+Organic Baby Spinach,Red Peppers,0.006196702672,0.05020727775,1.675798891,Organic Baby Spinach,Red Peppers
+Organic Baby Arugula,Organic Hass Avocado,0.006310403638,0.180781759,1.673658495,Organic Baby Arugula,Organic Hass Avocado
+Organic Hass Avocado,Organic Baby Arugula,0.006310403638,0.05842105263,1.673658495,Organic Hass Avocado,Organic Baby Arugula
+Organic Yellow Onion,Limes,0.007674815236,0.1319648094,1.66997194,Organic Yellow Onion,Limes
+Limes,Organic Yellow Onion,0.007674815236,0.09712230216,1.66997194,Limes,Organic Yellow Onion
+Hass Avocados,Organic Baby Spinach,0.006367254122,0.2051282051,1.662001441,Hass Avocados,Organic Baby Spinach
+Organic Baby Spinach,Hass Avocados,0.006367254122,0.05158912943,1.662001441,Organic Baby Spinach,Hass Avocados
+Organic Broccoli Florets,Bag of Organic Bananas,0.005059693007,0.3248175182,1.658020936,Organic Broccoli Florets,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Broccoli Florets,0.005059693007,0.02582704585,1.658020936,Bag of Organic Bananas,Organic Broccoli Florets
+Organic Raspberries,Organic Zucchini,0.007447413303,0.09097222222,1.653100608,Organic Raspberries,Organic Zucchini
+Organic Zucchini,Organic Raspberries,0.007447413303,0.1353305785,1.653100608,Organic Zucchini,Organic Raspberries
+Organic Cucumber,Organic Hass Avocado,0.009096077317,0.1781737194,1.649513539,Organic Cucumber,Organic Hass Avocado
+Organic Hass Avocado,Organic Cucumber,0.009096077317,0.08421052632,1.649513539,Organic Hass Avocado,Organic Cucumber
+Organic Hass Avocado,Bag of Organic Bananas,0.03479249574,0.3221052632,1.644176314,Organic Hass Avocado,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Hass Avocado,0.03479249574,0.1775972142,1.644176314,Bag of Organic Bananas,Organic Hass Avocado
+Organic Granny Smith Apple,Organic Baby Spinach,0.005571347356,0.2028985507,1.643936208,Organic Granny Smith Apple,Organic Baby Spinach
+Organic Baby Spinach,Organic Granny Smith Apple,0.005571347356,0.04514048825,1.643936208,Organic Baby Spinach,Organic Granny Smith Apple
+Organic Red Onion,Organic Baby Spinach,0.007504263786,0.2024539877,1.640334244,Organic Red Onion,Organic Baby Spinach
+Organic Baby Spinach,Organic Red Onion,0.007504263786,0.06080147398,1.640334244,Organic Baby Spinach,Organic Red Onion
+Organic Ginger Root,Organic Baby Spinach,0.005855599773,0.2019607843,1.636338183,Organic Ginger Root,Organic Baby Spinach
+Organic Baby Spinach,Organic Ginger Root,0.005855599773,0.04744357439,1.636338183,Organic Baby Spinach,Organic Ginger Root
+Organic Cilantro,Organic Hass Avocado,0.006367254122,0.1744548287,1.61508444,Organic Cilantro,Organic Hass Avocado
+Organic Hass Avocado,Organic Cilantro,0.006367254122,0.05894736842,1.61508444,Organic Hass Avocado,Organic Cilantro
+Organic Baby Carrots,Large Lemon,0.005514496873,0.1321525886,1.609808887,Organic Baby Carrots,Large Lemon
+Large Lemon,Organic Baby Carrots,0.005514496873,0.06717451524,1.609808887,Large Lemon,Organic Baby Carrots
+Organic Hass Avocado,Organic Gala Apples,0.006651506538,0.06157894737,1.604701754,Organic Hass Avocado,Organic Gala Apples
+Organic Gala Apples,Organic Hass Avocado,0.006651506538,0.1733333333,1.604701754,Organic Gala Apples,Organic Hass Avocado
+Organic Garnet Sweet Potato (Yam),Banana,0.007959067652,0.3278688525,1.59756596,Organic Garnet Sweet Potato (Yam),Banana
+Banana,Organic Garnet Sweet Potato (Yam),0.007959067652,0.03878116343,1.59756596,Banana,Organic Garnet Sweet Potato (Yam)
+Organic Cilantro,Organic Avocado,0.005173393974,0.1417445483,1.59213704,Organic Cilantro,Organic Avocado
+Organic Avocado,Organic Cilantro,0.005173393974,0.05810983397,1.59213704,Organic Avocado,Organic Cilantro
+Cucumber Kirby,Strawberries,0.005571347356,0.1035940803,1.583162357,Cucumber Kirby,Strawberries
+Strawberries,Cucumber Kirby,0.005571347356,0.08514335361,1.583162357,Strawberries,Cucumber Kirby
+Organic Zucchini,Limes,0.006878908471,0.125,1.581834532,Organic Zucchini,Limes
+Limes,Organic Zucchini,0.006878908471,0.08705035971,1.581834532,Limes,Organic Zucchini
+Apple Honeycrisp Organic,Bag of Organic Bananas,0.01330301308,0.308707124,1.575785929,Apple Honeycrisp Organic,Bag of Organic Bananas
+Bag of Organic Bananas,Apple Honeycrisp Organic,0.01330301308,0.06790481718,1.575785929,Bag of Organic Bananas,Apple Honeycrisp Organic
+Organic Grape Tomatoes,Organic Hass Avocado,0.00704945992,0.1700960219,1.574731066,Organic Grape Tomatoes,Organic Hass Avocado
+Organic Hass Avocado,Organic Grape Tomatoes,0.00704945992,0.06526315789,1.574731066,Organic Hass Avocado,Organic Grape Tomatoes
+Asparagus,Organic Baby Spinach,0.006822057987,0.1941747573,1.573253791,Asparagus,Organic Baby Spinach
+Organic Baby Spinach,Asparagus,0.006822057987,0.05527406725,1.573253791,Organic Baby Spinach,Asparagus
+Organic Peeled Whole Baby Carrots,Organic Strawberries,0.006196702672,0.2319148936,1.570201301,Organic Peeled Whole Baby Carrots,Organic Strawberries
+Organic Strawberries,Organic Peeled Whole Baby Carrots,0.006196702672,0.04195535027,1.570201301,Organic Strawberries,Organic Peeled Whole Baby Carrots
+Organic Blackberries,Organic Strawberries,0.006139852189,0.2317596567,1.569150254,Organic Blackberries,Organic Strawberries
+Organic Strawberries,Organic Blackberries,0.006139852189,0.0415704388,1.569150254,Organic Strawberries,Organic Blackberries
+Organic Baby Spinach + Organic Hass Avocado,Bag of Organic Bananas,0.005571347356,0.3052959502,1.558373698,Organic Baby Spinach | Organic Hass Avocado,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Baby Spinach + Organic Hass Avocado,0.005571347356,0.02843876959,1.558373698,Bag of Organic Bananas,Organic Baby Spinach | Organic Hass Avocado
+Organic Grape Tomatoes,Organic Baby Spinach,0.007959067652,0.1920438957,1.555989003,Organic Grape Tomatoes,Organic Baby Spinach
+Organic Baby Spinach,Organic Grape Tomatoes,0.007959067652,0.06448641179,1.555989003,Organic Baby Spinach,Organic Grape Tomatoes
+Organic Grape Tomatoes,Organic Strawberries,0.009494030699,0.2290809328,1.551013706,Organic Grape Tomatoes,Organic Strawberries
+Organic Strawberries,Organic Grape Tomatoes,0.009494030699,0.06428021555,1.551013706,Organic Strawberries,Organic Grape Tomatoes
+Apple Honeycrisp Organic,Organic Raspberries,0.00545764639,0.1266490765,1.54705365,Apple Honeycrisp Organic,Organic Raspberries
+Organic Raspberries,Apple Honeycrisp Organic,0.00545764639,0.06666666667,1.54705365,Organic Raspberries,Apple Honeycrisp Organic
+Banana,100% Whole Wheat Bread,0.008584422968,0.04182825485,1.539244776,Banana,100% Whole Wheat Bread
+100% Whole Wheat Bread,Banana,0.008584422968,0.3158995816,1.539244776,100% Whole Wheat Bread,Banana
+Organic Black Beans,Bag of Organic Bananas,0.005855599773,0.3002915452,1.532828868,Organic Black Beans,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Black Beans,0.005855599773,0.02988972722,1.532828868,Bag of Organic Bananas,Organic Black Beans
+Organic Cucumber,Organic Strawberries,0.0115406481,0.2260579065,1.530546026,Organic Cucumber,Organic Strawberries
+Organic Strawberries,Organic Cucumber,0.0115406481,0.07813702848,1.530546026,Organic Strawberries,Organic Cucumber
+Cucumber Kirby,Banana,0.01688459352,0.3139534884,1.529762288,Cucumber Kirby,Banana
+Banana,Cucumber Kirby,0.01688459352,0.08227146814,1.529762288,Banana,Cucumber Kirby
+Organic Whole Milk,Bag of Organic Bananas,0.02114837976,0.2995169082,1.528874758,Organic Whole Milk,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Whole Milk,0.02114837976,0.1079512478,1.528874758,Bag of Organic Bananas,Organic Whole Milk
+Organic Gala Apples,Organic Strawberries,0.008641273451,0.2251851852,1.524637185,Organic Gala Apples,Organic Strawberries
+Organic Strawberries,Organic Gala Apples,0.008641273451,0.05850654349,1.524637185,Organic Strawberries,Organic Gala Apples
+Organic Avocado,Banana,0.02762933485,0.3103448276,1.512178814,Organic Avocado,Banana
+Banana,Organic Avocado,0.02762933485,0.1346260388,1.512178814,Banana,Organic Avocado
+Cucumber Kirby,Limes,0.006424104605,0.1194503171,1.511605092,Cucumber Kirby,Limes
+Limes,Cucumber Kirby,0.006424104605,0.08129496403,1.511605092,Limes,Cucumber Kirby
+Organic Avocado,Cucumber Kirby,0.00722001137,0.08109833972,1.507949044,Organic Avocado,Cucumber Kirby
+Cucumber Kirby,Organic Avocado,0.00722001137,0.1342494715,1.507949044,Cucumber Kirby,Organic Avocado
+Organic Hass Avocado,Organic Strawberries,0.02404775441,0.2226315789,1.507347757,Organic Hass Avocado,Organic Strawberries
+Organic Strawberries,Organic Hass Avocado,0.02404775441,0.162817552,1.507347757,Organic Strawberries,Organic Hass Avocado
+Organic Large Extra Fancy Fuji Apple,Organic Hass Avocado,0.007163160887,0.1627906977,1.507099143,Organic Large Extra Fancy Fuji Apple,Organic Hass Avocado
+Organic Hass Avocado,Organic Large Extra Fancy Fuji Apple,0.007163160887,0.06631578947,1.507099143,Organic Hass Avocado,Organic Large Extra Fancy Fuji Apple
+Organic Garlic,Organic Baby Spinach,0.0115406481,0.1858974359,1.506188806,Organic Garlic,Organic Baby Spinach
+Organic Baby Spinach,Organic Garlic,0.0115406481,0.0935052971,1.506188806,Organic Baby Spinach,Organic Garlic
+Bag of Organic Bananas,Organic Baby Spinach + Organic Strawberries,0.005741898806,0.02930934417,1.498695825,Bag of Organic Bananas,Organic Baby Spinach | Organic Strawberries
+Organic Baby Spinach + Organic Strawberries,Bag of Organic Bananas,0.005741898806,0.2936046512,1.498695825,Organic Baby Spinach | Organic Strawberries,Bag of Organic Bananas
+Organic Zucchini,Large Lemon,0.006765207504,0.1229338843,1.49751179,Organic Zucchini,Large Lemon
+Large Lemon,Organic Zucchini,0.006765207504,0.0824099723,1.49751179,Large Lemon,Organic Zucchini
+Organic Spring Mix,Bag of Organic Bananas,0.005002842524,0.2933333333,1.497310892,Organic Spring Mix,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Spring Mix,0.005002842524,0.02553685432,1.497310892,Bag of Organic Bananas,Organic Spring Mix
+Banana,Yellow Onions,0.009266628766,0.04515235457,1.492913378,Banana,Yellow Onions
+Yellow Onions,Banana,0.009266628766,0.3063909774,1.492913378,Yellow Onions,Banana
+Bag of Organic Bananas,Organic Roma Tomato,0.005059693007,0.02582704585,1.489500775,Bag of Organic Bananas,Organic Roma Tomato
+Organic Roma Tomato,Bag of Organic Bananas,0.005059693007,0.2918032787,1.489500775,Organic Roma Tomato,Bag of Organic Bananas
+Organic Baby Carrots,Organic Raspberries,0.005059693007,0.121253406,1.481144036,Organic Baby Carrots,Organic Raspberries
+Organic Raspberries,Organic Baby Carrots,0.005059693007,0.06180555556,1.481144036,Organic Raspberries,Organic Baby Carrots
+Organic Baby Spinach,Organic Cucumber,0.009266628766,0.07508060801,1.470676943,Organic Baby Spinach,Organic Cucumber
+Organic Cucumber,Organic Baby Spinach,0.009266628766,0.1815144766,1.470676943,Organic Cucumber,Organic Baby Spinach
+Red Onion,Banana,0.006424104605,0.3013333333,1.468269621,Red Onion,Banana
+Banana,Red Onion,0.006424104605,0.03130193906,1.468269621,Banana,Red Onion
+Bag of Organic Bananas + Organic Baby Spinach,Organic Strawberries,0.005741898806,0.2167381974,1.467446071,Bag of Organic Bananas | Organic Baby Spinach,Organic Strawberries
+Organic Strawberries,Bag of Organic Bananas + Organic Baby Spinach,0.005741898806,0.03887605851,1.467446071,Organic Strawberries,Bag of Organic Bananas | Organic Baby Spinach
+Organic Whole Milk,Organic Raspberries,0.008470722001,0.1199677939,1.465439927,Organic Whole Milk,Organic Raspberries
+Organic Raspberries,Organic Whole Milk,0.008470722001,0.1034722222,1.465439927,Organic Raspberries,Organic Whole Milk
+Organic Baby Arugula,Organic Baby Spinach,0.006310403638,0.180781759,1.464740276,Organic Baby Arugula,Organic Baby Spinach
+Organic Baby Spinach,Organic Baby Arugula,0.006310403638,0.05112851221,1.464740276,Organic Baby Spinach,Organic Baby Arugula
+Organic Zucchini,Organic Avocado,0.007163160887,0.1301652893,1.462073715,Organic Zucchini,Organic Avocado
+Organic Avocado,Organic Zucchini,0.007163160887,0.08045977011,1.462073715,Organic Avocado,Organic Zucchini
+Organic Baby Spinach,Organic Small Bunch Celery,0.006708357021,0.0543528328,1.461875121,Organic Baby Spinach,Organic Small Bunch Celery
+Organic Small Bunch Celery,Organic Baby Spinach,0.006708357021,0.1804281346,1.461875121,Organic Small Bunch Celery,Organic Baby Spinach
+Grated Parmesan,Bag of Organic Bananas,0.006253553155,0.2857142857,1.4584197,Grated Parmesan,Bag of Organic Bananas
+Bag of Organic Bananas,Grated Parmesan,0.006253553155,0.0319210679,1.4584197,Bag of Organic Bananas,Grated Parmesan
+Red Vine Tomato,Banana,0.008300170551,0.2991803279,1.457778938,Red Vine Tomato,Banana
+Banana,Red Vine Tomato,0.008300170551,0.0404432133,1.457778938,Banana,Red Vine Tomato
+Organic Kiwi,Organic Strawberries,0.00562819784,0.2142857143,1.450841306,Organic Kiwi,Organic Strawberries
+Organic Strawberries,Organic Kiwi,0.00562819784,0.03810623557,1.450841306,Organic Strawberries,Organic Kiwi
+Large Lemon,Organic Baby Spinach,0.01466742467,0.1786703601,1.44763318,Large Lemon,Organic Baby Spinach
+Organic Baby Spinach,Large Lemon,0.01466742467,0.1188392446,1.44763318,Organic Baby Spinach,Large Lemon
+Organic Hass Avocado,Organic Zucchini,0.008527572484,0.07894736842,1.434591127,Organic Hass Avocado,Organic Zucchini
+Organic Zucchini,Organic Hass Avocado,0.008527572484,0.1549586777,1.434591127,Organic Zucchini,Organic Hass Avocado
+Organic Baby Spinach,Organic Yellow Onion,0.01028993746,0.0833717181,1.433537167,Organic Baby Spinach,Organic Yellow Onion
+Organic Yellow Onion,Organic Baby Spinach,0.01028993746,0.1769305963,1.433537167,Organic Yellow Onion,Organic Baby Spinach
+Honeycrisp Apple,Organic Hass Avocado,0.00545764639,0.1538461538,1.424291498,Honeycrisp Apple,Organic Hass Avocado
+Organic Hass Avocado,Honeycrisp Apple,0.00545764639,0.05052631579,1.424291498,Organic Hass Avocado,Honeycrisp Apple
+Banana,Honeycrisp Apple,0.01034678795,0.05041551247,1.421168052,Banana,Honeycrisp Apple
+Honeycrisp Apple,Banana,0.01034678795,0.2916666667,1.421168052,Honeycrisp Apple,Banana
+Organic Cucumber,Organic Whole Milk,0.005116543491,0.1002227171,1.419418353,Organic Cucumber,Organic Whole Milk
+Organic Whole Milk,Organic Cucumber,0.005116543491,0.07246376812,1.419418353,Organic Whole Milk,Organic Cucumber
+Organic Strawberries,Organic Lemon,0.009835133599,0.06658968437,1.418053932,Organic Strawberries,Organic Lemon
+Organic Lemon,Organic Strawberries,0.009835133599,0.2094430993,1.418053932,Organic Lemon,Organic Strawberries
+Organic Garlic,Large Lemon,0.00722001137,0.1163003663,1.416705986,Organic Garlic,Large Lemon
+Large Lemon,Organic Garlic,0.00722001137,0.0879501385,1.416705986,Large Lemon,Organic Garlic
+Organic Strawberries,Organic Granny Smith Apple,0.005741898806,0.03887605851,1.41579683,Organic Strawberries,Organic Granny Smith Apple
+Organic Granny Smith Apple,Organic Strawberries,0.005741898806,0.2091097308,1.41579683,Organic Granny Smith Apple,Organic Strawberries
+Unsweetened Almondmilk,Bag of Organic Bananas,0.006822057987,0.2764976959,1.411373903,Unsweetened Almondmilk,Bag of Organic Bananas
+Bag of Organic Bananas,Unsweetened Almondmilk,0.006822057987,0.03482298317,1.411373903,Bag of Organic Bananas,Unsweetened Almondmilk
+Organic Whole Milk,Organic Avocado,0.008868675384,0.1256038647,1.410837791,Organic Whole Milk,Organic Avocado
+Organic Avocado,Organic Whole Milk,0.008868675384,0.09961685824,1.410837791,Organic Avocado,Organic Whole Milk
+Organic Zucchini,Bag of Organic Bananas,0.01512222854,0.2747933884,1.402674319,Organic Zucchini,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Zucchini,0.01512222854,0.07719094602,1.402674319,Bag of Organic Bananas,Organic Zucchini
+Organic Whole String Cheese,Organic Hass Avocado,0.005400795907,0.1505546751,1.393819334,Organic Whole String Cheese,Organic Hass Avocado
+Organic Hass Avocado,Organic Whole String Cheese,0.005400795907,0.05,1.393819334,Organic Hass Avocado,Organic Whole String Cheese
+Limes,Organic Hass Avocado,0.01188175099,0.1503597122,1.392014388,Limes,Organic Hass Avocado
+Organic Hass Avocado,Limes,0.01188175099,0.11,1.392014388,Organic Hass Avocado,Limes
+Organic Strawberries,Seedless Red Grapes,0.008129619102,0.05504234026,1.391084433,Organic Strawberries,Seedless Red Grapes
+Seedless Red Grapes,Organic Strawberries,0.008129619102,0.2054597701,1.391084433,Seedless Red Grapes,Organic Strawberries
+Organic Hass Avocado,Fresh Cauliflower,0.005514496873,0.05105263158,1.387968763,Organic Hass Avocado,Fresh Cauliflower
+Fresh Cauliflower,Organic Hass Avocado,0.005514496873,0.1499227202,1.387968763,Fresh Cauliflower,Organic Hass Avocado
+Organic Baby Carrots,Organic Baby Spinach,0.007106310404,0.1702997275,1.379812164,Organic Baby Carrots,Organic Baby Spinach
+Organic Baby Spinach,Organic Baby Carrots,0.007106310404,0.05757715339,1.379812164,Organic Baby Spinach,Organic Baby Carrots
+Organic Hass Avocado,Organic Baby Spinach,0.01824900512,0.1689473684,1.368855003,Organic Hass Avocado,Organic Baby Spinach
+Organic Baby Spinach,Organic Hass Avocado,0.01824900512,0.1478581299,1.368855003,Organic Baby Spinach,Organic Hass Avocado
+Organic Whole Milk,Organic Strawberries,0.01421262081,0.2012882448,1.362840733,Organic Whole Milk,Organic Strawberries
+Organic Strawberries,Organic Whole Milk,0.01421262081,0.09622786759,1.362840733,Organic Strawberries,Organic Whole Milk
+Organic Gala Apples,Bag of Organic Bananas,0.01023308698,0.2666666667,1.36119172,Organic Gala Apples,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Gala Apples,0.01023308698,0.05223447475,1.36119172,Bag of Organic Bananas,Organic Gala Apples
+Organic Whole Milk,Organic Zucchini,0.00528709494,0.07487922705,1.360666946,Organic Whole Milk,Organic Zucchini
+Organic Zucchini,Organic Whole Milk,0.00528709494,0.09607438017,1.360666946,Organic Zucchini,Organic Whole Milk
+Organic Tomato Cluster,Organic Baby Spinach,0.005343945424,0.1678571429,1.360021715,Organic Tomato Cluster,Organic Baby Spinach
+Organic Baby Spinach,Organic Tomato Cluster,0.005343945424,0.04329801935,1.360021715,Organic Baby Spinach,Organic Tomato Cluster
+100% Whole Wheat Bread,Organic Strawberries,0.00545764639,0.2008368201,1.359784321,100% Whole Wheat Bread,Organic Strawberries
+Organic Strawberries,100% Whole Wheat Bread,0.00545764639,0.03695150115,1.359784321,Organic Strawberries,100% Whole Wheat Bread
+Organic Strawberries,Bag of Organic Bananas,0.03934053439,0.2663587375,1.359619905,Organic Strawberries,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Strawberries,0.03934053439,0.2008125363,1.359619905,Bag of Organic Bananas,Organic Strawberries
+Banana,Strawberries,0.01824900512,0.08891966759,1.358902652,Banana,Strawberries
+Strawberries,Banana,0.01824900512,0.2788879235,1.358902652,Strawberries,Banana
+Bag of Organic Bananas,Fresh Cauliflower,0.009778283115,0.04991294254,1.356984017,Bag of Organic Bananas,Fresh Cauliflower
+Fresh Cauliflower,Bag of Organic Bananas,0.009778283115,0.2658423493,1.356984017,Fresh Cauliflower,Bag of Organic Bananas
+Large Lemon,Banana,0.02256964184,0.2749307479,1.339621013,Large Lemon,Banana
+Banana,Large Lemon,0.02256964184,0.1099722992,1.339621013,Banana,Large Lemon
+Organic Garlic,Organic Avocado,0.00739056282,0.119047619,1.337195159,Organic Garlic,Organic Avocado
+Organic Avocado,Organic Garlic,0.00739056282,0.08301404853,1.337195159,Organic Avocado,Organic Garlic
+Organic Baby Spinach,Carrots,0.006424104605,0.05204974666,1.336576706,Organic Baby Spinach,Carrots
+Carrots,Organic Baby Spinach,0.006424104605,0.1649635036,1.336576706,Carrots,Organic Baby Spinach
+Organic Granny Smith Apple,Bag of Organic Bananas,0.007163160887,0.2608695652,1.331600596,Organic Granny Smith Apple,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Granny Smith Apple,0.007163160887,0.03656413233,1.331600596,Bag of Organic Bananas,Organic Granny Smith Apple
+Broccoli Crown,Banana,0.005230244457,0.2729970326,1.330198838,Broccoli Crown,Banana
+Banana,Broccoli Crown,0.005230244457,0.02548476454,1.330198838,Banana,Broccoli Crown
+Organic Cilantro,Organic Baby Spinach,0.005969300739,0.1635514019,1.325135495,Organic Cilantro,Organic Baby Spinach
+Organic Baby Spinach,Organic Cilantro,0.005969300739,0.04836480884,1.325135495,Organic Baby Spinach,Organic Cilantro
+Bag of Organic Bananas,Organic Grape Tomatoes,0.01074474133,0.05484619849,1.323380839,Bag of Organic Bananas,Organic Grape Tomatoes
+Organic Grape Tomatoes,Bag of Organic Bananas,0.01074474133,0.2592592593,1.323380839,Organic Grape Tomatoes,Bag of Organic Bananas
+Bag of Organic Bananas,Frozen Organic Wild Blueberries,0.005400795907,0.02756819501,1.3213203,Bag of Organic Bananas,Frozen Organic Wild Blueberries
+Frozen Organic Wild Blueberries,Bag of Organic Bananas,0.005400795907,0.2588555858,1.3213203,Frozen Organic Wild Blueberries,Bag of Organic Bananas
+Sparkling Water Grapefruit,Banana,0.01028993746,0.2709580838,1.320263904,Sparkling Water Grapefruit,Banana
+Banana,Sparkling Water Grapefruit,0.01028993746,0.05013850416,1.320263904,Banana,Sparkling Water Grapefruit
+Organic Red Onion,Organic Hass Avocado,0.005230244457,0.1411042945,1.306328705,Organic Red Onion,Organic Hass Avocado
+Organic Hass Avocado,Organic Red Onion,0.005230244457,0.04842105263,1.306328705,Organic Hass Avocado,Organic Red Onion
+Bag of Organic Bananas + Organic Hass Avocado,Organic Baby Spinach,0.005571347356,0.160130719,1.297420242,Bag of Organic Bananas | Organic Hass Avocado,Organic Baby Spinach
+Organic Baby Spinach,Bag of Organic Bananas + Organic Hass Avocado,0.005571347356,0.04514048825,1.297420242,Organic Baby Spinach,Bag of Organic Bananas | Organic Hass Avocado
+Organic Unsweetened Almond Milk,Bag of Organic Bananas,0.006594656055,0.2538293217,1.295663891,Organic Unsweetened Almond Milk,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Unsweetened Almond Milk,0.006594656055,0.03366221706,1.295663891,Bag of Organic Bananas,Organic Unsweetened Almond Milk
+Organic Grade A Free Range Large Brown Eggs,Banana,0.005571347356,0.2648648649,1.290574231,Organic Grade A Free Range Large Brown Eggs,Banana
+Banana,Organic Grade A Free Range Large Brown Eggs,0.005571347356,0.0271468144,1.290574231,Banana,Organic Grade A Free Range Large Brown Eggs
+Organic Half & Half,Bag of Organic Bananas,0.007617964753,0.252354049,1.288133407,Organic Half & Half,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Half & Half,0.007617964753,0.03888566454,1.288133407,Bag of Organic Bananas,Organic Half & Half
+Organic D'Anjou Pears,Bag of Organic Bananas,0.006196702672,0.2511520737,1.281997962,Organic D'Anjou Pears,Bag of Organic Bananas
+Bag of Organic Bananas,Organic D'Anjou Pears,0.006196702672,0.03163087638,1.281997962,Bag of Organic Bananas,Organic D'Anjou Pears
+Organic Carrot Bunch,Bag of Organic Bananas,0.00562819784,0.2506329114,1.279347914,Organic Carrot Bunch,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Carrot Bunch,0.00562819784,0.02872896111,1.279347914,Bag of Organic Bananas,Organic Carrot Bunch
+Organic Gala Apples,Banana,0.01006253553,0.2622222222,1.277697753,Organic Gala Apples,Banana
+Banana,Organic Gala Apples,0.01006253553,0.04903047091,1.277697753,Banana,Organic Gala Apples
+Fresh Cauliflower,Organic Baby Spinach,0.005798749289,0.1576506955,1.277326455,Fresh Cauliflower,Organic Baby Spinach
+Organic Baby Spinach,Fresh Cauliflower,0.005798749289,0.04698295716,1.277326455,Organic Baby Spinach,Fresh Cauliflower
+Original Hummus,Bag of Organic Bananas,0.009096077317,0.25,1.276117237,Original Hummus,Bag of Organic Bananas
+Bag of Organic Bananas,Original Hummus,0.009096077317,0.04643064423,1.276117237,Bag of Organic Bananas,Original Hummus
+Organic Small Bunch Celery,Organic Hass Avocado,0.005116543491,0.1376146789,1.274022211,Organic Small Bunch Celery,Organic Hass Avocado
+Organic Hass Avocado,Organic Small Bunch Celery,0.005116543491,0.04736842105,1.274022211,Organic Hass Avocado,Organic Small Bunch Celery
+Organic Avocado,Organic Baby Spinach,0.01398521887,0.1570881226,1.272768345,Organic Avocado,Organic Baby Spinach
+Organic Baby Spinach,Organic Avocado,0.01398521887,0.1133118379,1.272768345,Organic Baby Spinach,Organic Avocado
+Organic Hass Avocado,Apple Honeycrisp Organic,0.005912450256,0.05473684211,1.27021247,Organic Hass Avocado,Apple Honeycrisp Organic
+Apple Honeycrisp Organic,Organic Hass Avocado,0.005912450256,0.1372031662,1.27021247,Apple Honeycrisp Organic,Organic Hass Avocado
+Honeycrisp Apple,Organic Strawberries,0.006651506538,0.1875,1.269486143,Honeycrisp Apple,Organic Strawberries
+Organic Strawberries,Honeycrisp Apple,0.006651506538,0.04503464203,1.269486143,Organic Strawberries,Honeycrisp Apple
+Organic Italian Parsley Bunch,Organic Strawberries,0.005912450256,0.1870503597,1.266441812,Organic Italian Parsley Bunch,Organic Strawberries
+Organic Strawberries,Organic Italian Parsley Bunch,0.005912450256,0.04003079292,1.266441812,Organic Strawberries,Organic Italian Parsley Bunch
+Organic Strawberries,Organic Ginger Root,0.005400795907,0.03656658968,1.261188848,Organic Strawberries,Organic Ginger Root
+Organic Ginger Root,Organic Strawberries,0.005400795907,0.1862745098,1.261188848,Organic Ginger Root,Organic Strawberries
+Apple Honeycrisp Organic,Organic Strawberries,0.008015918135,0.1860158311,1.25943744,Apple Honeycrisp Organic,Organic Strawberries
+Organic Strawberries,Apple Honeycrisp Organic,0.008015918135,0.05427251732,1.25943744,Organic Strawberries,Apple Honeycrisp Organic
+Organic Garlic,Organic Whole Milk,0.005514496873,0.08882783883,1.258036783,Organic Garlic,Organic Whole Milk
+Organic Whole Milk,Organic Garlic,0.005514496873,0.07809983897,1.258036783,Organic Whole Milk,Organic Garlic
+Organic Raspberries,Organic Baby Spinach,0.01267765776,0.1548611111,1.254724525,Organic Raspberries,Organic Baby Spinach
+Organic Baby Spinach,Organic Raspberries,0.01267765776,0.1027176416,1.254724525,Organic Baby Spinach,Organic Raspberries
+Limes,Organic Cucumber,0.005059693007,0.06402877698,1.254193972,Limes,Organic Cucumber
+Organic Cucumber,Limes,0.005059693007,0.0991091314,1.254193972,Organic Cucumber,Limes
+Organic Red Onion,Bag of Organic Bananas,0.009096077317,0.245398773,1.252630417,Organic Red Onion,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Red Onion,0.009096077317,0.04643064423,1.252630417,Bag of Organic Bananas,Organic Red Onion
+Fresh Cauliflower,Organic Strawberries,0.006765207504,0.1839258114,1.245286768,Fresh Cauliflower,Organic Strawberries
+Organic Strawberries,Fresh Cauliflower,0.006765207504,0.04580446497,1.245286768,Organic Strawberries,Fresh Cauliflower
+Organic Baby Carrots,Bag of Organic Bananas,0.0101762365,0.2438692098,1.244822809,Organic Baby Carrots,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Baby Carrots,0.0101762365,0.05194428323,1.244822809,Bag of Organic Bananas,Organic Baby Carrots
+Organic Cilantro,Organic Strawberries,0.006708357021,0.1838006231,1.244439168,Organic Cilantro,Organic Strawberries
+Organic Strawberries,Organic Cilantro,0.006708357021,0.0454195535,1.244439168,Organic Strawberries,Organic Cilantro
+Asparagus,Organic Strawberries,0.006424104605,0.1828478964,1.237988644,Asparagus,Organic Strawberries
+Organic Strawberries,Asparagus,0.006424104605,0.04349499615,1.237988644,Organic Strawberries,Asparagus
+Organic Lemon,Organic Baby Spinach,0.007163160887,0.1525423729,1.235937512,Organic Lemon,Organic Baby Spinach
+Organic Baby Spinach,Organic Lemon,0.007163160887,0.05803777061,1.235937512,Organic Baby Spinach,Organic Lemon
+Bag of Organic Bananas,Organic Yellow Onion,0.01404206936,0.07167730702,1.232457312,Bag of Organic Bananas,Organic Yellow Onion
+Organic Yellow Onion,Bag of Organic Bananas,0.01404206936,0.2414467253,1.232457312,Organic Yellow Onion,Bag of Organic Bananas
+Organic Peeled Whole Baby Carrots,Bag of Organic Bananas,0.006367254122,0.2382978723,1.21638409,Organic Peeled Whole Baby Carrots,Bag of Organic Bananas
+Bag of Organic Bananas,Organic Peeled Whole Baby Carrots,0.006367254122,0.03250145096,1.21638409,Bag of Organic Bananas,Organic Peeled Whole Baby Carrots
+Organic Blueberries,Organic Baby Spinach,0.007561114269,0.1497747748,1.213513721,Organic Blueberries,Organic Baby Spinach
+Organic Baby Spinach,Organic Blueberries,0.007561114269,0.0612620912,1.213513721,Organic Baby Spinach,Organic Blueberries
+Organic Whole Milk,Organic Baby Spinach,0.0105173394,0.1489533011,1.20685793,Organic Whole Milk,Organic Baby Spinach
+Organic Baby Spinach,Organic Whole Milk,0.0105173394,0.08521418701,1.20685793,Organic Baby Spinach,Organic Whole Milk
+Bag of Organic Bananas,Organic Whole String Cheese,0.008470722001,0.04323853743,1.205334189,Bag of Organic Bananas,Organic Whole String Cheese
+Organic Whole String Cheese,Bag of Organic Bananas,0.008470722001,0.236133122,1.205334189,Organic Whole String Cheese,Bag of Organic Bananas
+Seedless Red Grapes,Banana,0.009778283115,0.2471264368,1.204142389,Seedless Red Grapes,Banana
+Banana,Seedless Red Grapes,0.009778283115,0.04764542936,1.204142389,Banana,Seedless Red Grapes

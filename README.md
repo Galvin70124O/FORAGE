@@ -38,10 +38,10 @@ Every analysis page has a **Methods** note explaining the technique in plain wor
 | --- | --- | --- |
 | Demo data | 7,300 synthetic household records (20 foods × 365 days, 2025) made by `src/generate_data.py`. In the raw file, `Price` is the total paid per purchase, so price per unit = Price ÷ Quantity_Purchased. ₹ figures from it are labelled *illustrative (synthetic prices)*. | Ours; committed |
 | My data | Each user's own purchases and pantry checks, in Neon Postgres (online) or a local SQLite file | Private to each Google account |
-| M5 (Walmart) | Retail unit sales, store CA_1, the 100 best-selling food items, last 180 days | Kaggle competition rules: non-commercial use. Not redistributed; **local only** |
-| Instacart | Online grocery orders from users 1–2,000 (313,404 order lines) | "Non-commercial use … subject to Instacart's Terms". Not redistributed; **local only** |
+| M5 (Walmart) | Retail unit sales, store CA_1, the 100 best-selling food items, last 180 days | Kaggle competition rules: non-commercial use. Raw files not redistributed; daily totals and model results published in `data/public/m5/` |
+| Instacart | Online grocery orders from users 1–2,000 (313,404 order lines) | "Non-commercial use … subject to Instacart's Terms". Raw files not redistributed; aggregates only in `data/public/instacart/` |
 
-`docs/data_licences.md` records the licence check. To use M5 and Instacart locally, download them yourself into `dataset/` and run `python src/real_data_processor.py`. Online, those pages say "available in the local version".
+`docs/data_licences.md` records the licence check. To use M5 and Instacart locally, download them yourself into `dataset/` and run `python src/real_data_processor.py`. The raw files are never committed. Online, those pages read aggregated results published in `data/public/` (built by `python scripts/build_public_artifacts.py`; no Instacart user IDs or order rows).
 
 **Definitions.**
 
@@ -128,4 +128,4 @@ Never commit `.streamlit/secrets.toml`, `.env`, `dataset/` or `data/real/`.
 
 - **The demo data is synthetic.** Its waste is a random share of unused food, independent of expiry, so long-shelf-life foods waste the most there. Its prices are illustrative.
 - **Personal data is weekly.** It supports period-level analyses only, and models trained on it become reliable only after several weeks.
-- **The M5 and Instacart extracts are bounded subsets** (one store, 100 items, 180 days; 2,000 users) and are not available online.
+- **The M5 and Instacart extracts are bounded subsets** (one store, 100 items, 180 days; 2,000 users). Online, their pages use precomputed results, so they don't retrain models.

@@ -1,0 +1,177 @@
+{
+  "dataset": "instacart",
+  "source": "The Instacart Online Grocery Shopping Dataset 2017, users 1-2,000",
+  "url": "https://www.kaggle.com/datasets/psparks/instacart-market-basket-analysis",
+  "attribution": "Data: \"The Instacart Online Grocery Shopping Dataset 2017\", Instacart.",
+  "licence": "Non-commercial use, subject to Instacart's terms. The raw files are not redistributed; this folder holds aggregates only: no user IDs and no order-level rows.",
+  "built": "2026-10-20",
+  "files": {
+    "departments.csv": {
+      "rows": 21,
+      "columns": [
+        "Department",
+        "Lines",
+        "Reorder_Rate"
+      ],
+      "dates": [],
+      "sha256": "b1c29aaed9d29f6e12b54b6ff1d5c7655ba1e537e03f113e25105bb114ec631d"
+    },
+    "aisles.csv": {
+      "rows": 134,
+      "columns": [
+        "Aisle",
+        "Department",
+        "Lines",
+        "Reorder_Rate"
+      ],
+      "dates": [],
+      "sha256": "b3e4a4d549b67bf0f0a04217c9f131349badce3aa7ddc62dea67783dd54b3ed2"
+    },
+    "products.csv": {
+      "rows": 1149,
+      "columns": [
+        "Product_Name",
+        "Department",
+        "Order_Lines",
+        "Customers",
+        "Reorder_Rate"
+      ],
+      "dates": [],
+      "sha256": "6adf0a3511d574f9531e5b901a012e8e0524c5de2fa017a36948bd4b0bf0f7f1"
+    },
+    "frequency.csv": {
+      "rows": 21,
+      "columns": [
+        "Department",
+        "Count",
+        "Share (%)"
+      ],
+      "dates": [],
+      "sha256": "44f4d537b08d98ab02fe569c0ccace569536d479e5703e0ee838acfd451b69a9"
+    },
+    "order_statistics.csv": {
+      "rows": 6,
+      "columns": [
+        "Column",
+        "Count",
+        "Missing",
+        "Mean",
+        "Median",
+        "Mode",
+        "Std",
+        "Min",
+        "Max",
+        "Q1",
+        "Q3",
+        "IQR"
+      ],
+      "dates": [],
+      "sha256": "7002c3383a77d4656dc7e31641c70ef2ee15cffc12c474f9399579532a010daa"
+    },
+    "order_correlation.csv": {
+      "rows": 6,
+      "columns": [
+        "Variable",
+        "Items per order",
+        "Reordered share of basket",
+        "Days since previous order",
+        "Hour of day (0\u201323)",
+        "Day code (0\u20136)",
+        "Customer's order number"
+      ],
+      "dates": [],
+      "sha256": "1fc67d82f238b376519957cc66ae7e50b6ef01653df8714ceb1cfee3d520a667"
+    },
+    "basket_sizes.csv": {
+      "rows": 63,
+      "columns": [
+        "Items per order",
+        "Orders"
+      ],
+      "dates": [],
+      "sha256": "c3fffe988fb5b680d78aaa246b9c00615b7cb6a253916b5dd2c5c5433c5a5809"
+    },
+    "day_hour.csv": {
+      "rows": 168,
+      "columns": [
+        "Day_Code",
+        "Hour",
+        "Orders"
+      ],
+      "dates": [],
+      "sha256": "260585bf84ea72cad12b02851efc7768742db5d4431b9d7fa22419ccad46d585"
+    },
+    "days_since.csv": {
+      "rows": 32,
+      "columns": [
+        "Days_Since",
+        "Orders"
+      ],
+      "dates": [],
+      "sha256": "f7cbb70dd5355d3efd2494790c72a886bdb70bc0973b775b06dbf12d929450b3"
+    },
+    "profile.csv": {
+      "rows": 13,
+      "columns": [
+        "Column",
+        "Type",
+        "Missing",
+        "Missing (%)",
+        "Distinct"
+      ],
+      "dates": [],
+      "sha256": "feb5444699a8e676dd9621e0598b16ec55033223b9929cd328e4dd373723df00"
+    },
+    "outliers.csv": {
+      "rows": 4,
+      "columns": [
+        "Column",
+        "Lower bound",
+        "Upper bound",
+        "Outliers",
+        "Outliers (%)"
+      ],
+      "dates": [],
+      "sha256": "1bd7c1c14d99619f55c8655a237d38eea70ae675c9fb26a5d84ffc3b3a8cf25d"
+    },
+    "rules.csv": {
+      "rows": 456,
+      "columns": [
+        "If",
+        "Then",
+        "Support",
+        "Confidence",
+        "Lift",
+        "Antecedents",
+        "Consequents"
+      ],
+      "dates": [],
+      "sha256": "bc07ccd040aa21e9d0f9f1964bde440ed05343a2d244e03361b599be9be5a1db"
+    },
+    "tests.csv": {
+      "rows": 1,
+      "columns": [
+        "name",
+        "question",
+        "h0",
+        "h1",
+        "statistic_name",
+        "statistic",
+        "p_value",
+        "effect_name",
+        "effect",
+        "effect_label",
+        "n",
+        "conclusion",
+        "extra"
+      ],
+      "dates": [],
+      "sha256": "c1db57a41c06ce487c0276688b502c23021f0f8fb4ad4e9f12689c1257d62ce8"
+    },
+    "values.json": {
+      "rows": null,
+      "sha256": "608105340ad53b064a0049ab2b329f7019dd1338f231b5c99ab45adcd6ae50c5"
+    }
+  },
+  "total_bytes": 129355
+}

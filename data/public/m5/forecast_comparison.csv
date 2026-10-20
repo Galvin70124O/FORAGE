@@ -1,0 +1,5 @@
+Model,Type,MAE,RMSE,R2
+Random Forest,Model,4.312172451,6.5862046,0.649983545
+Linear Regression,Model,4.465643435,6.822030367,0.6244694075
+7-day moving average,Baseline,4.855469388,7.498787074,0.5462673097
+Naive (yesterday's value),Baseline,5.600285714,8.87965572,0.3637756575

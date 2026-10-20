@@ -1,0 +1,63 @@
+{
+  "order_lines": 313404,
+  "orders": 31749,
+  "products": 21017,
+  "customers": 2000,
+  "columns": 13,
+  "missing_values": 19681,
+  "duplicate_keys": 0,
+  "reorder_rate": 0.5858093706525762,
+  "items_per_order": 9.871303033166399,
+  "order_columns": [
+    "Items per order",
+    "Reordered share of basket",
+    "Days since previous order",
+    "Hour of day (0\u201323)",
+    "Day code (0\u20136)",
+    "Customer's order number"
+  ],
+  "repeat_min_lines": 50,
+  "rules_orders": 17590,
+  "rules_products": 150,
+  "quality_report": {
+    "rows": 313404,
+    "columns": [
+      "Order_ID",
+      "User_ID",
+      "Order_Set",
+      "Order_Number",
+      "Order_Day_Of_Week",
+      "Order_Hour",
+      "Days_Since_Prior_Order",
+      "Product_ID",
+      "Product_Name",
+      "Aisle",
+      "Department",
+      "Add_To_Cart_Order",
+      "Reordered"
+    ],
+    "missing_values": {
+      "Order_ID": 0,
+      "User_ID": 0,
+      "Order_Set": 0,
+      "Order_Number": 0,
+      "Order_Day_Of_Week": 0,
+      "Order_Hour": 0,
+      "Days_Since_Prior_Order": 19681,
+      "Product_ID": 0,
+      "Product_Name": 0,
+      "Aisle": 0,
+      "Department": 0,
+      "Add_To_Cart_Order": 0,
+      "Reordered": 0
+    },
+    "duplicate_keys": 0,
+    "selection": {
+      "user_id_upper_bound": 2000,
+      "reason": "Deterministic subset of users 1\u20132,000, joined to all their available prior/train product lines; it avoids repeatedly processing 32m raw line items."
+    },
+    "missing_product_metadata": 0,
+    "missing_order_relationship": 0,
+    "invalid_reordered": 0
+  }
+}

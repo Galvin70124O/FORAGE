@@ -1,0 +1,66 @@
+{
+  "forecast": {
+    "cutoff": "2016-03-21",
+    "best_model": "Random Forest",
+    "train_rows": 13800,
+    "test_rows": 3500
+  },
+  "week": {
+    "best": "4-week average",
+    "cutoff": "2016-03-21",
+    "train_rows": 11100,
+    "test_rows": 2800
+  },
+  "explanations": {
+    "model_name": "Random Forest",
+    "selected_overall": "Random Forest",
+    "keys": [
+      "Product_ID",
+      "Department"
+    ]
+  },
+  "quality_report": {
+    "rows": 18000,
+    "columns": [
+      "Date",
+      "Product_ID",
+      "Store_ID",
+      "Department",
+      "Category",
+      "Quantity_Sold",
+      "Price",
+      "Weekday",
+      "Month",
+      "Event_Name",
+      "Event_Type"
+    ],
+    "missing_values": {
+      "Date": 0,
+      "Product_ID": 0,
+      "Store_ID": 0,
+      "Department": 0,
+      "Category": 0,
+      "Quantity_Sold": 0,
+      "Price": 0,
+      "Weekday": 0,
+      "Month": 0,
+      "Event_Name": 16400,
+      "Event_Type": 16400
+    },
+    "duplicate_keys": 0,
+    "selection": {
+      "store": "CA_1",
+      "departments": [
+        "FOODS_1",
+        "FOODS_2",
+        "FOODS_3"
+      ],
+      "days": 180,
+      "products": 100,
+      "reason": "All genuine M5 food departments; one representative store and the highest-selling products in the final 180 available training days keep the dashboard responsive."
+    },
+    "invalid_negative_sales": 0,
+    "missing_prices": 0,
+    "invalid_dates": 0
+  }
+}

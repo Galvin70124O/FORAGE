@@ -59,7 +59,7 @@ url = "<Neon pooled connection string>"
 
 - The sidebar shows **Continue with Google**. After signing in it shows your name and **Log out**, and the "Your food" pages work.
 - Log a purchase, then a pantry check, and confirm they appear under **My data**. Restart the app from the Cloud menu (**⋮ → Reboot**) and confirm they are still there, because they live in Neon.
-- The Insights pages work without signing in. M5 and Instacart show "available in the local version" (see `docs/data_licences.md`).
+- The Insights pages work without signing in. M5 and Instacart use the aggregated results in `data/public/` (see `docs/data_licences.md`).
 - If Neon has been idle, the first request shows **Waking up the database…** for a few seconds.
 
 ## Notes

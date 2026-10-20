@@ -1,0 +1,256 @@
+{
+  "dataset": "m5",
+  "source": "M5 Forecasting - Accuracy (Walmart), Kaggle competition data, store CA_1",
+  "url": "https://www.kaggle.com/competitions/m5-forecasting-accuracy/data",
+  "attribution": "Data: Walmart via the M5 Forecasting competition (University of Nicosia / MOFC, Kaggle).",
+  "licence": "Kaggle competition rules: non-commercial, academic use. The raw files are not redistributed; this folder holds daily unit-sales totals for 100 items and model results computed from them.",
+  "built": "2026-10-20",
+  "files": {
+    "item_day.csv": {
+      "rows": 18000,
+      "columns": [
+        "Date",
+        "Product_ID",
+        "Store_ID",
+        "Department",
+        "Category",
+        "Quantity_Sold",
+        "Price",
+        "Weekday",
+        "Month",
+        "Event_Name",
+        "Event_Type"
+      ],
+      "dates": [
+        "Date"
+      ],
+      "sha256": "1b8aedbc32da0a55a1f16d41e5ee79287aced39b5420ee1ad52efeb742f577b4"
+    },
+    "summary_statistics.csv": {
+      "rows": 2,
+      "columns": [
+        "Column",
+        "Count",
+        "Missing",
+        "Mean",
+        "Median",
+        "Mode",
+        "Std",
+        "Min",
+        "Max",
+        "Q1",
+        "Q3",
+        "IQR"
+      ],
+      "dates": [],
+      "sha256": "4ba026f59d302ae757b8d28a14b5077d48fa3fd9a883f16fe9b9b9dc114584b2"
+    },
+    "forecast_comparison.csv": {
+      "rows": 4,
+      "columns": [
+        "Model",
+        "Type",
+        "MAE",
+        "RMSE",
+        "R2"
+      ],
+      "dates": [],
+      "sha256": "0ecb4cd42a60e561f3b84be3a6a2b4a524152c090aac6b2ae77af4ffce355c0f"
+    },
+    "forecast_test.csv": {
+      "rows": 3500,
+      "columns": [
+        "Date",
+        "Product_ID",
+        "Department",
+        "Quantity_Sold",
+        "Random Forest",
+        "Linear Regression",
+        "7-day moving average",
+        "Naive (yesterday's value)"
+      ],
+      "dates": [
+        "Date"
+      ],
+      "sha256": "355a11bbb8834555e9e919d3e01fc5aa92822d9c30502e9fbeb2daf3f2a125ab"
+    },
+    "rolling_per_fold.csv": {
+      "rows": 20,
+      "columns": [
+        "Fold",
+        "Model",
+        "Type",
+        "MAE",
+        "RMSE",
+        "R2",
+        "Cutoff",
+        "Train_Rows",
+        "Test_Rows"
+      ],
+      "dates": [
+        "Cutoff"
+      ],
+      "sha256": "9004fd1c801d8a1effce43ab2697b6b13164f53a0d1317100f8b1ed309569b2e"
+    },
+    "rolling_summary.csv": {
+      "rows": 4,
+      "columns": [
+        "Model",
+        "Type",
+        "MAE_mean",
+        "MAE_std",
+        "RMSE_mean",
+        "RMSE_std",
+        "R2_mean",
+        "R2_std",
+        "Folds"
+      ],
+      "dates": [],
+      "sha256": "dbfc724e667e443f8e678900a176755ec5840fda4fc1ef32d22993092f68a933"
+    },
+    "week_comparison.csv": {
+      "rows": 4,
+      "columns": [
+        "Model",
+        "Type",
+        "MAE",
+        "RMSE",
+        "R2"
+      ],
+      "dates": [],
+      "sha256": "925db0430354963377678fae27bce32d97f59685d2236d8e2a50d50bc00bf101"
+    },
+    "week_rolling.csv": {
+      "rows": 4,
+      "columns": [
+        "Model",
+        "Type",
+        "MAE_mean",
+        "MAE_std",
+        "RMSE_mean",
+        "RMSE_std",
+        "R2_mean",
+        "R2_std",
+        "Folds"
+      ],
+      "dates": [],
+      "sha256": "e6f1c007bb92f7e55327e027b49d2f873809719956025f2de1c35d869cd91ded"
+    },
+    "week_per_fold.csv": {
+      "rows": 20,
+      "columns": [
+        "Fold",
+        "Model",
+        "Type",
+        "MAE",
+        "RMSE",
+        "R2",
+        "Cutoff",
+        "Train_Rows",
+        "Test_Rows"
+      ],
+      "dates": [
+        "Cutoff"
+      ],
+      "sha256": "79fa4f35cf95fa3907898d15195ab3e211a0e6be84b0093dfba629721e951582"
+    },
+    "week_test.csv": {
+      "rows": 2800,
+      "columns": [
+        "Date",
+        "Product_ID",
+        "Target_7",
+        "4-week average",
+        "Random Forest",
+        "Linear Regression",
+        "Last-week total"
+      ],
+      "dates": [
+        "Date"
+      ],
+      "sha256": "c0d8974177bd9fe188df267a38b23288260eb3bedd74ee319ac44844d4f92d8e"
+    },
+    "week_latest.csv": {
+      "rows": 100,
+      "columns": [
+        "Product_ID",
+        "Forecast"
+      ],
+      "dates": [],
+      "sha256": "df4574ac790fb4ae39acb952ffe6242283b6ff101c9c84926c6855b170c02e40"
+    },
+    "explain_importance.csv": {
+      "rows": 6,
+      "columns": [
+        "Feature",
+        "Importance",
+        "Std"
+      ],
+      "dates": [],
+      "sha256": "3f15eaeeebc5c2fece315884893b5a760ec464cd1268290f420412b3fa22896f"
+    },
+    "explain_residuals.csv": {
+      "rows": 3500,
+      "columns": [
+        "Product_ID",
+        "Department",
+        "Actual",
+        "Predicted",
+        "Residual"
+      ],
+      "dates": [],
+      "sha256": "dde2f25fd11a7152df048e895234bdf66f32a5d7ee50dcbe67e1ae9285029343"
+    },
+    "explain_by_item.csv": {
+      "rows": 100,
+      "columns": [
+        "Product_ID",
+        "MAE",
+        "Mean_Actual",
+        "Bias",
+        "Rows",
+        "Relative_MAE"
+      ],
+      "dates": [],
+      "sha256": "415516dfe10524f3e0e4059ebd9e4b661511a44885ad22fd896b6fcaeb035249"
+    },
+    "explain_by_group.csv": {
+      "rows": 3,
+      "columns": [
+        "Department",
+        "MAE",
+        "Mean_Actual",
+        "Bias",
+        "Rows",
+        "Relative_MAE"
+      ],
+      "dates": [],
+      "sha256": "43a7a12f228629025a2facd16ce328aabb88a3c4a1c16291bc9e966033482e17"
+    },
+    "tests.csv": {
+      "rows": 3,
+      "columns": [
+        "name",
+        "question",
+        "h0",
+        "h1",
+        "statistic_name",
+        "statistic",
+        "p_value",
+        "effect_name",
+        "effect",
+        "effect_label",
+        "n",
+        "conclusion",
+        "extra"
+      ],
+      "dates": [],
+      "sha256": "47c0f9630d71a5a0188b7b2ef45e280bf7e13510da90bcb9910e00b4816790d9"
+    },
+    "values.json": {
+      "rows": null,
+      "sha256": "7f2d72079b05968ab04071d1a050ebc3b7f73d1d6fede46844e7881667d90718"
+    }
+  },
+  "total_bytes": 1829382
+}
