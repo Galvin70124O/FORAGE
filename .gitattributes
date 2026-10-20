@@ -1,0 +1,2 @@
+# Published results are hashed in their manifest; keep their bytes identical on every OS.
+data/public/** text eol=lf
