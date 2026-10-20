@@ -68,13 +68,14 @@ def write_bundle(name: str, tables: dict[str, pd.DataFrame], values: dict, built
         frame.to_csv(path, index=False, lineterminator="\n", float_format="%.10g")
         files[path.name] = {"rows": len(frame), "columns": list(map(str, frame.columns)), "dates": dates}
     values_path = folder / "values.json"
-    values_path.write_text(json.dumps(values, indent=2, default=str) + "\n", encoding="utf-8")
+    # newline="\n": the bytes (and so the hashes) must be the same on every OS; .gitattributes keeps them LF.
+    values_path.write_text(json.dumps(values, indent=2, default=str) + "\n", encoding="utf-8", newline="\n")
     files[values_path.name] = {"rows": None}
     for file, info in files.items():
         info["sha256"] = _sha256(folder / file)
     manifest = {"dataset": name, **LICENCES[name], "built": built, "files": files,
                 "total_bytes": sum((folder / f).stat().st_size for f in files)}
-    (folder / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (folder / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
     return manifest
 
 
