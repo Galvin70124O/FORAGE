@@ -17,8 +17,8 @@ from services.data import (
 from ui.components import empty_state, page_header
 
 OFFLINE_NOTE = {
-    "m5": ("Model results were computed offline on the full extract; the page shows the published daily sales "
-           "totals and those results."),
+    "m5": ("Computed offline on the full dataset: the page shows published aggregates (department totals, the 10 "
+           "best sellers, model results), with no prices or per-item daily rows."),
     "instacart": ("Computed offline on the full dataset: the page shows published aggregates only (no customer IDs "
                   "or individual orders)."),
 }

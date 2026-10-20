@@ -31,12 +31,9 @@ def household_config(df):
     return df.rename(columns=columns), list(columns.values()), "Category", "Records per category", derived, UNIT_NOTE
 
 
-def m5_config(df):
-    frame = df.assign(Day_Number=df["Date"].dt.dayofweek, Event_Day=df["Event_Name"].notna().astype(int))
-    columns = {"Quantity_Sold": "Units sold (per item-day)", "Price": "Price (USD)",
-               "Day_Number": "Weekday (0 = Monday)", "Month": "Month", "Event_Day": "Event day (1 = yes)"}
-    return (frame.rename(columns=columns), list(columns.values()), "Department", "Item-days per department",
-            set(), "Each row is one item on one day at store CA_1.")
+M5_NOTE = "Each record is one item on one day at store CA_1."
+M5_OFFLINE_NOTE = (" Computed offline on the full dataset; prices are not published online, so price is not "
+                   "among the variables here.")
 
 
 INSTACART_NOTE = ("Statistics are per order (one row per order). Days since previous order is blank for first orders "
@@ -53,8 +50,12 @@ if df is not None:
         stat_columns, frequency_title, derived_pairs, note = (df.values["order_columns"], "Order lines per department",
                                                               set(), INSTACART_NOTE)
         stats, frequencies, corr = df.order_statistics, df.frequency, df.correlation
+    elif source == "m5":  # aggregates of the item-day extract (item rows are never published)
+        stat_columns, frequency_title, derived_pairs = df.values["stat_columns"], "Item-days per department", set()
+        note = M5_NOTE + (M5_OFFLINE_NOTE if df.offline else "")
+        stats, frequencies, corr = df.statistics, df.frequency, df.correlation
     else:
-        configs = {"demo": household_config, "personal": household_config, "m5": m5_config}
+        configs = {"demo": household_config, "personal": household_config}
         frame, stat_columns, category, frequency_title, derived_pairs, note = configs[source](df)
         stats = descriptive_statistics(frame, stat_columns).reset_index()
         frequencies = frequency_table(df[category], label=category).reset_index()
@@ -82,9 +83,13 @@ if df is not None:
                 pair = top.iloc[0]
                 first, second = (name.split(" (")[0].lower() for name in (pair["First"], pair["Second"]))
                 excluded = " (ignoring pairs where one variable is calculated from the other)" if derived_pairs else ""
-                st.markdown(f"**Reading:** the strongest relationship{excluded} is a {describe_strength(pair['r'])} "
-                            f"correlation between {first} and {second} (r = {pair['r']:.2f}). Correlation does not "
-                            "show cause.")
+                strength = describe_strength(pair["r"])
+                if strength == "no meaningful":
+                    st.markdown(f"**Reading:** no pair of variables{excluded} is meaningfully correlated; the largest "
+                                f"is between {first} and {second} (r = {pair['r']:.2f}).")
+                else:
+                    st.markdown(f"**Reading:** the strongest relationship{excluded} is a {strength} correlation between "
+                                f"{first} and {second} (r = {pair['r']:.2f}). Correlation does not show cause.")
                 if source in ("demo", "personal"):
                     st.caption("Correlations between raw quantities partly reflect that some foods are bought in larger "
                                "amounts than others.")
@@ -135,22 +140,20 @@ if df is not None:
         elif source == "m5":
             left, right = st.columns(2, gap="large")
             with left:
-                charts.histogram(df, "Quantity_Sold", value_title="Units sold per item-day", bins=40,
-                                 title=f"Most item-days sell fewer than {df['Quantity_Sold'].quantile(0.75):.0f} units",
+                charts.histogram(df.units_distribution, "Units", value_title="Units sold per item-day", bins=40,
+                                 weight="Item_days", count_title="Item-days",
+                                 title=f"Most item-days sell fewer than {df.values['units_q75']:.0f} units",
                                  subtitle="Distribution of units sold per item per day; 3 in 4 item-days are below that")
             with right:
-                by_day = df.groupby("Weekday", as_index=False, observed=True)["Quantity_Sold"].mean()
-                weekend = by_day[by_day["Weekday"].isin(["Saturday", "Sunday"])]["Quantity_Sold"].mean()
-                weekday = by_day[~by_day["Weekday"].isin(["Saturday", "Sunday"])]["Quantity_Sold"].mean()
-                charts.bar(by_day, "Weekday", "Quantity_Sold", value_title="Mean units per item-day",
+                charts.bar(df.weekday, "Weekday", "Mean_Units", value_title="Mean units per item-day",
                            category_title="Weekday", horizontal=False, sort=WEEKDAYS, value_format=".1f",
                            highlight=["Saturday", "Sunday"],
-                           title=f"Weekends sell {(weekend / weekday - 1) * 100:.0f}% more per item",
+                           title=f"Weekends sell {df.values['weekend_uplift_pct']:.0f}% more per item",
                            subtitle="Mean units sold per item-day")
-            section("Top 15 items by unit sales", "M5 item IDs; the dataset does not include product names")
-            top_items = df.groupby("Product_ID", as_index=False, observed=True)["Quantity_Sold"].sum().nlargest(15, "Quantity_Sold")
-            charts.bar(top_items, "Product_ID", "Quantity_Sold", value_title="Units sold", category_title="Item",
-                       value_format=",.0f", height=380)
+            section("Top 10 items by unit sales", "M5 item IDs; the dataset does not include product names")
+            top_items = df.top_items_weekly.groupby("Product_ID", as_index=False)["Units"].sum().nlargest(10, "Units")
+            charts.bar(top_items, "Product_ID", "Units", value_title="Units sold", category_title="Item",
+                       value_format=",.0f", height=300)
         else:
             left, right = st.columns(2, gap="large")
             with left:

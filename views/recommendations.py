@@ -135,34 +135,29 @@ if df is not None:
                 backtest_section.render(summarise(run_backtest(frame)), int(frame["Date"].nunique()))
 
     elif source == "m5":
-        recent_end = df["Date"].max()
-        recent = df[df["Date"] > recent_end - pd.Timedelta(days=28)]
-        previous = df[(df["Date"] <= recent_end - pd.Timedelta(days=28)) & (df["Date"] > recent_end - pd.Timedelta(days=56))]
-        trend = pd.DataFrame({
-            "Recent": recent.groupby("Product_ID", observed=True)["Quantity_Sold"].mean(),
-            "Previous": previous.groupby("Product_ID", observed=True)["Quantity_Sold"].mean(),
-        }).dropna()
-        trend = trend[trend["Previous"] >= 1]
-        trend["Change"] = (trend["Recent"] - trend["Previous"]) / trend["Previous"] * 100
-        trend = trend.sort_values("Change", ascending=False).reset_index().rename(columns={"index": "Product_ID"})
-        rising = trend[trend["Change"] >= 20]
-        kpi_row([("Items compared", f"{len(trend)}"), ("Rising 20% or more", f"{len(rising)}"),
-                 ("Falling 20% or more", f"{int((trend['Change'] <= -20).sum())}"),
-                 ("Window", f"to {fmt_date(recent_end)}")])
+        counts, trend = df.values["trend_counts"], df.trends.sort_values("Change", ascending=False)
+        kpi_row([("Items compared", f"{counts['compared']}"), ("Rising 20% or more", f"{counts['rising']}"),
+                 ("Falling 20% or more", f"{counts['falling']}"),
+                 ("Window", f"to {fmt_date(pd.Timestamp(counts['window_end']))}")])
         section("How this is calculated")
         formula("change = (mean daily units, last 28 days − previous 28 days) ÷ previous 28 days")
         st.caption("Items selling at least one unit a day in the earlier window are compared. Rising items need more "
                    "shelf stock; falling items are at risk of overstock, which is where retail waste starts. M5 has "
                    "no stock or waste data, so these are demand signals, not purchase quantities.")
+        if df.offline:
+            st.caption("Computed offline on the full dataset; online the page shows the 5 largest increases and "
+                       "the 5 largest decreases.")
+        shown = 10 if not df.offline else 5
         left, right = st.columns([1, 1], gap="large")
         with left:
             section("Largest increases")
-            charts.bar(trend.head(10), "Product_ID", "Change", value_title="Change in mean daily units (%)",
+            charts.bar(trend.head(shown), "Product_ID", "Change", value_title="Change in mean daily units (%)",
                        category_title="Item", value_format="+.0f", height=320)
         with right:
             section("Largest decreases")
-            charts.bar(trend.tail(10), "Product_ID", "Change", value_title="Change in mean daily units (%)",
-                       category_title="Item", value_format="+.0f", sort="x", slot=1, height=320)
+            charts.bar(trend.tail(shown), "Product_ID", "Change", value_title="Change in mean daily units (%)",
+                       category_title="Item", value_format="+.0f", sort="x", slot=1, height=320,
+                       highlight=[trend.iloc[-1]["Product_ID"]])
         table(trend, {"Product_ID": "Item", "Recent": number("Last 28 days (units/day)"),
                       "Previous": number("Previous 28 days (units/day)"), "Change": number("Change (%)", "%+.1f")},
               max_rows=10)

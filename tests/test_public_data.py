@@ -42,10 +42,23 @@ def test_instacart_files_have_no_ids_or_order_rows():
             assert info["rows"] < 5_000, f"{file} looks row-level"
 
 
-def test_m5_item_day_is_daily_totals_per_item():
-    item_day = public_data.read_table("m5", "item_day")
-    assert not item_day.duplicated(["Date", "Product_ID"]).any()
-    assert item_day["Product_ID"].nunique() == 100
+def test_m5_has_no_per_item_daily_rows_and_no_prices():
+    manifest = public_data.manifest("m5")
+    assert "item_day.csv" not in manifest["files"]
+    for file, info in manifest["files"].items():
+        if not file.endswith(".csv"):
+            continue
+        assert not [c for c in info["columns"] if "price" in c.lower()], f"{file} has a price column"
+        if "Product_ID" in info["columns"]:
+            table = pd.read_csv(PUBLIC / "m5" / file)
+            assert table["Product_ID"].nunique() <= public_data.M5_TOP_ITEMS, f"{file} covers too many items"
+            for column in ("Date", "Week"):
+                if column in table:  # per-item rows over time must be at least a week apart (weekly totals)
+                    gaps = table.assign(**{column: pd.to_datetime(table[column])}).sort_values(column).groupby(
+                        "Product_ID")[column].diff().dropna()
+                    assert (gaps >= pd.Timedelta(days=7)).all(), f"{file} has per-item daily rows"
+        assert not {"Event_Name", "Event_Type", "Weekday", "Month"} & set(info["columns"]) or "Product_ID" not in             info["columns"], f"{file} has calendar columns per item"
+    assert "price" not in (PUBLIC / "m5" / "values.json").read_text(encoding="utf-8").lower()
 
 
 def test_test_results_round_trip():
@@ -81,7 +94,9 @@ def test_public_only_mode_ignores_raw_files(public_only):
     from services import data
     assert not data.has_raw("m5") and not data.has_raw("instacart")
     assert data.offline("m5") and data.offline("instacart")
-    assert len(data.load_m5()) == public_data.manifest("m5")["files"]["item_day.csv"]["rows"]
+    summary = data.load("m5")
+    assert summary.offline and summary.values["rows"] == 18_000
+    assert "Product_ID" not in data.m5_forecast()[0].columns  # predictions are published as department totals
 
 
 @pytest.mark.skipif(not RESULTS.exists(), reason="outputs/results.json is git-ignored; run scripts/export_results.py")

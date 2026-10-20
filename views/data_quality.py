@@ -161,13 +161,9 @@ elif df is not None:
     else:
         report = quality_report(source) or {}
         key = ["Date", "Product_ID", "Store_ID"] if source == "m5" else ["Order_ID", "Product_ID"]
-        if source == "m5":
-            rows, columns, missing = len(df), len(df.columns), int(df.isna().sum().sum())
-            duplicates = int(df.duplicated(subset=key).sum())
-        else:
-            values = df.values
-            rows, columns, missing, duplicates = (values["order_lines"], values["columns"], values["missing_values"],
-                                                  values["duplicate_keys"])
+        values = df.values
+        rows = values["rows"] if source == "m5" else values["order_lines"]
+        columns, missing, duplicates = values["columns"], values["missing_values"], values["duplicate_keys"]
         kpi_row([("Rows", f"{rows:,}"), ("Columns", f"{columns}"), ("Missing values", f"{missing:,}"),
                  ("Duplicate keys", f"{duplicates:,}", f"Rows sharing {' + '.join(key)}.")])
         selection = report.get("selection", {})
@@ -176,7 +172,7 @@ elif df is not None:
         left, right = st.columns([1.3, 1], gap="large")
         with left:
             section("Columns")
-            profile_table(df if source == "m5" else None, profile=None if source == "m5" else df.profile)
+            profile_table(None, profile=df.profile)
         with right:
             section("Extraction checks", "Recorded when the extract was built from the raw files")
             checks = {k: v for k, v in report.items() if isinstance(v, (int, float)) and k != "rows"}
@@ -189,7 +185,7 @@ elif df is not None:
                 st.caption("Days_Since_Prior_Order is blank for each customer's first order; that is expected, "
                            "not missing data.")
         section("Outliers (IQR rule)", "Flagged for review and kept.")
-        if source == "m5":
-            outlier_table(df, ["Quantity_Sold", "Price"])
-        else:
-            outlier_table(None, [], outliers=df.outliers)
+        outlier_table(None, [], outliers=df.outliers)
+        if source == "m5" and df.offline:
+            st.caption("Computed offline on the full extract. Prices are not published online, so the Price column "
+                       "is left out of these tables.")

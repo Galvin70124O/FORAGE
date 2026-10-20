@@ -11,7 +11,7 @@ import streamlit as st
 import public_data
 from clean_data import RAW_DATA_PATH, clean_records
 from dataset_registry import get_dataset
-from public_data import InstacartSummary
+from public_data import InstacartSummary, PublicSummary
 from ui.components import fmt_date
 
 # Model modules (scikit-learn, scipy) are imported inside the functions that need them, so pages
@@ -79,12 +79,25 @@ M5_DTYPES = {"Product_ID": "category", "Store_ID": "category", "Department": "ca
              "Weekday": "category", "Month": "int8", "Event_Name": "category", "Event_Type": "category"}
 
 
-@st.cache_data(show_spinner="Loading the M5 sales...")
+@st.cache_data(show_spinner="Loading the M5 extract...")
 def load_m5() -> pd.DataFrame:
-    """Unit sales per item per day: the raw extract locally, the published daily totals online (same rows)."""
+    """Unit sales per item per day; only available locally (item-level rows are never published)."""
+    return pd.read_csv(M5_PATH, parse_dates=["Date"], dtype=M5_DTYPES)
+
+
+# Tables in data/public/m5 that are page aggregates (the rest are model results read by the functions below).
+M5_SUMMARY_TABLES = ["department_day", "statistics", "correlation", "frequency", "units_distribution", "weekday",
+                     "top_items_weekly", "trends", "profile", "outliers"]
+
+
+@st.cache_resource(show_spinner="Summarising the M5 sales...")
+def m5_summary() -> PublicSummary:
+    """M5 aggregates: computed from the item-day extract locally (prices included), read from data/public/ online."""
     if has_raw("m5"):
-        return pd.read_csv(M5_PATH, parse_dates=["Date"], dtype=M5_DTYPES)
-    return public_data.read_table("m5", "item_day").astype(M5_DTYPES)
+        tables, values = public_data.m5_summary(load_m5(), include_price=True)
+        return PublicSummary(tables, values, offline=False)
+    tables = {name: public_data.read_table("m5", name) for name in M5_SUMMARY_TABLES}
+    return PublicSummary(tables, public_data.read_values("m5"), offline=True)
 
 
 @st.cache_data(show_spinner="Loading the Instacart extract...")
@@ -112,8 +125,8 @@ def instacart_summary() -> InstacartSummary:
 def load(source: str):
     """The selected source's data, or None when it is not available.
 
-    Demo, My data and M5 are DataFrames of records; Instacart is an InstacartSummary
-    of aggregates, because its order lines are never published.
+    Demo and My data are DataFrames of records; M5 and Instacart are PublicSummary
+    aggregates, because their item-level and order-level rows are never published.
     """
     if source == "demo":
         return load_demo()
@@ -123,7 +136,7 @@ def load(source: str):
         return pd.DataFrame() if frame is None else frame
     if not available(source):
         return None
-    return load_m5() if source == "m5" else instacart_summary()
+    return m5_summary() if source == "m5" else instacart_summary()
 
 
 def quality_report(source: str) -> dict | None:
@@ -145,8 +158,9 @@ def describe(source: str, df) -> str:
         return (f"your purchases and pantry checks · {len(df):,} food-periods · "
                 f"{fmt_date(df['Period_Start'].min())} to {fmt_date(df['Date'].max())}")
     if source == "m5":
-        return (f"Walmart retail unit sales, store CA_1, top {df['Product_ID'].nunique()} food items · "
-                f"{len(df):,} rows · {fmt_date(df['Date'].min())} to {fmt_date(df['Date'].max())}")
+        values = df.values
+        return (f"Walmart retail unit sales, store CA_1, top {values['items']} food items · {values['rows']:,} item-days · "
+                f"{fmt_date(pd.Timestamp(values['date_min']))} to {fmt_date(pd.Timestamp(values['date_max']))}")
     return (f"online grocery orders from users 1–2,000 · {df.values['order_lines']:,} order lines · "
             f"{df.values['orders']:,} orders · no calendar dates")
 
@@ -161,7 +175,10 @@ def demo_forecast() -> dict:
 
 @st.cache_resource(show_spinner="Evaluating M5 forecasting models on the held-out period...")
 def m5_forecast():
-    """(test rows with each model's predictions, None, comparison, metadata)."""
+    """(test rows with each model's predictions, None, comparison, metadata).
+
+    Online the test rows are department-day totals (actuals and summed predictions), not item-days.
+    """
     if not has_raw("m5"):
         values = public_data.read_values("m5")["forecast"]
         return (public_data.read_table("m5", "forecast_test"), None,
@@ -295,8 +312,7 @@ def m5_week() -> dict:
     if not has_raw("m5"):
         values = public_data.read_values("m5")["week"]
         tables = {key: public_data.read_table("m5", f"week_{key}") for key in ("comparison", "rolling", "per_fold", "test")}
-        latest = public_data.read_table("m5", "week_latest").set_index("Product_ID")["Forecast"]
-        return {**values, **tables, "cutoff": pd.Timestamp(values["cutoff"]), "latest": latest}
+        return {**values, **tables, "cutoff": pd.Timestamp(values["cutoff"]), "latest": None}
     return _week(load_m5().assign(Product_ID=lambda d: d["Product_ID"].astype(str)), "Product_ID",
                  "Quantity_Sold", [], [], m5_forecast()[3]["cutoff"])
 
@@ -309,7 +325,8 @@ def forecaster_explanations(source: str) -> dict:
         return hit
     if source == "m5" and not has_raw("m5"):
         values = public_data.read_values("m5")["explanations"]
-        tables = {key: public_data.read_table("m5", f"explain_{key}") for key in ("importance", "residuals", "by_item", "by_group")}
+        tables = {key: public_data.read_table("m5", f"explain_{key}")
+                  for key in ("importance", "residual_distribution", "by_item", "by_group")}
         return {**values, **tables, "keys": tuple(values["keys"])}
     from explain import error_by, importance, residual_frame
     from m5_forecasting import FEATURES as M5_FEATURES
@@ -403,7 +420,7 @@ def data_as_of(source: str) -> str:
     if source in ("m5", "instacart") and not available(source):
         return "Not built yet"
     if source == "m5":
-        return f"Data as of {fmt_date(load_m5()['Date'].max())}"
+        return f"Data as of {fmt_date(pd.Timestamp(m5_summary().values['date_max']))}"
     if source == "instacart":
         return "No calendar dates"
     from services.personal import personal_data

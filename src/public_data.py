@@ -4,9 +4,11 @@ The raw M5 and Instacart files are not redistributed (their terms do not clearly
 allow it). scripts/build_public_artifacts.py runs where the raw extracts exist and
 writes small tables here; the online app reads them when the raw files are absent.
 
-- M5: unit sales per item per day (store totals, no transactions) and every model
-  result the pages show (metrics, rolling-origin folds, test-window predictions,
-  residuals, importance, hypothesis tests).
+- M5: aggregates only. Department-day unit totals, distributions, the 10 best
+  sellers' weekly totals, 10 trend rows, and every model result the pages show
+  (metrics, rolling-origin folds, department-level predictions vs actuals, a
+  residual distribution, importance, hypothesis tests). No prices and no per-item
+  daily rows.
 - Instacart: aggregates only (departments, aisles, products, distributions, the
   association rules, χ² results). No user IDs and no order-level rows.
 
@@ -34,7 +36,8 @@ LICENCES = {
         "url": "https://www.kaggle.com/competitions/m5-forecasting-accuracy/data",
         "attribution": "Data: Walmart via the M5 Forecasting competition (University of Nicosia / MOFC, Kaggle).",
         "licence": ("Kaggle competition rules: non-commercial, academic use. The raw files are not redistributed; "
-                    "this folder holds daily unit-sales totals for 100 items and model results computed from them."),
+                    "this folder holds aggregates only: department daily totals, the 10 best sellers' weekly totals "
+                    "and model results. No prices and no per-item daily rows."),
     },
     "instacart": {
         "source": "The Instacart Online Grocery Shopping Dataset 2017, users 1-2,000",
@@ -191,13 +194,89 @@ def instacart_summary(df: pd.DataFrame) -> tuple[dict[str, pd.DataFrame], dict]:
     return tables, values
 
 
-class InstacartSummary:
-    """Instacart aggregates for the pages: tables as attributes, scalars in .values."""
+# --- M5 aggregates -----------------------------------------------------------------
+M5_TOP_ITEMS = 10  # the only per-item detail published: weekly totals of the 10 best sellers
+M5_COLUMNS = {"Quantity_Sold": "Units sold (per item-day)", "Price": "Price (USD)", "Day_Number": "Weekday (0 = Monday)",
+              "Month": "Month", "Event_Day": "Event day (1 = yes)"}
+WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+
+def m5_trends(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+    """Mean daily units per item, last 28 days vs the previous 28, for items selling at least 1 a day before."""
+    end = df["Date"].max()
+    recent = df[df["Date"] > end - pd.Timedelta(days=28)]
+    previous = df[(df["Date"] <= end - pd.Timedelta(days=28)) & (df["Date"] > end - pd.Timedelta(days=56))]
+    trend = pd.DataFrame({"Recent": recent.groupby("Product_ID", observed=True)["Quantity_Sold"].mean(),
+                          "Previous": previous.groupby("Product_ID", observed=True)["Quantity_Sold"].mean()}).dropna()
+    trend = trend[trend["Previous"] >= 1]
+    trend["Change"] = (trend["Recent"] - trend["Previous"]) / trend["Previous"] * 100
+    trend = trend.sort_values("Change", ascending=False).rename_axis("Product_ID").reset_index()
+    trend["Product_ID"] = trend["Product_ID"].astype(str)
+    counts = {"compared": len(trend), "rising": int((trend["Change"] >= 20).sum()),
+              "falling": int((trend["Change"] <= -20).sum()), "window_end": str(end.date()),
+              "daily_now": float(recent.groupby("Date")["Quantity_Sold"].sum().mean()),
+              "daily_before": float(previous.groupby("Date")["Quantity_Sold"].sum().mean())}
+    return trend, counts
+
+
+def m5_summary(df: pd.DataFrame, *, include_price: bool) -> tuple[dict[str, pd.DataFrame], dict]:
+    """Every M5 figure the pages show, as aggregates. Published with include_price=False:
+    no prices and no per-item daily rows (only the top items' weekly totals and 10 trend rows)."""
+    from data_quality import column_profile, iqr_outliers
+    from stats import correlation_matrix, descriptive_statistics, frequency_table
+
+    frame = df.assign(Day_Number=df["Date"].dt.dayofweek, Event_Day=df["Event_Name"].notna().astype(int))
+    columns = {k: v for k, v in M5_COLUMNS.items() if include_price or k != "Price"}
+    frame = frame.rename(columns=columns)
+    stat_columns = list(columns.values())
+    lines = df.assign(Department=df["Department"].astype(str), Category=df["Category"].astype(str),
+                      Product_ID=df["Product_ID"].astype(str))
+    department_day = (lines.groupby(["Date", "Category", "Department"])
+                      .agg(Units=("Quantity_Sold", "sum"), Items=("Product_ID", "nunique")).reset_index())
+    weekday = lines.groupby("Weekday", observed=True)["Quantity_Sold"].mean().reindex(WEEKDAYS)
+    top = lines.groupby("Product_ID")["Quantity_Sold"].sum().nlargest(M5_TOP_ITEMS).index
+    top_weekly = (lines[lines["Product_ID"].isin(top)]
+                  .assign(Week=lambda d: d["Date"].dt.to_period("W").dt.start_time)
+                  .groupby(["Week", "Product_ID"])["Quantity_Sold"].sum().rename("Units").reset_index())
+    trend, counts = m5_trends(lines)
+    shown_trend = pd.concat([trend.head(M5_TOP_ITEMS // 2), trend.tail(M5_TOP_ITEMS // 2)]).drop_duplicates("Product_ID")
+    weekend = weekday[["Saturday", "Sunday"]].mean()
+    numeric = ["Quantity_Sold"] + (["Price"] if include_price else [])
+    profile = column_profile(df)
+    tables = {
+        "department_day": department_day,
+        "statistics": descriptive_statistics(frame, stat_columns).reset_index(),
+        "correlation": correlation_matrix(frame, stat_columns).reset_index(names="Variable"),
+        "frequency": frequency_table(lines["Department"], label="Department").reset_index(),
+        "units_distribution": lines["Quantity_Sold"].value_counts().sort_index().rename("Item_days")
+                              .rename_axis("Units").reset_index(),
+        "weekday": weekday.rename("Mean_Units").rename_axis("Weekday").reset_index(),
+        "top_items_weekly": top_weekly,
+        "trends": shown_trend if not include_price else trend,
+        "profile": profile if include_price else profile[profile["Column"] != "Price"],
+        "outliers": iqr_outliers(df, numeric),
+    }
+    values = {
+        "rows": len(df), "columns": len(df.columns), "items": int(lines["Product_ID"].nunique()),
+        "missing_values": int(df.isna().sum().sum()),
+        "duplicate_keys": int(df.duplicated(subset=["Date", "Product_ID", "Store_ID"]).sum()),
+        "date_min": str(df["Date"].min().date()), "date_max": str(df["Date"].max().date()),
+        "stat_columns": stat_columns, "units_q75": float(lines["Quantity_Sold"].quantile(0.75)),
+        "weekend_uplift_pct": float((weekend / weekday.drop(["Saturday", "Sunday"]).mean() - 1) * 100),
+        "trend_counts": counts, "top_items": [str(i) for i in top],
+    }
+    return tables, values
+
+
+class PublicSummary:
+    """Aggregates for a public source: tables as attributes, scalars in .values, .offline when read from disk."""
 
     def __init__(self, tables: dict[str, pd.DataFrame], values: dict, *, offline: bool):
         self.tables, self.values, self.offline = tables, values, offline
-        self.correlation = tables["order_correlation"].set_index("Variable")
-        self.correlation.index.name = None
+        key = "order_correlation" if "order_correlation" in tables else "correlation"
+        self.correlation = tables[key].set_index("Variable") if key in tables else None
+        if self.correlation is not None:
+            self.correlation.index.name = None
 
     def __getattr__(self, name: str) -> pd.DataFrame:
         try:
@@ -206,4 +285,7 @@ class InstacartSummary:
             raise AttributeError(name) from error
 
     def __len__(self) -> int:
-        return self.values["order_lines"]
+        return self.values.get("order_lines", self.values.get("rows", 0))
+
+
+InstacartSummary = PublicSummary

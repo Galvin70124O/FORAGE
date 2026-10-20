@@ -146,35 +146,34 @@ def personal_dashboard(purchases: pd.DataFrame, checks: pd.DataFrame) -> dict:
             "actions": actions[:5], "illustrative": False, "month": _month_label(now)}
 
 
+def m5_accuracy(tested: pd.DataFrame, model: str) -> tuple[float, float]:
+    """1 − WAPE of `model` on item-days: the last 14 days of the test period and the 14 before."""
+    end = tested["Date"].max()
+    last = tested[tested["Date"] > end - pd.Timedelta(days=14)]
+    before = tested[(tested["Date"] <= end - pd.Timedelta(days=14)) & (tested["Date"] > end - pd.Timedelta(days=28))]
+    return accuracy(last["Quantity_Sold"], last[model]), accuracy(before["Quantity_Sold"], before[model])
+
+
 @st.cache_resource(show_spinner="Building the dashboard...")
 def m5_dashboard() -> dict:
-    from services.data import best_next_day, load_m5, m5_forecast
-    df = load_m5()
-    end = df["Date"].max()
-    recent = df[df["Date"] > end - pd.Timedelta(days=28)]
-    previous = df[(df["Date"] <= end - pd.Timedelta(days=28)) & (df["Date"] > end - pd.Timedelta(days=56))]
-    daily_now = recent.groupby("Date")["Quantity_Sold"].sum().mean()
-    daily_before = previous.groupby("Date")["Quantity_Sold"].sum().mean()
-    trend = pd.DataFrame({"Recent": recent.groupby("Product_ID", observed=True)["Quantity_Sold"].mean(),
-                          "Previous": previous.groupby("Product_ID", observed=True)["Quantity_Sold"].mean()}).dropna()
-    trend = trend[trend["Previous"] >= 1]
-    trend["Change"] = (trend["Recent"] - trend["Previous"]) / trend["Previous"] * 100
-    tested, _, _, _ = m5_forecast()
+    """KPIs, weekly totals, top items and actions, from the M5 aggregates (the same locally and online)."""
+    from services.data import best_next_day, has_raw, m5_forecast, m5_summary
+    summary = m5_summary()
+    counts = summary.values["trend_counts"]
     model = best_next_day("m5")
-    t_end = tested["Date"].max()
-    last2, prev2 = tested[tested["Date"] > t_end - pd.Timedelta(days=14)], tested[
-        (tested["Date"] <= t_end - pd.Timedelta(days=14)) & (tested["Date"] > t_end - pd.Timedelta(days=28))]
-    acc_now, acc_before = accuracy(last2["Quantity_Sold"], last2[model]), accuracy(prev2["Quantity_Sold"], prev2[model])
+    if has_raw("m5"):
+        acc_now, acc_before = m5_accuracy(m5_forecast()[0], model)
+    else:  # item-level predictions are not published; the accuracy was computed offline on them
+        acc_now, acc_before = summary.values["accuracy_now"], summary.values["accuracy_before"]
     kpis = [
-        ("Units sold per day, last 28 days", f"{daily_now:,.0f}", "All 100 items, store CA_1.",
-         _delta(daily_now, daily_before, "{:+,.0f} vs previous 28 days"), "normal"),
-        ("Items rising 20% or more", f"{int((trend['Change'] >= 20).sum())}", "Mean daily units, last 28 vs previous 28 days.",
-         None, "off"),
-        ("Items falling 20% or more", f"{int((trend['Change'] <= -20).sum())}", "Overstock risk: where retail waste starts.",
-         None, "off"),
+        ("Units sold per day, last 28 days", f"{counts['daily_now']:,.0f}", "All 100 items, store CA_1.",
+         _delta(counts["daily_now"], counts["daily_before"], "{:+,.0f} vs previous 28 days"), "normal"),
+        ("Items rising 20% or more", f"{counts['rising']}", "Mean daily units, last 28 vs previous 28 days.", None, "off"),
+        ("Items falling 20% or more", f"{counts['falling']}", "Overstock risk: where retail waste starts.", None, "off"),
         ("Forecast accuracy", f"{acc_now * 100:.1f}%", f"1 − WAPE of {model}, last 14 days of the test period.",
          _delta(acc_now * 100, acc_before * 100, "{:+.1f} pts vs previous 14 days"), "normal"),
     ]
+    trend = summary.trends.set_index("Product_ID")
     actions = []
     for item, row in trend.sort_values("Change").head(3).iterrows():
         actions.append({"tag": "Reduce stock", "title": f"Order less of {item}",
@@ -182,6 +181,7 @@ def m5_dashboard() -> dict:
     for item, row in trend.sort_values("Change", ascending=False).head(2).iterrows():
         actions.append({"tag": "Restock", "title": f"Restock {item}",
                         "why": f"Daily sales rose {row['Change']:.0f}% ({row['Previous']:.1f} → {row['Recent']:.1f} units)."})
-    daily = df.groupby(df["Date"].dt.to_period("W").dt.to_timestamp())["Quantity_Sold"].sum()
-    top = df.groupby("Product_ID", observed=True)["Quantity_Sold"].sum().sort_values(ascending=False)
-    return {"kpis": kpis, "weekly": daily.rename("Units"), "top": top.rename("Units"), "actions": actions}
+    days = summary.department_day
+    weekly = days.groupby(days["Date"].dt.to_period("W").dt.to_timestamp())["Units"].sum()
+    top = summary.top_items_weekly.groupby("Product_ID")["Units"].sum().sort_values(ascending=False)
+    return {"kpis": kpis, "weekly": weekly.rename("Units"), "top": top.rename("Units"), "actions": actions}

@@ -23,44 +23,63 @@ import pandas as pd  # noqa: E402
 
 import public_data  # noqa: E402
 from services import data  # noqa: E402
-from stats import descriptive_statistics  # noqa: E402
-
-M5_TEST_COLUMNS = ["Date", "Product_ID", "Department", "Quantity_Sold"]
-WEEK_TEST_COLUMNS = ["Date", "Product_ID", "Target_7"]
-
 
 def m5_bundle() -> tuple[dict, dict]:
+    """M5 aggregates only: department-day totals, distributions, the 10 best sellers' weekly totals, 10 trend rows
+    and the model results. No prices and no per-item daily rows (tests/test_public_data.py enforces this)."""
+    import numpy as np
+
+    from explain import reading
+    from services.overview import m5_accuracy
+
     df = data.load_m5()
+    tables, values = public_data.m5_summary(df, include_price=False)
     tested, _, comparison, meta = data.m5_forecast()
     per_fold, summary = data.m5_rolling()
     week = data.m5_week()
     info = data.forecaster_explanations("m5")
-    models = list(comparison["Model"])
-    numeric = ["Quantity_Sold", "Price"]
-    tables = {
-        "item_day": df,
-        "summary_statistics": descriptive_statistics(df, numeric).reset_index(),
+    department = df.drop_duplicates("Product_ID").set_index(df.drop_duplicates("Product_ID")["Product_ID"].astype(str))[
+        "Department"].astype(str)
+    models, week_models = list(comparison["Model"]), list(week["comparison"]["Model"])
+    forecast_departments = (tested.assign(Department=tested["Department"].astype(str))
+                            .groupby(["Date", "Department"])[["Quantity_Sold", *models]].sum().reset_index())
+    week_test = week["test"].assign(Department=lambda d: d["Product_ID"].astype(str).map(department))
+    week_departments = week_test.groupby(["Date", "Department"])[["Target_7", *week_models]].sum().reset_index()
+    counts, edges = np.histogram(info["residuals"]["Residual"], bins=60)
+    residual_distribution = pd.DataFrame({"Residual": (edges[:-1] + edges[1:]) / 2, "Item_days": counts})
+    accuracy_now, accuracy_before = m5_accuracy(tested, data.best_next_day("m5"))
+    tables.update({
         "forecast_comparison": comparison,
-        "forecast_test": tested[M5_TEST_COLUMNS + models].assign(Product_ID=lambda d: d["Product_ID"].astype(str),
-                                                                 Department=lambda d: d["Department"].astype(str)),
+        "forecast_test": forecast_departments,
         "rolling_per_fold": per_fold, "rolling_summary": summary,
         "week_comparison": week["comparison"], "week_rolling": week["rolling"], "week_per_fold": week["per_fold"],
-        "week_test": week["test"][WEEK_TEST_COLUMNS + list(week["comparison"]["Model"])],
-        "week_latest": week["latest"].rename("Forecast").rename_axis("Product_ID").reset_index(),
-        "explain_importance": info["importance"], "explain_residuals": info["residuals"],
-        "explain_by_item": info["by_item"], "explain_by_group": info["by_group"],
+        "week_test": week_departments,
+        "explain_importance": info["importance"], "explain_residual_distribution": residual_distribution,
+        "explain_by_item": info["by_item"].head(public_data.M5_TOP_ITEMS), "explain_by_group": info["by_group"],
         "tests": public_data.tests_frame(data.source_tests("m5")),
-    }
-    values = {
+    })
+    values.update({
         "forecast": {"cutoff": str(meta["cutoff"].date()), "best_model": meta["best_model"],
                      "train_rows": meta["train_rows"], "test_rows": meta["test_rows"]},
         "week": {"best": week["best"], "cutoff": str(pd.Timestamp(week["cutoff"]).date()),
                  "train_rows": week["train_rows"], "test_rows": week["test_rows"]},
         "explanations": {"model_name": info["model_name"], "selected_overall": info["selected_overall"],
-                         "keys": list(info["keys"])},
-        "quality_report": data.quality_report("m5"),
-    }
+                         "keys": list(info["keys"]),
+                         "reading": reading(info["residuals"], info["by_item"], info["keys"][0], "units sold per item-day")},
+        "accuracy_now": accuracy_now, "accuracy_before": accuracy_before,
+        "quality_report": without_price(data.quality_report("m5")),
+    })
     return tables, values
+
+
+def without_price(report: dict | None) -> dict | None:
+    """The extract's quality report minus any mention of the Price column (prices are not published)."""
+    if report is None:
+        return None
+    report = {k: v for k, v in report.items() if "price" not in k.lower()}
+    report["columns"] = [c for c in report.get("columns", []) if c != "Price"]
+    report["missing_values"] = {k: v for k, v in report.get("missing_values", {}).items() if k != "Price"}
+    return report
 
 
 def instacart_bundle() -> tuple[dict, dict]:

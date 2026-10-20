@@ -33,6 +33,7 @@ SEVEN_DAY = ("7-day forecasts are made at the end of a day for the total of the 
              "known that evening (direct strategy). Training forecasts whose 7 days overlap the test period are "
              "left out.")
 HIGHLIGHT = "font-weight: 600; background-color: rgba(57, 135, 229, 0.14)"
+OFFLINE_ITEMS = "Per-item detail was computed offline on the full dataset; online the page shows aggregates."
 
 
 def highlight(frame: pd.DataFrame, best: str, formats: dict) -> "pd.io.formats.style.Styler":
@@ -152,7 +153,9 @@ if df is not None:
             tested, _, _, meta = m5_forecast()
             per_fold, summary = m5_rolling()
             week, cutoff = m5_week(), meta["cutoff"]
-            unit, actual, key, label = "units sold per item-day", "Quantity_Sold", "Product_ID", "Item"
+            unit, actual = "units sold per item-day", "Quantity_Sold"
+            # Online only department totals are published; item-level predictions stay offline.
+            key, label = ("Product_ID", "Item") if "Product_ID" in tested.columns else ("Department", "Department")
             week_unit, y_title = "units per item-week", "Units sold per day"
             features = "yesterday's and last week's sales, the 7-day average, weekday, month and price"
         else:
@@ -179,6 +182,8 @@ if df is not None:
                           "differences between foods rather than day-to-day accuracy." if source != "m5" else ""))
             section("Actual against predicted", f"Final test period from {fmt_date(cutoff)}; the dashed line is "
                     "the selected model")
+            if key == "Department":
+                st.caption("Department totals (sum of item-level actuals and predictions). " + OFFLINE_ITEMS)
             actual_vs_predicted(tested, key, actual, best, label, y_title, f"forecast_item_{source}")
 
         with week_tab:
@@ -192,6 +197,8 @@ if df is not None:
                        f"{week['best']}.")
             section("Actual against predicted 7-day totals", "Each point is a forecast made on that date for the "
                     "following 7 days")
+            if key == "Department":
+                st.caption("Department totals. " + OFFLINE_ITEMS)
             actual_vs_predicted(week["test"], key, "Target_7", week["best"], label, "Total over the next 7 days",
                                 f"week_item_{source}")
 
@@ -224,12 +231,21 @@ if df is not None:
                            value_format=".3f", height=260)
                 st.caption(top_feature_sentence(info["importance"], "MAE"))
             with right:
-                section("Residuals against predictions", "Actual − predicted; points above 0 were under-predicted")
-                charts.scatter(sample(info["residuals"]), "Predicted", "Residual", x_title=f"Predicted ({unit.split(' (')[0]})",
-                               y_title="Residual", label=item_key, height=260, label_extremes=0,
-                               tooltip=[f"{item_key}:N", charts.tip("Predicted", "Predicted"),
-                                        charts.tip("Actual", "Actual"), charts.tip("Residual", "Residual")])
-            st.markdown("**Where it fails:** " + error_reading(info["residuals"], info["by_item"], item_key, unit))
+                if "residuals" in info:
+                    section("Residuals against predictions", "Actual − predicted; points above 0 were under-predicted")
+                    charts.scatter(sample(info["residuals"]), "Predicted", "Residual",
+                                   x_title=f"Predicted ({unit.split(' (')[0]})", y_title="Residual", label=item_key,
+                                   height=260, label_extremes=0,
+                                   tooltip=[f"{item_key}:N", charts.tip("Predicted", "Predicted"),
+                                            charts.tip("Actual", "Actual"), charts.tip("Residual", "Residual")])
+                else:
+                    section("Distribution of residuals", "Actual − predicted per item-day; above 0 = under-predicted")
+                    charts.histogram(info["residual_distribution"], "Residual", value_title="Residual (units)", bins=40,
+                                     weight="Item_days", count_title="Item-days", height=260)
+                    st.caption("Computed offline on the full dataset: the item-day residuals are not published.")
+            reading_text = (info["reading"] if "reading" in info else
+                            error_reading(info["residuals"], info["by_item"], item_key, unit))
+            st.markdown("**Where it fails:** " + reading_text)
             left, right = st.columns(2, gap="large")
             with left:
                 section(f"Error by {item_key.replace('_', ' ').lower()}", "MAE as % of that item's average demand")
