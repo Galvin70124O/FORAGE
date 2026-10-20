@@ -1,0 +1,11 @@
+Column,Type,Missing,Missing (%),Distinct
+Date,datetime64[us],0,0,180
+Product_ID,category,0,0,100
+Store_ID,category,0,0,1
+Department,category,0,0,3
+Category,category,0,0,1
+Quantity_Sold,int16,0,0,99
+Weekday,category,0,0,7
+Month,int8,0,0,7
+Event_Name,category,16400,91.11111111,16
+Event_Type,category,16400,91.11111111,4

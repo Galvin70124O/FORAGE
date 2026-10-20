@@ -1,0 +1,5 @@
+Variable,Units sold (per item-day),Weekday (0 = Monday),Month,Event day (1 = yes)
+Units sold (per item-day),1,0.1486941135,-0.04045495198,-0.01631580308
+Weekday (0 = Monday),0.1486941135,1,-0.01848130489,0.005442156119
+Month,-0.04045495198,-0.01848130489,1,-0.05588544703
+Event day (1 = yes),-0.01631580308,0.005442156119,-0.05588544703,1

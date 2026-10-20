@@ -1,4 +1,39 @@
 {
+  "rows": 18000,
+  "columns": 11,
+  "items": 100,
+  "missing_values": 32800,
+  "duplicate_keys": 0,
+  "date_min": "2015-10-28",
+  "date_max": "2016-04-24",
+  "stat_columns": [
+    "Units sold (per item-day)",
+    "Weekday (0 = Monday)",
+    "Month",
+    "Event day (1 = yes)"
+  ],
+  "units_q75": 14.0,
+  "weekend_uplift_pct": 47.39610893425834,
+  "trend_counts": {
+    "compared": 97,
+    "rising": 19,
+    "falling": 20,
+    "window_end": "2016-04-24",
+    "daily_now": 1117.7857142857142,
+    "daily_before": 1120.2142857142858
+  },
+  "top_items": [
+    "FOODS_3_090",
+    "FOODS_3_586",
+    "FOODS_3_252",
+    "FOODS_3_120",
+    "FOODS_3_587",
+    "FOODS_3_064",
+    "FOODS_3_511",
+    "FOODS_3_282",
+    "FOODS_3_501",
+    "FOODS_3_499"
+  ],
   "forecast": {
     "cutoff": "2016-03-21",
     "best_model": "Random Forest",
@@ -17,8 +52,11 @@
     "keys": [
       "Product_ID",
       "Department"
-    ]
+    ],
+    "reading": "The model struggles most with FOODS_3_234 (typical error 96% of its average) and least with FOODS_3_077 (nan%); residuals show no systematic bias and larger misses on high-demand days."
   },
+  "accuracy_now": 0.6193369840382027,
+  "accuracy_before": 0.6128836607662285,
   "quality_report": {
     "rows": 18000,
     "columns": [
@@ -28,7 +66,6 @@
       "Department",
       "Category",
       "Quantity_Sold",
-      "Price",
       "Weekday",
       "Month",
       "Event_Name",
@@ -41,7 +78,6 @@
       "Department": 0,
       "Category": 0,
       "Quantity_Sold": 0,
-      "Price": 0,
       "Weekday": 0,
       "Month": 0,
       "Event_Name": 16400,
@@ -60,7 +96,6 @@
       "reason": "All genuine M5 food departments; one representative store and the highest-selling products in the final 180 available training days keep the dashboard responsive."
     },
     "invalid_negative_sales": 0,
-    "missing_prices": 0,
     "invalid_dates": 0
   }
 }

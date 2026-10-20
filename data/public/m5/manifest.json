@@ -3,31 +3,25 @@
   "source": "M5 Forecasting - Accuracy (Walmart), Kaggle competition data, store CA_1",
   "url": "https://www.kaggle.com/competitions/m5-forecasting-accuracy/data",
   "attribution": "Data: Walmart via the M5 Forecasting competition (University of Nicosia / MOFC, Kaggle).",
-  "licence": "Kaggle competition rules: non-commercial, academic use. The raw files are not redistributed; this folder holds daily unit-sales totals for 100 items and model results computed from them.",
+  "licence": "Kaggle competition rules: non-commercial, academic use. The raw files are not redistributed; this folder holds aggregates only: department daily totals, the 10 best sellers' weekly totals and model results. No prices and no per-item daily rows.",
   "built": "2026-10-20",
   "files": {
-    "item_day.csv": {
-      "rows": 18000,
+    "department_day.csv": {
+      "rows": 540,
       "columns": [
         "Date",
-        "Product_ID",
-        "Store_ID",
-        "Department",
         "Category",
-        "Quantity_Sold",
-        "Price",
-        "Weekday",
-        "Month",
-        "Event_Name",
-        "Event_Type"
+        "Department",
+        "Units",
+        "Items"
       ],
       "dates": [
         "Date"
       ],
-      "sha256": "1b8aedbc32da0a55a1f16d41e5ee79287aced39b5420ee1ad52efeb742f577b4"
+      "sha256": "32b45a97b812792705ccf1b18f037acd116457ec315227e42dbadc2d5de56a6c"
     },
-    "summary_statistics.csv": {
-      "rows": 2,
+    "statistics.csv": {
+      "rows": 4,
       "columns": [
         "Column",
         "Count",
@@ -43,7 +37,94 @@
         "IQR"
       ],
       "dates": [],
-      "sha256": "4ba026f59d302ae757b8d28a14b5077d48fa3fd9a883f16fe9b9b9dc114584b2"
+      "sha256": "113ca8bffa345c7c1475440f33ade01a651e21fe14b63f34a113ec11098a7d7b"
+    },
+    "correlation.csv": {
+      "rows": 4,
+      "columns": [
+        "Variable",
+        "Units sold (per item-day)",
+        "Weekday (0 = Monday)",
+        "Month",
+        "Event day (1 = yes)"
+      ],
+      "dates": [],
+      "sha256": "127d3d37458b57ef1f5bd17bf58314aec58639db1318b69b8cc6b8e3d57a2033"
+    },
+    "frequency.csv": {
+      "rows": 3,
+      "columns": [
+        "Department",
+        "Count",
+        "Share (%)"
+      ],
+      "dates": [],
+      "sha256": "73c0432d631a98618768cb496c3ce50246c5a41571ad87c117bde875355d040c"
+    },
+    "units_distribution.csv": {
+      "rows": 99,
+      "columns": [
+        "Units",
+        "Item_days"
+      ],
+      "dates": [],
+      "sha256": "d28620ccdb57fc1e9f7966ae72ef0bcdc57d2b25d11a16d8d21a1a61fa5d48dd"
+    },
+    "weekday.csv": {
+      "rows": 7,
+      "columns": [
+        "Weekday",
+        "Mean_Units"
+      ],
+      "dates": [],
+      "sha256": "d3d84a3b67f144403caf077c721c51b3b58b57927ccce24e5e8d1d002eb1a957"
+    },
+    "top_items_weekly.csv": {
+      "rows": 260,
+      "columns": [
+        "Week",
+        "Product_ID",
+        "Units"
+      ],
+      "dates": [
+        "Week"
+      ],
+      "sha256": "4a5c6340ca1073226223545b6655ff4acf2012e1224877d2b3e41a9975df3dcb"
+    },
+    "trends.csv": {
+      "rows": 10,
+      "columns": [
+        "Product_ID",
+        "Recent",
+        "Previous",
+        "Change"
+      ],
+      "dates": [],
+      "sha256": "af06537fb0ca6374bb36ff92d89b35ad99ec171d5e50662e2cd3344681366edd"
+    },
+    "profile.csv": {
+      "rows": 10,
+      "columns": [
+        "Column",
+        "Type",
+        "Missing",
+        "Missing (%)",
+        "Distinct"
+      ],
+      "dates": [],
+      "sha256": "ee6ae99ca2adae34d62ebae3bd9c64b74da2893a0ecd5ffa00e777bb8e581542"
+    },
+    "outliers.csv": {
+      "rows": 1,
+      "columns": [
+        "Column",
+        "Lower bound",
+        "Upper bound",
+        "Outliers",
+        "Outliers (%)"
+      ],
+      "dates": [],
+      "sha256": "b4cd91fc9fd3a485b31be18965d7c1f7edd9d54a1191d8ad6248ee609252ea8b"
     },
     "forecast_comparison.csv": {
       "rows": 4,
@@ -58,10 +139,9 @@
       "sha256": "0ecb4cd42a60e561f3b84be3a6a2b4a524152c090aac6b2ae77af4ffce355c0f"
     },
     "forecast_test.csv": {
-      "rows": 3500,
+      "rows": 105,
       "columns": [
         "Date",
-        "Product_ID",
         "Department",
         "Quantity_Sold",
         "Random Forest",
@@ -72,7 +152,7 @@
       "dates": [
         "Date"
       ],
-      "sha256": "355a11bbb8834555e9e919d3e01fc5aa92822d9c30502e9fbeb2daf3f2a125ab"
+      "sha256": "f8aa3904a44f2be7d8c5d3415990fe5f5c07c5f13217427f7b2a7c4ba123c110"
     },
     "rolling_per_fold.csv": {
       "rows": 20,
@@ -155,10 +235,10 @@
       "sha256": "79fa4f35cf95fa3907898d15195ab3e211a0e6be84b0093dfba629721e951582"
     },
     "week_test.csv": {
-      "rows": 2800,
+      "rows": 84,
       "columns": [
         "Date",
-        "Product_ID",
+        "Department",
         "Target_7",
         "4-week average",
         "Random Forest",
@@ -168,16 +248,7 @@
       "dates": [
         "Date"
       ],
-      "sha256": "c0d8974177bd9fe188df267a38b23288260eb3bedd74ee319ac44844d4f92d8e"
-    },
-    "week_latest.csv": {
-      "rows": 100,
-      "columns": [
-        "Product_ID",
-        "Forecast"
-      ],
-      "dates": [],
-      "sha256": "df4574ac790fb4ae39acb952ffe6242283b6ff101c9c84926c6855b170c02e40"
+      "sha256": "b41d2d28a91050a138421643817da3b5811e6469d12caddcf79a6433e1b8fa02"
     },
     "explain_importance.csv": {
       "rows": 6,
@@ -187,22 +258,19 @@
         "Std"
       ],
       "dates": [],
-      "sha256": "3f15eaeeebc5c2fece315884893b5a760ec464cd1268290f420412b3fa22896f"
+      "sha256": "bbf6910fa5da682b3970ba3ed228709ea5c9af60ddfada4dcb76141ed83ade09"
     },
-    "explain_residuals.csv": {
-      "rows": 3500,
+    "explain_residual_distribution.csv": {
+      "rows": 60,
       "columns": [
-        "Product_ID",
-        "Department",
-        "Actual",
-        "Predicted",
-        "Residual"
+        "Residual",
+        "Item_days"
       ],
       "dates": [],
-      "sha256": "dde2f25fd11a7152df048e895234bdf66f32a5d7ee50dcbe67e1ae9285029343"
+      "sha256": "787ce5ace6777344d606a5bdca5acf90c1a86f61043a8d6a3f1f12927af2dcb9"
     },
     "explain_by_item.csv": {
-      "rows": 100,
+      "rows": 10,
       "columns": [
         "Product_ID",
         "MAE",
@@ -212,7 +280,7 @@
         "Relative_MAE"
       ],
       "dates": [],
-      "sha256": "415516dfe10524f3e0e4059ebd9e4b661511a44885ad22fd896b6fcaeb035249"
+      "sha256": "c67eecaf176e2b8e24f4a27fb6abf469890b43ad12b2ee9ee7f342b072a9ef4e"
     },
     "explain_by_group.csv": {
       "rows": 3,
@@ -249,8 +317,8 @@
     },
     "values.json": {
       "rows": null,
-      "sha256": "7f2d72079b05968ab04071d1a050ebc3b7f73d1d6fede46844e7881667d90718"
+      "sha256": "12cc7b313017b017da82d7b6f5d673c2718c1e7d9e19c5cac837a0dc5c16b034"
     }
   },
-  "total_bytes": 1829382
+  "total_bytes": 48637
 }

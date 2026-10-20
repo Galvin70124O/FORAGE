@@ -16,9 +16,9 @@ Checked on 19 October 2026 before deciding whether derived extracts may be commi
 
 ## Decision (updated 20 October 2026)
 
-The **raw and row-level data are not redistributed**: `dataset/` and `data/real/` stay git-ignored. The project owner decided to publish **aggregated results** instead, in `data/public/` (about 2 MB), so the online app can show the M5 and Instacart pages for academic and educational use with attribution:
+The **raw and row-level data are not redistributed**: `dataset/` and `data/real/` stay git-ignored. The project owner decided to publish **aggregated results** instead, in `data/public/`, so the online app can show the M5 and Instacart pages for academic and educational use with attribution:
 
-- **M5 (`data/public/m5/`):** daily unit-sales totals for the 100 selected food items at store CA_1 over 180 days, with the item price and calendar fields used by the models. It contains no transaction data. It also holds every model result the pages show: metrics, rolling-origin folds, test-window predictions, residuals, permutation importance and hypothesis tests.
+- **M5 (`data/public/m5/`):** aggregates only (rebuilt 20 October 2026). These are department and category daily unit totals; distributions and summary statistics of units per item-day; the 10 best-selling items as weekly totals; the 5 largest rises and 5 largest falls in demand; and the model results the pages show (metrics, rolling-origin folds, 7-day results, predictions against actuals summed to department-day totals, a residual distribution, permutation importance and hypothesis tests). There are **no prices, no calendar or event columns per item and no per-item daily rows**, and a test enforces this. Views that need item-level rows say they were computed offline on the full dataset.
 - **Instacart (`data/public/instacart/`):** aggregates only. These are counts and reorder rates by department, aisle and product (products with 50+ order lines), basket-size and day/hour distributions, per-order summary statistics and correlations, the association rules table and the χ² test. There are **no user IDs and no order-level rows**, and a test enforces this.
 
 Each folder has a `manifest.json` with the source, licence note, attribution, build date, row counts and a SHA-256 hash per file. The app shows the attribution under **Source & licence** in the sidebar.
