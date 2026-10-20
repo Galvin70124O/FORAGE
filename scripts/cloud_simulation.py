@@ -57,6 +57,21 @@ def log_issues(lines: list[str]) -> list[str]:
     return issues
 
 
+def peak_memory_mb(pid: int) -> float | None:
+    """Peak resident memory of the server process (and its children: a Windows venv python is a launcher)."""
+    try:
+        if os.name == "nt":
+            script = (f"$ids = @({pid}) + @(Get-CimInstance Win32_Process -Filter 'ParentProcessId={pid}' | "
+                      "ForEach-Object ProcessId); ($ids | ForEach-Object { (Get-Process -Id $_ -ErrorAction "
+                      "SilentlyContinue).PeakWorkingSet64 } | Measure-Object -Maximum).Maximum")
+            out = subprocess.run(["powershell", "-NoProfile", "-Command", script], capture_output=True, text=True)
+            return float(out.stdout.strip()) / 1e6
+        status = Path(f"/proc/{pid}/status").read_text()
+        return next(int(line.split()[1]) / 1e3 for line in status.splitlines() if line.startswith("VmHWM"))
+    except Exception:
+        return None
+
+
 def run(command, cwd, env=None, label=""):
     print(f"--> {label or ' '.join(map(str, command))}")
     result = subprocess.run(command, cwd=cwd, env=env, capture_output=True, text=True)
@@ -108,10 +123,12 @@ def main() -> None:
     with open(log_path, "w", encoding="utf-8") as log:
         server = subprocess.Popen([str(python), "-m", "streamlit", "run", "app.py", "--server.port", str(args.port),
                                    "--server.headless", "true"], cwd=clone, stdout=log, stderr=subprocess.STDOUT, env=env)
+    started = time.time()
     try:
         for _ in range(120):
             try:
                 if urllib.request.urlopen(f"http://localhost:{args.port}/_stcore/health", timeout=2).status == 200:
+                    print(f"--> server healthy after {time.time() - started:.0f}s")
                     break
             except Exception:
                 time.sleep(1)
@@ -121,6 +138,8 @@ def main() -> None:
         crawl = subprocess.run([sys.executable, str(ROOT / "scripts" / "crawl_pages.py"), "--url",
                                 f"http://localhost:{args.port}", "--out", str(workdir / "shots"), "--modes",
                                 *args.modes, *([] if args.no_exercise else ["--exercise"])], cwd=clone, env=env)
+        peak = peak_memory_mb(server.pid)
+        print(f"peak server memory after crawling every page: {peak:,.0f} MB" if peak else "peak memory: not measured")
     finally:
         server.terminate()
         server.wait(timeout=30)
