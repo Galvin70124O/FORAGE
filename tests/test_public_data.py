@@ -132,7 +132,9 @@ PAGES = ["views/overview.py", "views/data_quality.py", "views/eda.py", "views/wa
 def test_every_insights_page_renders_from_public_results(public_only, source):
     from streamlit.testing.v1 import AppTest
     app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=120)
+    app.secrets["FORAGE_TEST"] = "1"  # independent of any local .streamlit/secrets.toml
     app.session_state["source"] = source
+    app.session_state["app_mode"], app.session_state["app_mode_chosen"] = "insights", True
     app.run()
     for page in PAGES:
         app.switch_page(page).run()
