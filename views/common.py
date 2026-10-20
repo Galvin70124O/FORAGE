@@ -11,9 +11,17 @@ from services.data import (
     current_source,
     describe,
     load,
+    offline,
     set_source,
 )
 from ui.components import empty_state, page_header
+
+OFFLINE_NOTE = {
+    "m5": ("Model results were computed offline on the full extract; the page shows the published daily sales "
+           "totals and those results."),
+    "instacart": ("Computed offline on the full dataset: the page shows published aggregates only (no customer IDs "
+                  "or individual orders)."),
+}
 
 UNIT_NOTE = ("Quantities are in each food's recorded unit (kg, L, dozen, loaf or pack), so totals are only "
              "compared within a food; rates and percentages are unit-free.")
@@ -35,13 +43,13 @@ def begin(title: str, purpose: str, *, feature: str | None = "waste") -> tuple[s
     df = load(source)
     page_header(title, purpose, pill=SOURCES[source], detail=describe(source, df))
     if df is None:
-        empty_state(f"{SOURCES[source]} is available in the local version",
-                    f"The {SOURCES[source]} dataset is licensed for non-commercial use and its terms do not clearly "
-                    "allow redistribution, so FORAGE does not publish it online (see docs/data_licences.md). To use "
-                    "it, run FORAGE locally: download the dataset yourself into dataset/ and run "
-                    f"`{EXTRACT_COMMAND}`. The demo data and your own data work everywhere.")
+        empty_state(f"{SOURCES[source]} results have not been built",
+                    f"Download the dataset into dataset/, run `{EXTRACT_COMMAND}`, then "
+                    "`python scripts/build_public_artifacts.py`. The demo data and your own data work everywhere.")
         switch_buttons(["demo"], f"missing_{source}")
         return source, None
+    if offline(source):
+        st.caption(OFFLINE_NOTE[source])
     if source == "personal":
         from services.personal import gate
         if feature:

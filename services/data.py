@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
+import os
 
 import pandas as pd
 import streamlit as st
 
+import public_data
 from clean_data import RAW_DATA_PATH, clean_records
 from dataset_registry import get_dataset
+from public_data import InstacartSummary
 from ui.components import fmt_date
 
 # Model modules (scikit-learn, scipy) are imported inside the functions that need them, so pages
@@ -52,17 +55,41 @@ def load_demo() -> pd.DataFrame:
     return pd.read_csv(DEMO_PATH, parse_dates=["Date", "Estimated_Expiry_Date"])
 
 
-@st.cache_data(show_spinner="Loading the M5 extract...")
+def has_raw(source: str) -> bool:
+    """Whether the raw extract for a public source is on this machine (the local version).
+
+    FORAGE_PUBLIC_ONLY=1 ignores local raw files, to test the online behaviour on a machine that has them.
+    """
+    if os.environ.get("FORAGE_PUBLIC_ONLY") == "1":
+        return False
+    return (M5_PATH if source == "m5" else INSTACART_PATH).exists()
+
+
+def offline(source: str) -> bool:
+    """True when a public source is shown from the precomputed results in data/public/ (the online version)."""
+    return source in ("m5", "instacart") and not has_raw(source) and public_data.available(source)
+
+
+def available(source: str) -> bool:
+    return source not in ("m5", "instacart") or has_raw(source) or public_data.available(source)
+
+
+M5_DTYPES = {"Product_ID": "category", "Store_ID": "category", "Department": "category",
+             "Category": "category", "Quantity_Sold": "int16", "Price": "float32",
+             "Weekday": "category", "Month": "int8", "Event_Name": "category", "Event_Type": "category"}
+
+
+@st.cache_data(show_spinner="Loading the M5 sales...")
 def load_m5() -> pd.DataFrame:
-    return pd.read_csv(M5_PATH, parse_dates=["Date"], dtype={
-        "Product_ID": "category", "Store_ID": "category", "Department": "category",
-        "Category": "category", "Quantity_Sold": "int16", "Price": "float32",
-        "Weekday": "category", "Month": "int8", "Event_Name": "category", "Event_Type": "category",
-    })
+    """Unit sales per item per day: the raw extract locally, the published daily totals online (same rows)."""
+    if has_raw("m5"):
+        return pd.read_csv(M5_PATH, parse_dates=["Date"], dtype=M5_DTYPES)
+    return public_data.read_table("m5", "item_day").astype(M5_DTYPES)
 
 
 @st.cache_data(show_spinner="Loading the Instacart extract...")
 def load_instacart() -> pd.DataFrame:
+    """Order lines; only available locally (they are never published)."""
     return pd.read_csv(INSTACART_PATH, dtype={
         "Order_ID": "int32", "User_ID": "int32", "Order_Set": "category",
         "Order_Number": "int16", "Order_Day_Of_Week": "int8", "Order_Hour": "int8",
@@ -71,28 +98,45 @@ def load_instacart() -> pd.DataFrame:
     })
 
 
-def load(source: str) -> pd.DataFrame | None:
-    """The selected source's records, or None when a public extract has not been built."""
+@st.cache_resource(show_spinner="Summarising the Instacart orders...")
+def instacart_summary() -> InstacartSummary:
+    """Instacart aggregates: computed from the order lines locally, read from data/public/ online."""
+    if has_raw("instacart"):
+        tables, values = public_data.instacart_summary(load_instacart())
+        return InstacartSummary(tables, values, offline=False)
+    names = [name[:-4] for name in public_data.manifest("instacart")["files"] if name.endswith(".csv")]
+    tables = {name: public_data.read_table("instacart", name) for name in names if name not in ("tests", "rules")}
+    return InstacartSummary(tables, public_data.read_values("instacart"), offline=True)
+
+
+def load(source: str):
+    """The selected source's data, or None when it is not available.
+
+    Demo, My data and M5 are DataFrames of records; Instacart is an InstacartSummary
+    of aggregates, because its order lines are never published.
+    """
     if source == "demo":
         return load_demo()
     if source == "personal":
         from services.personal import personal_frame
         frame = personal_frame()
         return pd.DataFrame() if frame is None else frame
-    if source == "m5":
-        return load_m5() if M5_PATH.exists() else None
-    return load_instacart() if INSTACART_PATH.exists() else None
+    if not available(source):
+        return None
+    return load_m5() if source == "m5" else instacart_summary()
 
 
 def quality_report(source: str) -> dict | None:
     path = (M5_PATH if source == "m5" else INSTACART_PATH).parent / "quality_report.json"
-    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+    if path.exists():
+        return json.loads(path.read_text(encoding="utf-8"))
+    return public_data.read_values(source).get("quality_report") if public_data.available(source) else None
 
 
-def describe(source: str, df: pd.DataFrame | None) -> str:
+def describe(source: str, df) -> str:
     """One line for the data-source label under each page title."""
     if df is None:
-        return "available in the local version"
+        return "not built yet: run scripts/build_public_artifacts.py"
     if source == "demo":
         return f"synthetic household records · {len(df):,} rows · {fmt_date(df['Date'].min())} to {fmt_date(df['Date'].max())}"
     if source == "personal":
@@ -103,8 +147,8 @@ def describe(source: str, df: pd.DataFrame | None) -> str:
     if source == "m5":
         return (f"Walmart retail unit sales, store CA_1, top {df['Product_ID'].nunique()} food items · "
                 f"{len(df):,} rows · {fmt_date(df['Date'].min())} to {fmt_date(df['Date'].max())}")
-    return (f"online grocery orders from users 1–2,000 · {len(df):,} order lines · "
-            f"{df['Order_ID'].nunique():,} orders · no calendar dates")
+    return (f"online grocery orders from users 1–2,000 · {df.values['order_lines']:,} order lines · "
+            f"{df.values['orders']:,} orders · no calendar dates")
 
 
 @st.cache_resource(show_spinner="Evaluating forecasting models on the held-out period...")
@@ -117,6 +161,11 @@ def demo_forecast() -> dict:
 
 @st.cache_resource(show_spinner="Evaluating M5 forecasting models on the held-out period...")
 def m5_forecast():
+    """(test rows with each model's predictions, None, comparison, metadata)."""
+    if not has_raw("m5"):
+        values = public_data.read_values("m5")["forecast"]
+        return (public_data.read_table("m5", "forecast_test"), None,
+                public_data.read_table("m5", "forecast_comparison"), {**values, "cutoff": pd.Timestamp(values["cutoff"])})
     from m5_forecasting import forecast_retail_demand
     return forecast_retail_demand(load_m5())
 
@@ -166,6 +215,8 @@ def source_tests(source: str) -> list:
 
     if source == "demo":
         return household_tests(load_demo())
+    if not has_raw(source):
+        return public_data.tests_from_frame(public_data.read_table(source, "tests"))
     if source == "m5":
         return m5_tests(load_m5())
     return instacart_tests(load_instacart())
@@ -201,6 +252,8 @@ def demo_rolling():
 
 @st.cache_resource(show_spinner="Backtesting M5 models over 5 rolling folds...")
 def m5_rolling():
+    if not has_raw("m5"):
+        return public_data.read_table("m5", "rolling_per_fold"), public_data.read_table("m5", "rolling_summary")
     from horizon import rolling_origin
     from m5_forecasting import FEATURES, M5_BASELINES, create_m5_features, impute_price, m5_models
     return rolling_origin(create_m5_features(load_m5()), target="Quantity_Sold", features=FEATURES,
@@ -239,6 +292,11 @@ def demo_week() -> dict:
 
 @st.cache_resource(show_spinner="Evaluating M5 7-day forecasts...")
 def m5_week() -> dict:
+    if not has_raw("m5"):
+        values = public_data.read_values("m5")["week"]
+        tables = {key: public_data.read_table("m5", f"week_{key}") for key in ("comparison", "rolling", "per_fold", "test")}
+        latest = public_data.read_table("m5", "week_latest").set_index("Product_ID")["Forecast"]
+        return {**values, **tables, "cutoff": pd.Timestamp(values["cutoff"]), "latest": latest}
     return _week(load_m5().assign(Product_ID=lambda d: d["Product_ID"].astype(str)), "Product_ID",
                  "Quantity_Sold", [], [], m5_forecast()[3]["cutoff"])
 
@@ -249,6 +307,10 @@ def forecaster_explanations(source: str) -> dict:
     """Permutation importance and residuals for the selected next-day model on the final test period."""
     if (hit := _precomputed(f"forecaster_explanations_{source}" if source == "demo" else None)) is not None:
         return hit
+    if source == "m5" and not has_raw("m5"):
+        values = public_data.read_values("m5")["explanations"]
+        tables = {key: public_data.read_table("m5", f"explain_{key}") for key in ("importance", "residuals", "by_item", "by_group")}
+        return {**values, **tables, "keys": tuple(values["keys"])}
     from explain import error_by, importance, residual_frame
     from m5_forecasting import FEATURES as M5_FEATURES
     from prediction import FEATURE_COLUMNS, TARGET
@@ -307,6 +369,10 @@ def personal_classifier(purchases: pd.DataFrame, checks: pd.DataFrame) -> dict |
 @st.cache_resource(show_spinner="Finding products bought together (FP-growth)...")
 def instacart_rules():
     """(basket matrix shape, association rules) for the top 150 Instacart products."""
+    if not has_raw("instacart"):
+        values = public_data.read_values("instacart")
+        return ((values["rules_orders"], values["rules_products"]),
+                public_data.rules_from_frame(public_data.read_table("instacart", "rules")))
     from basket import baskets, find_rules
     matrix = baskets(load_instacart().assign(Product_Name=lambda d: d["Product_Name"].astype(str)), top_n=150)
     return matrix.shape, find_rules(matrix, min_support=0.005, min_lift=1.2)
@@ -334,10 +400,12 @@ def data_as_of(source: str) -> str:
     """Footer text: the last date covered by the selected source."""
     if source == "demo":
         return f"Data as of {fmt_date(load_demo()['Date'].max())}"
+    if source in ("m5", "instacart") and not available(source):
+        return "Not built yet"
     if source == "m5":
-        return f"Data as of {fmt_date(load_m5()['Date'].max())}" if M5_PATH.exists() else "Local version only"
+        return f"Data as of {fmt_date(load_m5()['Date'].max())}"
     if source == "instacart":
-        return "No calendar dates" if INSTACART_PATH.exists() else "Local version only"
+        return "No calendar dates"
     from services.personal import personal_data
     data = personal_data()
     if not data or (data[0].empty and data[1].empty):

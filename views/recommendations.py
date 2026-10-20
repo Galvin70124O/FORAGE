@@ -193,11 +193,7 @@ if df is not None:
                 table(matches, {"Then": text("Also in the basket", "large"), "Support": number("Support", "%.3f"),
                                 "Confidence": number("Confidence", "%.2f"), "Lift": number("Lift", "%.2f")})
         with repeat_tab:
-            products = df.groupby(["Product_Name", "Department"], observed=True).agg(
-                Order_Lines=("Order_ID", "size"), Customers=("User_ID", "nunique"), Reorder_Rate=("Reordered", "mean"))
-            products = products[products["Order_Lines"] >= 50].reset_index()
-            products["Reorder_Rate"] *= 100
-            products = products.sort_values(["Reorder_Rate", "Order_Lines"], ascending=False)
+            products = df.products.sort_values(["Reorder_Rate", "Order_Lines"], ascending=False)
             kpi_row([("Products with 50+ order lines", f"{len(products):,}"),
                      ("Median reorder rate", f"{products['Reorder_Rate'].median():.1f}%"),
                      ("Reordered 80% of the time or more", f"{int((products['Reorder_Rate'] >= 80).sum())}")])

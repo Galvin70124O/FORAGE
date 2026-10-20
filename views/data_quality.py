@@ -47,16 +47,16 @@ HOUSEHOLD_NUMERIC = ["Quantity_Purchased", "Quantity_Consumed", "Quantity_Wasted
                      "Price", "Expiry_Days"]
 
 
-def profile_table(df: pd.DataFrame) -> None:
-    table(column_profile(df), {
+def profile_table(df: pd.DataFrame | None, *, profile: pd.DataFrame | None = None) -> None:
+    table(column_profile(df) if profile is None else profile, {
         "Missing": number("Missing", "%d"),
         "Missing (%)": number("Missing (%)", "%.1f"),
         "Distinct": number("Distinct values", "%d"),
     }, max_rows=None)
 
 
-def outlier_table(df: pd.DataFrame, columns: list[str]) -> None:
-    table(iqr_outliers(df, columns), {
+def outlier_table(df: pd.DataFrame | None, columns: list[str], *, outliers: pd.DataFrame | None = None) -> None:
+    table(iqr_outliers(df, columns) if outliers is None else outliers, {
         "Lower bound": number("Lower bound"), "Upper bound": number("Upper bound"),
         "Outliers": number("Outliers", "%d"), "Outliers (%)": number("Outliers (%)", "%.1f"),
     })
@@ -160,19 +160,23 @@ elif df is not None:
 
     else:
         report = quality_report(source) or {}
-        numeric = (["Quantity_Sold", "Price"] if source == "m5"
-                   else ["Order_Hour", "Days_Since_Prior_Order", "Add_To_Cart_Order", "Order_Number"])
         key = ["Date", "Product_ID", "Store_ID"] if source == "m5" else ["Order_ID", "Product_ID"]
-        kpi_row([("Rows", f"{len(df):,}"), ("Columns", f"{len(df.columns)}"),
-                 ("Missing values", f"{int(df.isna().sum().sum()):,}"),
-                 ("Duplicate keys", f"{int(df.duplicated(subset=key).sum()):,}", f"Rows sharing {' + '.join(key)}.")])
+        if source == "m5":
+            rows, columns, missing = len(df), len(df.columns), int(df.isna().sum().sum())
+            duplicates = int(df.duplicated(subset=key).sum())
+        else:
+            values = df.values
+            rows, columns, missing, duplicates = (values["order_lines"], values["columns"], values["missing_values"],
+                                                  values["duplicate_keys"])
+        kpi_row([("Rows", f"{rows:,}"), ("Columns", f"{columns}"), ("Missing values", f"{missing:,}"),
+                 ("Duplicate keys", f"{duplicates:,}", f"Rows sharing {' + '.join(key)}.")])
         selection = report.get("selection", {})
         if selection:
             st.caption("How the extract was selected: " + selection.get("reason", ""))
         left, right = st.columns([1.3, 1], gap="large")
         with left:
             section("Columns")
-            profile_table(df)
+            profile_table(df if source == "m5" else None, profile=None if source == "m5" else df.profile)
         with right:
             section("Extraction checks", "Recorded when the extract was built from the raw files")
             checks = {k: v for k, v in report.items() if isinstance(v, (int, float)) and k != "rows"}
@@ -185,4 +189,7 @@ elif df is not None:
                 st.caption("Days_Since_Prior_Order is blank for each customer's first order; that is expected, "
                            "not missing data.")
         section("Outliers (IQR rule)", "Flagged for review and kept.")
-        outlier_table(df, numeric)
+        if source == "m5":
+            outlier_table(df, ["Quantity_Sold", "Price"])
+        else:
+            outlier_table(None, [], outliers=df.outliers)

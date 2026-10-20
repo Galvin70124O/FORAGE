@@ -39,19 +39,8 @@ def m5_config(df):
             set(), "Each row is one item on one day at store CA_1.")
 
 
-def instacart_config(df):
-    orders = df.groupby("Order_ID").agg(
-        Basket=("Product_ID", "size"), Reorder_Share=("Reordered", "mean"), Order_Hour=("Order_Hour", "first"),
-        Order_Day=("Order_Day_Of_Week", "first"), Days_Since=("Days_Since_Prior_Order", "first"),
-        Order_Number=("Order_Number", "first"))
-    columns = {"Basket": "Items per order", "Reorder_Share": "Reordered share of basket",
-               "Days_Since": "Days since previous order", "Order_Hour": "Hour of day (0–23)",
-               "Order_Day": "Day code (0–6)", "Order_Number": "Customer's order number"}
-    frame = orders.rename(columns=columns)
-    frame["Department"] = None
-    return (frame, list(columns.values()), None, "Order lines per department", set(),
-            "Statistics are per order (one row per order). Days since previous order is blank for first orders "
-            "and capped at 30 by Instacart, which is why its mode and maximum are both 30.")
+INSTACART_NOTE = ("Statistics are per order (one row per order). Days since previous order is blank for first orders "
+                  "and capped at 30 by Instacart, which is why its mode and maximum are both 30.")
 
 
 source, df = begin("EDA", "Descriptive statistics, category frequencies, correlations and the main patterns "
@@ -60,14 +49,21 @@ methods(['Descriptive statistics summarise each variable: the mode is the most f
          "Each hypothesis test asks whether a difference could be chance (H0). p < 0.05 means it is unlikely to be chance; the effect size (Cohen's d, η², Cramér's V) says how big it is."])
 
 if df is not None:
-    configs = {"demo": household_config, "personal": household_config, "m5": m5_config, "instacart": instacart_config}
-    frame, stat_columns, category, frequency_title, derived_pairs, note = configs[source](df)
+    if source == "instacart":  # aggregates only: the order lines are never published
+        stat_columns, frequency_title, derived_pairs, note = (df.values["order_columns"], "Order lines per department",
+                                                              set(), INSTACART_NOTE)
+        stats, frequencies, corr = df.order_statistics, df.frequency, df.correlation
+    else:
+        configs = {"demo": household_config, "personal": household_config, "m5": m5_config}
+        frame, stat_columns, category, frequency_title, derived_pairs, note = configs[source](df)
+        stats = descriptive_statistics(frame, stat_columns).reset_index()
+        frequencies = frequency_table(df[category], label=category).reset_index()
+        corr = correlation_matrix(frame, stat_columns)
 
     stats_tab, tests_tab, patterns_tab = st.tabs(["Descriptive statistics", "Statistical tests", "Patterns"])
     with stats_tab:
         st.caption(note + " Missing values are excluded from each statistic and counted separately. "
                    "Std is the sample standard deviation; IQR = Q3 − Q1; the mode is the most frequent recorded value.")
-        stats = descriptive_statistics(frame, stat_columns).reset_index()
         table(stats, {
             "Column": "Variable", "Count": number("Count", "%d"), "Missing": number("Missing", "%d"),
             **{name: number(name, "%.2f") for name in ["Mean", "Median", "Mode", "Std", "Min", "Max", "Q1", "Q3", "IQR"]},
@@ -76,14 +72,9 @@ if df is not None:
         left, right = st.columns([1, 1.35], gap="large")
         with left:
             section("Frequency table", frequency_title)
-            if source == "instacart":
-                frequencies = frequency_table(df["Department"].astype(str), label="Department")
-            else:
-                frequencies = frequency_table(df[category], label=category)
-            table(frequencies.reset_index(), {"Count": number("Count", "%d"), "Share (%)": number("Share (%)", "%.1f")})
+            table(frequencies, {"Count": number("Count", "%d"), "Share (%)": number("Share (%)", "%.1f")})
         with right:
             section("Correlation matrix", "Pearson r between the variables above")
-            corr = correlation_matrix(frame, stat_columns)
             charts.correlation_heatmap(corr, height=380)
             st.caption("Blue is positive, red is negative, grey is no linear relationship.")
             top = strongest_correlations(corr, 1, exclude_pairs=derived_pairs)
@@ -164,16 +155,26 @@ if df is not None:
             left, right = st.columns(2, gap="large")
             with left:
                 section("Top 15 products", "Order lines")
-                top_products = df.groupby("Product_Name", as_index=False, observed=True).size().nlargest(15, "size")
-                charts.bar(top_products, "Product_Name", "size", value_title="Order lines", category_title="Product",
-                           value_format=",.0f", height=420)
+                top_products = df.products.nlargest(15, "Order_Lines")
+                charts.bar(top_products, "Product_Name", "Order_Lines", value_title="Order lines",
+                           category_title="Product", value_format=",.0f", height=420)
             with right:
-                reorder = df.groupby("Department", as_index=False, observed=True)["Reordered"].mean()
-                reorder["Reorder rate"] = reorder["Reordered"] * 100
+                reorder = df.departments.rename(columns={"Reorder_Rate": "Reorder rate"})
                 top = reorder.loc[reorder["Reorder rate"].idxmax()]
                 charts.bar(reorder, "Department", "Reorder rate", value_title="Reorder rate (%)",
                            category_title="Department", value_format=".0f",
                            title=f"{top['Department'].capitalize()} is reordered most often ({top['Reorder rate']:.0f}%)",
                            subtitle="Share of order lines the customer had bought before")
-            section("Distribution of basket size", "Items per order")
-            charts.histogram(frame, "Items per order", value_title="Items per order", bins=40)
+            left, right = st.columns(2, gap="large")
+            with left:
+                charts.histogram(df.basket_sizes, "Items per order", value_title="Items per order", bins=40,
+                                 weight="Orders", count_title="Orders",
+                                 title=f"A typical order has {df.values['items_per_order']:.0f} items",
+                                 subtitle="Distribution of basket size (items per order)")
+            with right:
+                by_hour = df.day_hour.groupby("Hour", as_index=False)["Orders"].sum()
+                peak = by_hour.loc[by_hour["Orders"].idxmax()]
+                charts.bar(by_hour, "Hour", "Orders", value_title="Orders", category_title="Hour of day",
+                           horizontal=False, sort=list(range(24)), value_format=",.0f", labels=False,
+                           title=f"Orders peak at {int(peak['Hour'])}:00",
+                           subtitle="Orders by hour of day")

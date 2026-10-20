@@ -117,12 +117,16 @@ def line(data: pd.DataFrame, x: str, y: str, *, y_title: str, x_title: str | Non
 
 
 def histogram(data: pd.DataFrame, value: str, *, value_title: str, bins: int = 30, slot: int = 0,
-              height: int | None = None, title: str | None = None, subtitle: str | None = None) -> None:
+              height: int | None = None, title: str | None = None, subtitle: str | None = None,
+              weight: str | None = None, count_title: str = "Records") -> None:
+    """Histogram of raw values, or of pre-counted values when `weight` names the count column."""
+    count = alt.Y(f"sum({weight}):Q", title=count_title) if weight else alt.Y("count():Q", title=count_title)
+    count_tip = (alt.Tooltip(f"sum({weight}):Q", title=count_title, format=",") if weight
+                 else alt.Tooltip("count():Q", title=count_title, format=","))
     chart = alt.Chart(data).mark_bar(color=colors()["accent"], cornerRadiusEnd=2, binSpacing=1).encode(
         x=alt.X(f"{value}:Q", bin=alt.Bin(maxbins=bins), title=value_title),
-        y=alt.Y("count():Q", title="Records"),
-        tooltip=[alt.Tooltip(f"{value}:Q", bin=alt.Bin(maxbins=bins), title=value_title),
-                 alt.Tooltip("count():Q", title="Records", format=",")],
+        y=count,
+        tooltip=[alt.Tooltip(f"{value}:Q", bin=alt.Bin(maxbins=bins), title=value_title), count_tip],
     )
     _show(chart, height or HEIGHTS["medium"], title, subtitle)
 

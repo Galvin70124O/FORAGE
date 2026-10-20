@@ -15,6 +15,7 @@ SRC_DIR = PROJECT_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
+import public_data  # noqa: E402
 from services.data import SOURCES, data_as_of  # noqa: E402
 from services.session import personal_available, render_account  # noqa: E402
 from ui.theme import VERSION, apply_styles  # noqa: E402
@@ -40,6 +41,20 @@ def build_pages(signed_in: bool) -> dict[str, list]:
     }
 
 
+def render_licence(source: str) -> None:
+    """Attribution and licence for the selected Insights source."""
+    if source == "demo":
+        st.caption("Synthetic household records made by FORAGE's own generator (src/generate_data.py). "
+                   "For illustration only; prices are illustrative.")
+    elif source == "personal":
+        st.caption("Your own purchases and pantry checks, private to your account.")
+    else:
+        info = public_data.LICENCES[source]
+        built = public_data.manifest(source)
+        st.caption(f"{info['attribution']}  \n{info['licence']}  \n[Dataset page]({info['url']})"
+                   + (f"  \nResults built {built['built']}." if built else ""))
+
+
 def render_sidebar(signed_in: bool) -> None:
     """Below Streamlit's own page navigation: the Insights source, the account and a footer."""
     sources = [key for key in SOURCES if key != "personal" or signed_in]
@@ -48,7 +63,8 @@ def render_sidebar(signed_in: bool) -> None:
     with st.sidebar:
         st.radio("Insights data source", sources, format_func=SOURCES.get, key="source",
                  help="Every Insights page uses only the selected source. Sources are never combined.")
-        st.caption("Demo data is synthetic and for illustration only. M5 and Instacart are public datasets.")
+        with st.expander("Source & licence"):
+            render_licence(st.session_state["source"])
         st.divider()
         render_account()
         st.markdown(f'<div class="fg-footer">{data_as_of(st.session_state["source"])}<br>'

@@ -100,32 +100,30 @@ elif df is not None:
                        subtitle="Top 8 items by units sold (M5 item IDs)")
         action_list(board["actions"], "No item changed by 20% or more.")
     else:
-        orders = df["Order_ID"].nunique()
-        basket = df.groupby("Order_ID").size()
-        kpi_row([("Orders", f"{orders:,}"), ("Reorder rate", f"{df['Reordered'].mean() * 100:.1f}%",
+        values = df.values
+        kpi_row([("Orders", f"{values['orders']:,}"), ("Reorder rate", f"{values['reorder_rate'] * 100:.1f}%",
                   "Share of order lines the customer had bought before."),
-                 ("Items per order", f"{basket.mean():.1f}", "Mean basket size."),
-                 ("Products", f"{df['Product_ID'].nunique():,}")])
+                 ("Items per order", f"{values['items_per_order']:.1f}", "Mean basket size."),
+                 ("Products", f"{values['products']:,}")])
         st.caption("Instacart has no calendar dates, so there is no month-on-month change, and no quantities, "
                    "expiry or waste.")
         left, right = st.columns(2, gap="large")
-        departments = df.groupby("Department", observed=True).size().sort_values(ascending=False)
+        departments = df.departments.sort_values("Lines", ascending=False)
         with left:
-            charts.bar(departments.head(10).rename("Lines").rename_axis("Department").reset_index(), "Department",
-                       "Lines", value_title="Order lines", value_format=",.0f",
-                       title=f"{departments.index[0].capitalize()} fills {departments.iloc[0] / len(df) * 100:.0f}% "
+            top = departments.iloc[0]
+            charts.bar(departments.head(10), "Department", "Lines", value_title="Order lines", value_format=",.0f",
+                       title=f"{top['Department'].capitalize()} fills {top['Lines'] / values['order_lines'] * 100:.0f}% "
                              "of order lines", subtitle="Top 10 departments")
         with right:
-            reorder = df.groupby("Department", observed=True)["Reordered"].mean().mul(100).sort_values(ascending=False)
-            charts.bar(reorder.head(10).rename("Rate").rename_axis("Department").reset_index(), "Department", "Rate",
-                       value_title="Reorder rate (%)", value_format=".0f",
-                       title=f"{reorder.index[0].capitalize()} is reordered most ({reorder.iloc[0]:.0f}%)",
+            reorder = departments.sort_values("Reorder_Rate", ascending=False)
+            charts.bar(reorder.head(10), "Department", "Reorder_Rate", value_title="Reorder rate (%)", value_format=".0f",
+                       title=f"{reorder.iloc[0]['Department'].capitalize()} is reordered most "
+                             f"({reorder.iloc[0]['Reorder_Rate']:.0f}%)",
                        subtitle="Share of order lines bought before, top 10 departments")
-        products = df.groupby("Product_Name", observed=True).agg(Lines=("Order_ID", "size"), Rate=("Reordered", "mean"))
-        products = products[products["Lines"] >= 50].sort_values("Rate", ascending=False).head(5)
-        action_list([{"tag": "Regular list", "title": f"Keep {name} on the regular list",
-                      "why": f"Reordered {row.Rate * 100:.0f}% of the time across {int(row.Lines):,} order lines."}
-                     for name, row in products.iterrows()], "")
+        products = df.products.sort_values(["Reorder_Rate", "Order_Lines"], ascending=False).head(5)
+        action_list([{"tag": "Regular list", "title": f"Keep {row.Product_Name} on the regular list",
+                      "why": f"Reordered {row.Reorder_Rate:.0f}% of the time across {int(row.Order_Lines):,} order lines."}
+                     for row in products.itertuples()], "")
 
     with st.expander("What each data source supports"):
         st.caption("Sources are never mixed. Pages show a clear notice when the selected source cannot support an "
