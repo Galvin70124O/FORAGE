@@ -33,7 +33,8 @@ def require_user() -> tuple[Store, int]:
         st.stop()
     db, uid = session.store(), session.user_id()
     if db is None or uid is None:
-        empty_state("The database is not reachable", st.session_state.get("store_error", "Try again in a minute."))
+        from ui.kitchen import t
+        empty_state(t("db_unreachable"), st.session_state.get("store_error", ""))
         st.stop()
     session.demo_banner()
     return db, uid

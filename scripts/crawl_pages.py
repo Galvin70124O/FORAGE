@@ -15,7 +15,8 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 INSIGHTS = ["Overview", "Data Quality", "EDA", "Waste & Expiry", "Forecasting", "Recommendations"]
-PERSONAL = ["Home", "I bought", "Pantry check", "My data"]
+PERSONAL = ["Home", "I bought", "Pantry check", "Shopping list", "My data"]
+TO_KITCHEN, TO_INSIGHTS = "Back to Kitchen", "Open Project insights"
 SOURCES = ["Demo data", "My data", "M5 (Walmart)", "Instacart"]
 PHONE_UA = ("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) "
             "Version/17.0 Mobile/15E148 Safari/604.1")
@@ -48,6 +49,16 @@ def goto(page, name):
     settle(page)
 
 
+def switch_mode(page, kitchen: bool) -> None:
+    """Use the switch at the bottom of the sidebar (no-op when already in that mode)."""
+    open_sidebar(page)
+    button = (page.locator('[data-testid="stSidebar"] [data-testid^="stBaseButton"]')
+              .filter(has_text=TO_KITCHEN if kitchen else TO_INSIGHTS).locator("visible=true"))
+    if button.count():
+        button.first.click()
+        settle(page)
+
+
 def choose_source(page, source):
     open_sidebar(page)
     option = page.locator('[data-testid="stSidebar"] [data-testid="stRadio"] label').filter(has_text=source)
@@ -69,25 +80,23 @@ def check(page, label, console, results):
 
 
 def exercise(page, console, results):
-    """Log a purchase via I bought… and a pantry check (proves writes work in this deployment)."""
+    """Log a purchase with a tile, then do a pantry check with a level button (proves writes work here)."""
+    switch_mode(page, kitchen=True)
     goto(page, "I bought")
-    box = page.locator('[data-testid="stSelectbox"]').filter(has_text="Food").first
-    box.locator("input").click()
-    page.keyboard.type("Crawler milk")
-    page.wait_for_timeout(500)
-    page.keyboard.press("Enter")
-    page.wait_for_timeout(1500)
-    page.get_by_role("spinbutton", name="Quantity").fill("2")
-    page.get_by_role("spinbutton", name="Total paid (₹)").fill("120")
+    page.get_by_role("button", name="Milk", exact=True).first.click()
+    settle(page)
     page.get_by_role("button", name="Save", exact=True).click()
     settle(page)
-    check(page, "exercise | I bought: save", console, results)
+    saved = page.locator('[data-testid="stAlertContentSuccess"]').filter(has_text="Saved: Milk").count()
+    check(page, "exercise | I bought: save" + ("" if saved else " (no success message)"), console, results)
+    if not saved:
+        results[-1][1].append("no 'Saved: Milk' message after Save")
     goto(page, "Pantry check")
-    save = page.get_by_role("button", name="checks").filter(has_text="Save")
-    if save.count() and save.first.is_enabled():
-        save.first.click()
-        settle(page)
-    check(page, "exercise | Pantry check: save", console, results)
+    page.get_by_role("button", name="Check everything").first.click()
+    settle(page)
+    page.get_by_role("button", name="Half", exact=True).first.click()
+    settle(page)
+    check(page, "exercise | Pantry check: Half", console, results)
 
 
 def main() -> None:
@@ -122,20 +131,32 @@ def main() -> None:
                 # a cold start (fresh environment) can take a while before anything renders
                 page.wait_for_selector('[data-testid="stSidebar"] a', timeout=240_000)
                 settle(page, 2500)
+                def shoot(label, page=page, console=console):
+                    tag = label.replace(" | ", "_").replace(" ", "_").replace("&", "and").replace("(", "").replace(")", "")
+                    page.screenshot(path=str(args.out / f"{tag}.png"))
+                    check(page, label, console, results)
+
+                # Kitchen pages (a visitor sees the sign-in page there)
+                switch_mode(page, kitchen=True)
+                for name in [n for n in args.pages if n in PERSONAL]:
+                    goto(page, name)
+                    skip = page.locator('[data-testid="stMain"] button').filter(has_text="Skip")
+                    if name == "Home" and skip.count():  # first-time walkthrough
+                        shoot(f"{mode} {width} | Kitchen | Home walkthrough")
+                        skip.first.click()
+                        settle(page)
+                    shoot(f"{mode} {width} | Kitchen | {name}")
                 if args.exercise and mode == args.modes[0] and width == args.widths[0]:
                     exercise(page, console, results)
+                # Project insights pages, per data source
+                switch_mode(page, kitchen=False)
                 for source in args.sources:
                     if not choose_source(page, source):
                         print(f"skip    {mode} {width} | {source} (not offered in this session)")
                         continue
-                    for name in args.pages:
-                        if name in PERSONAL and source != args.sources[0]:
-                            continue  # personal pages do not depend on the Insights source
+                    for name in [n for n in args.pages if n in INSIGHTS]:
                         goto(page, name)
-                        label = f"{mode} {width} | {source} | {name}"
-                        tag = label.replace(" | ", "_").replace(" ", "_").replace("&", "and").replace("(", "").replace(")", "")
-                        page.screenshot(path=str(args.out / f"{tag}.png"))
-                        check(page, label, console, results)
+                        shoot(f"{mode} {width} | {source} | {name}")
                 page.close()
                 context.close()
         browser.close()

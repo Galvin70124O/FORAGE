@@ -8,40 +8,45 @@ import streamlit as st
 
 from pantry import read_import
 from services import personal
-from services.data import set_source
 from services.personal import queue_toast, require_user, toast_pending
-from ui.components import kpi_row, number, page_header, section, table
+from ui.components import kpi_row, number, section, table
+from ui.kitchen import page_title, t
 
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "data" / "templates"
 TEMPLATES = {"purchases": TEMPLATE_DIR / "purchases_template.csv",
              "pantry checks": TEMPLATE_DIR / "pantry_checks_template.csv"}
 
-page_header("My data", pill="My data", purpose="Everything you have logged. Edit or delete entries, and export or import CSV files.")
+page_title("nav_my_data", "my_data_purpose")
 db, uid = require_user()
 toast_pending()
 buys, checks, foods = personal.purchases(uid), personal.checks(uid), personal.foods(uid)
 
-kpi_row([("Purchases", f"{len(buys):,}"), ("Pantry checks", f"{len(checks):,}"), ("Foods", f"{len(foods):,}")])
-st.button("Analyse my data in Insights", on_click=set_source, args=("personal",),
-          help="Sets the Insights data source to My data.")
+kpi_row([(t("purchases"), f"{len(buys):,}"), (t("pantry_checks"), f"{len(checks):,}"), (t("foods"), f"{len(foods):,}")])
 
 
-@st.dialog("Delete entries")
+def analyse_mine() -> None:
+    st.session_state.update(source="personal", app_mode="insights", app_mode_chosen=True)
+
+
+st.button(t("analyse_mine"), on_click=analyse_mine, icon=":material/query_stats:")
+
+
+@st.dialog(t("delete"))
 def confirm_delete(kind: str, ids: list[int]) -> None:
-    st.write(f"Delete {len(ids)} {kind}? This cannot be undone.")
+    st.write(t("delete_confirm", n=len(ids)))
     with st.container(horizontal=True):
-        if st.button("Delete", type="primary"):
+        if st.button(t("delete"), type="primary"):
             for entry in ids:
                 (db.delete_purchase if kind == "purchases" else db.delete_check)(uid, int(entry))
             queue_toast(f"Deleted {len(ids)} {kind}.")
             st.rerun()
-        if st.button("Cancel"):
+        if st.button(t("cancel")):
             st.rerun()
 
 
 def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: dict) -> None:
     if frame.empty:
-        st.write(f"No {kind} yet.")
+        st.write(t("no_entries"))
         return
     view = frame.sort_values(["date", "id"], ascending=False).reset_index(drop=True)
     if "category" in view:
@@ -54,7 +59,7 @@ def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: 
     selected = edited.loc[edited["Select"], "id"].astype(int).tolist()
     changed = edited.drop(columns="Select").compare(view.drop(columns="Select")).index
     with st.container(horizontal=True):
-        if st.button(f"Save {len(changed)} change(s)", type="primary", disabled=len(changed) == 0, key=f"save_{kind}"):
+        if st.button(t("save_changes", n=len(changed)), type="primary", disabled=len(changed) == 0, key=f"save_{kind}"):
             try:
                 for index in changed:
                     row = edited.loc[index]
@@ -68,11 +73,11 @@ def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: 
                 st.rerun()
             except ValueError as error:
                 st.error(str(error))
-        if st.button(f"Delete selected ({len(selected)})", disabled=not selected, key=f"delete_{kind}"):
+        if st.button(t("delete_selected", n=len(selected)), disabled=not selected, key=f"delete_{kind}"):
             confirm_delete(kind, selected)
 
 
-purchases_tab, checks_tab, foods_tab, files_tab = st.tabs(["Purchases", "Pantry checks", "Foods", "Import and export"])
+purchases_tab, checks_tab, foods_tab, files_tab = st.tabs([t("purchases"), t("pantry_checks"), t("foods"), t("files")])
 date_column = st.column_config.DateColumn("Date", format="D MMM YYYY")
 
 with purchases_tab:
@@ -87,14 +92,14 @@ with checks_tab:
 
 with foods_tab:
     if foods.empty:
-        st.write("Foods appear here when you log a purchase.")
+        st.write(t("no_entries"))
     else:
         edited = st.data_editor(foods, hide_index=True, width="stretch", num_rows="fixed", key="edit_foods",
                                 disabled=["id"], column_config={
                                     "id": None, "name": "Food", "category": "Category", "unit": "Default unit",
                                     "shelf_life_days": st.column_config.NumberColumn("Shelf life (days)", min_value=1, step=1)})
         changed = edited.compare(foods).index
-        if st.button(f"Save {len(changed)} change(s)", type="primary", disabled=len(changed) == 0, key="save_foods"):
+        if st.button(t("save_changes", n=len(changed)), type="primary", disabled=len(changed) == 0, key="save_foods"):
             for index in changed:
                 row = edited.loc[index]
                 db.update_food(uid, int(row["id"]), name=row["name"], category=row["category"], unit=row["unit"],

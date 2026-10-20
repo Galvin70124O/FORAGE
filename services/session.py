@@ -15,9 +15,9 @@ from sqlalchemy import inspect, text
 
 from identity import ALLOWED, NOT_ALLOWED, Identity, access, auth_configured, database_configured, mode
 from store import Store, normalise_database_url
+from ui.kitchen import t
 
 LOCAL_DB = Path(__file__).resolve().parent.parent / "data" / "forage_local.db"
-TAGLINE = "Log what you buy and check your pantry; FORAGE works out what you waste and what to buy."
 
 
 def secrets() -> dict:
@@ -107,20 +107,19 @@ def render_sign_in_page() -> None:
     _, middle, _ = st.columns([1, 2, 1])
     with middle:
         st.markdown('<p class="fg-brand" style="font-size:1.4rem;margin-top:2rem">FORAGE</p>', unsafe_allow_html=True)
-        st.markdown(f'<p class="fg-purpose">{TAGLINE}</p>', unsafe_allow_html=True)
-        st.button("Continue with Google", on_click=sign_in, type="primary", width="stretch")
-        st.caption("Your purchases and pantry checks are private to your account. The Insights pages are open to "
-                   "everyone without signing in.")
+        st.markdown(f'<p class="fg-purpose">{t("tagline")}</p>', unsafe_allow_html=True)
+        st.info(t("unverified_note"))
+        st.button(t("continue_google"), on_click=sign_in, type="primary", width="stretch")
+        st.caption(t("private_note"))
 
 
 def render_not_allowed_page(person: Identity) -> None:
     _, middle, _ = st.columns([1, 2, 1])
     with middle:
         st.markdown('<p class="fg-brand" style="font-size:1.4rem;margin-top:2rem">FORAGE</p>', unsafe_allow_html=True)
-        st.subheader("Access not enabled for this account")
-        st.write(f"{person.email} is not on this FORAGE team's list. Ask the person who runs the app to add it, "
-                 "or sign in with another Google account.")
-        st.button("Log out", on_click=st.logout, width="stretch")
+        st.subheader(t("not_allowed_title"))
+        st.write(t("not_allowed_body", email=person.email))
+        st.button(t("log_out"), on_click=st.logout, width="stretch")
 
 
 def render_account() -> None:
@@ -129,20 +128,19 @@ def render_account() -> None:
     status, person = access_status()
     if auth_configured(config):
         if status == ALLOWED:
-            st.caption(f"Signed in as **{person.name}**  \n{person.email}")
-            st.button("Log out", on_click=st.logout, width="stretch")
+            st.caption(f"{t('signed_in_as')} **{person.name}**  \n{person.email}")
+            st.button(t("log_out"), on_click=st.logout, width="stretch")
         elif status == NOT_ALLOWED:
-            st.caption(f"{person.email}: access not enabled.")
-            st.button("Log out", on_click=st.logout, width="stretch")
+            st.caption(f"{person.email}: {t('not_allowed_title').lower()}.")
+            st.button(t("log_out"), on_click=st.logout, width="stretch")
         else:
-            st.caption("Sign in to log your food. Insights are open to everyone.")
-            st.button("Continue with Google", on_click=sign_in, type="primary", width="stretch")
+            st.caption(t("sign_in_prompt"))
+            st.button(t("continue_google"), on_click=sign_in, type="primary", width="stretch")
     elif not database_configured(config):
-        st.caption("Single local user. No sign-in configured.")
+        st.caption(t("single_user"))
 
 
 def demo_banner() -> None:
     """Shown on personal pages when no database is configured."""
     if not database_configured(secrets()) and not auth_configured(secrets()):
-        st.info("Demo mode, data is temporary and resets. No database is configured, so entries are kept in a "
-                "local file on this machine only.")
+        st.info(t("demo_banner"))

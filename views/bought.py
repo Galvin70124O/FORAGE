@@ -1,112 +1,176 @@
-"""I bought…: log a purchase in a few taps, or paste a bill."""
+"""I bought… (Kitchen mode): tap a food, choose an everyday amount, save. Repeat buttons and bill paste included."""
 
 import pandas as pd
 import streamlit as st
 
+from kitchen import (
+    CATEGORIES,
+    UNITS,
+    amount_text,
+    frequent_foods,
+    guess,
+    last_purchase,
+    last_week,
+    preset_for,
+    presets,
+)
 from pantry import parse_bill
 from services.personal import foods as cached_foods
 from services.personal import purchases as cached_purchases
-from services.personal import queue_toast, require_user, toast_pending
-from ui.components import fmt_date, number, page_header, section, table
+from services.personal import require_user
+from ui.components import fmt_date, number, section
+from ui.kitchen import flash, page_title, success, t, tiles
 
-UNITS = ["kg", "g", "L", "ml", "piece", "dozen", "loaf", "pack", "unit"]
-
-page_header("I bought…", pill="My data", purpose="Log a purchase: pick the food, check the amount and price, save.")
+page_title("nav_bought", "bought_purpose")
 db, uid = require_user()
-toast_pending()
+flash()
 
-buys = cached_purchases(uid)
-foods = cached_foods(uid)
-known = foods.set_index("name") if not foods.empty else pd.DataFrame()
-frequent = buys["food"].value_counts().head(8).index.tolist() if not buys.empty else []
-
-
-def pick_chip() -> None:
-    if st.session_state.get("bought_chip"):
-        st.session_state["bought_food"] = st.session_state["bought_chip"]
+buys, foods = cached_purchases(uid), cached_foods(uid)
+today = pd.Timestamp.today().normalize()
+known_units = dict(zip(foods["name"], foods["unit"])) if not foods.empty else {}
 
 
-if frequent:
-    st.pills("Buy again", frequent, key="bought_chip", on_change=pick_chip)
+def describe(row) -> str:
+    return f"{preset_for(row['unit'], row['quantity']) or amount_text(row['quantity'], row['unit'])}"
 
-# Most recently bought first, then the rest alphabetically: the usual pick is at the top on a phone.
-recent = buys.sort_values(["date", "id"], ascending=False)["food"].drop_duplicates().tolist() if not buys.empty else []
-options = recent + sorted(set(foods["name"]) - set(recent)) if not foods.empty else []
-food = st.selectbox("Food", options, index=None, accept_new_options=True, key="bought_food",
-                    placeholder="Type a food, e.g. Milk")
-last = buys[buys["food"].str.lower() == str(food).lower()].iloc[-1] if food and not buys.empty and \
-    (buys["food"].str.lower() == str(food).lower()).any() else None
-is_new = bool(food) and str(food).strip().lower() not in {n.lower() for n in options}
-food_unit = known.at[food, "unit"] if food in known.index and pd.notna(known.at[food, "unit"]) else None
-default_unit = (last["unit"] if last is not None and last["unit"] in UNITS else food_unit) or "unit"
 
-with st.form("bought", border=False):
-    left, right = st.columns(2)
-    quantity = left.number_input("Quantity", min_value=0.0, step=0.5, format="%.2f",
-                                 value=float(last["quantity"]) if last is not None else 1.0)
-    unit = right.selectbox("Unit", UNITS, index=UNITS.index(default_unit) if default_unit in UNITS else len(UNITS) - 1)
-    price = left.number_input("Total paid (₹)", min_value=0.0, step=5.0, format="%.2f",
-                              value=float(last["total_price"]) if last is not None and pd.notna(last["total_price"]) else 0.0,
-                              help="What you paid for this purchase in total, not per unit.")
-    day = right.date_input("Date", value=pd.Timestamp.today().date(), format="DD/MM/YYYY")
+def choose(food: str | None) -> None:
+    st.session_state["k_food"] = food
+    st.session_state.pop("k_search", None)
+
+
+def picked_from_search() -> None:
+    if st.session_state.get("k_search"):
+        st.session_state["k_food"] = str(st.session_state["k_search"]).strip()
+
+
+@st.dialog(t("repeat_week_title"))
+def confirm_repeat_week(rows: pd.DataFrame) -> None:
+    st.write(t("repeat_week_body", n=len(rows)))
+    st.markdown("\n".join(f"- {row['food']}: {describe(row)}" for _, row in rows.iterrows()))
+    with st.container(horizontal=True):
+        if st.button(t("add_them"), type="primary"):
+            for _, row in rows.iterrows():
+                db.add_purchase(uid, today, row["food"], float(row["quantity"]), row["unit"],
+                                None if pd.isna(row["total_price"]) else float(row["total_price"]))
+            success(t("saved_many", n=len(rows)))
+            st.rerun()
+        if st.button(t("cancel")):
+            st.rerun()
+
+
+# Repeat buttons: the fastest way to log a usual shop.
+last = last_purchase(buys)
+week = last_week(buys, today)
+if last is not None or not week.empty:
+    with st.container(horizontal=True, key="fg-tiles-repeat"):
+        if last is not None and st.button(t("repeat_last", food=last["food"], amount=describe(last)),
+                                          icon=":material/replay:"):
+            db.add_purchase(uid, today, last["food"], float(last["quantity"]), last["unit"],
+                            None if pd.isna(last["total_price"]) else float(last["total_price"]))
+            success(t("saved_purchase", food=last["food"], amount=describe(last), price=""))
+            st.rerun()
+        if not week.empty and st.button(t("repeat_week", n=len(week)), icon=":material/event_repeat:"):
+            confirm_repeat_week(week)
+
+# 1. Which food: big tiles for the usual foods, search for anything else.
+food = st.session_state.get("k_food")
+usual = frequent_foods(buys)
+section(t("your_foods") if not buys.empty else t("starter_foods"))
+tapped = tiles(usual, "food", selected=food)
+if tapped:
+    choose(None if tapped == food else tapped)
+    st.rerun()
+names = sorted(set(foods["name"]) if not foods.empty else set()) or []
+st.selectbox(t("search_food"), [n for n in names if n not in usual], index=None, accept_new_options=True,
+             key="k_search", placeholder=t("search_placeholder"), on_change=picked_from_search)
+
+if food:
+    previous = buys[buys["food"].str.lower() == food.lower()] if not buys.empty else buys
+    previous = previous.sort_values(["date", "id"]).iloc[-1] if not previous.empty else None
+    is_new = food.lower() not in {n.lower() for n in names}
+    unit_guess, category_guess, shelf_guess = guess(food)
+    stored_unit = previous["unit"] if previous is not None and pd.notna(previous["unit"]) else known_units.get(food)
+    unit = stored_unit if isinstance(stored_unit, str) and stored_unit else unit_guess
+
+    st.subheader(food)
+    # 2. How much: everyday choices in the food's own unit; any other amount is still possible.
+    options = presets(unit)
+    labels = [label for label, _ in options]
+    default = preset_for(unit, previous["quantity"]) if previous is not None else None
+    choice = st.pills(t("how_much"), labels, default=default or labels[min(1, len(labels) - 1)],
+                      key=f"k_amount_{food}")
+    with st.expander(t("other_amount")):
+        left, right = st.columns(2)
+        custom = left.number_input(t("amount"), min_value=0.0, step=0.25, format="%.2f", value=0.0, key=f"k_custom_{food}")
+        custom_unit = right.selectbox(t("unit"), UNITS, index=UNITS.index(unit) if unit in UNITS else len(UNITS) - 1,
+                                      key=f"k_custom_unit_{food}")
+    last_price = previous["total_price"] if previous is not None and pd.notna(previous["total_price"]) else 0.0
+    price = st.number_input(t("price_paid"), min_value=0.0, step=5.0, format="%.0f", help=t("price_help"),
+                            value=float(last_price), key=f"k_price_{food}")
+    with st.expander(t("another_day")):
+        day = st.date_input(t("date"), value=today.date(), format="DD/MM/YYYY", key="k_day")
     category, shelf = None, None
     if is_new:
-        st.caption("New food: tell FORAGE how to treat it (you can change this later on My data).")
+        st.caption(t("new_food_note"))
         left, right = st.columns(2)
-        category = left.text_input("Category", placeholder="Dairy")
-        shelf = right.number_input("Shelf life (days)", min_value=1, value=7, step=1,
-                                   help="Days from purchase until it goes off.")
-    saved = st.form_submit_button("Save", type="primary", width="stretch")
+        category = left.selectbox(t("category"), CATEGORIES, index=CATEGORIES.index(category_guess), key=f"k_cat_{food}")
+        shelf = right.number_input(t("stays_good"), min_value=1, value=shelf_guess, step=1, key=f"k_shelf_{food}")
 
-if saved:
-    if not food or not str(food).strip():
-        st.error("Choose or type a food first.")
-    elif quantity <= 0:
-        st.error("Quantity must be more than 0.")
-    else:
-        db.add_purchase(uid, day, str(food), quantity, unit, price if price > 0 else None,
-                        category=category or None, shelf_life_days=shelf)
-        queue_toast(f"Saved: {str(food).strip()} {quantity:g} {unit}" + (f" for ₹{price:,.0f}" if price else ""))
-        for key in ("bought_food", "bought_chip"):
-            st.session_state.pop(key, None)
-        st.rerun()
+    if st.button(t("save"), type="primary", width="stretch", key="k_save"):
+        if custom > 0:
+            quantity, unit_saved, amount_label = custom, custom_unit, amount_text(custom, custom_unit)
+        elif choice:
+            quantity, unit_saved, amount_label = dict(options)[choice], unit, choice
+        else:
+            quantity = 0.0
+        if quantity <= 0:
+            st.error(t("choose_amount_first"))
+        else:
+            db.add_purchase(uid, day, food, float(quantity), unit_saved, float(price) if price > 0 else None,
+                            category=category, shelf_life_days=int(shelf) if shelf else None)
+            success(t("saved_purchase", food=food, amount=amount_label, price=f", ₹{price:,.0f}" if price else ""))
+            choose(None)
+            st.rerun()
 
-with st.expander("Paste a bill or grocery order"):
-    st.caption("One item per line, ending with the price, e.g. `Milk 2 L 120` or `Eggs x12 84`. "
-               "You check the rows before anything is saved.")
-    bill = st.text_area("Bill text", height=140, label_visibility="collapsed",
+with st.expander(t("paste_bill")):
+    st.caption(t("bill_help"))
+    bill = st.text_area(t("paste_bill"), height=140, label_visibility="collapsed",
                         placeholder="Milk 2 L 120\nEggs x12 84\nTomato 1kg 40")
-    if st.button("Read the bill"):
+    if st.button(t("read_bill")):
         if bill.strip():
             rows, skipped = parse_bill(bill)
             st.session_state["bill_rows"], st.session_state["bill_skipped"] = rows, skipped
         else:
-            st.error("Paste the bill text first.")
+            st.error(t("paste_first"))
     rows = st.session_state.get("bill_rows")
     if rows is not None:
         if st.session_state.get("bill_skipped"):
-            st.caption("Not read: " + "; ".join(st.session_state["bill_skipped"]))
+            st.caption(t("not_read", lines="; ".join(st.session_state["bill_skipped"])))
         if rows.empty:
-            st.write("No items were recognised.")
+            st.write(t("nothing_recognised"))
         else:
-            rows = rows.assign(Save=True)
-            edited = st.data_editor(rows, hide_index=True, width="stretch", num_rows="fixed", key="bill_editor",
-                                    column_config={"food": "Food", "quantity": number("Quantity"),
-                                                   "unit": st.column_config.SelectboxColumn("Unit", options=UNITS),
-                                                   "total_price": number("Total ₹"), "Save": st.column_config.CheckboxColumn("Save")})
+            edited = st.data_editor(rows.assign(Save=True), hide_index=True, width="stretch", num_rows="fixed",
+                                    key="bill_editor", column_config={
+                                        "food": "Food", "quantity": number("Quantity"),
+                                        "unit": st.column_config.SelectboxColumn("Unit", options=UNITS),
+                                        "total_price": number("₹"), "Save": st.column_config.CheckboxColumn("Save")})
             chosen = edited[edited["Save"]]
-            if st.button(f"Save {len(chosen)} purchases", type="primary", disabled=chosen.empty):
+            if st.button(t("save_n", n=len(chosen)), type="primary", disabled=chosen.empty):
                 for row in chosen.itertuples():
-                    db.add_purchase(uid, pd.Timestamp.today(), row.food, row.quantity, row.unit,
+                    db.add_purchase(uid, today, row.food, row.quantity, row.unit,
                                     row.total_price if row.total_price > 0 else None)
                 st.session_state.pop("bill_rows", None)
-                queue_toast(f"Saved {len(chosen)} purchases from the bill.")
+                success(t("saved_many", n=len(chosen)))
                 st.rerun()
 
 if not buys.empty:
-    section("Recent purchases", "Edit or delete them on My data")
+    section(t("recent"), t("edit_on_my_data"))
     recent = buys.sort_values(["date", "id"], ascending=False).head(5)
-    table(recent[["date", "food", "quantity", "unit", "total_price"]], {
-        "date": st.column_config.DateColumn("Date", format="D MMM"), "food": "Food",
-        "quantity": number("Qty", "%g"), "unit": "Unit", "total_price": number("₹", "%.0f")})
-    st.caption(f"{len(buys):,} purchases logged since {fmt_date(buys['date'].min())}.")
+    lines = []
+    for _, row in recent.iterrows():
+        when = (t("today") if row["date"] == today else t("yesterday") if row["date"] == today - pd.Timedelta(days=1)
+                else fmt_date(row["date"]))
+        price = f", ₹{row['total_price']:,.0f}" if pd.notna(row["total_price"]) else ""
+        lines.append(f"- {when}: **{row['food']}**, {describe(row)}{price}")
+    st.markdown("\n".join(lines))

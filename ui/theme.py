@@ -100,6 +100,11 @@ hr { margin: 0.5rem 0 !important; }
   border-radius: 999px; border: 1px solid var(--fg-border); margin-right: 0.5rem; vertical-align: 1px; }
 [data-testid="stMetricValue"] { font-size: 1.65rem; font-weight: 600; }
 [data-testid="stMetricLabel"] p { font-size: 0.8rem; opacity: 0.8; }
+/* Touch targets of at least 44 px for buttons, links, inputs and checkboxes. */
+.stButton button, .stDownloadButton button, .stFormSubmitButton button, .stLinkButton a { min-height: 44px; }
+[data-testid="stPageLink"] a { min-height: 44px; display: flex; align-items: center; }
+[data-baseweb="input"], [data-baseweb="select"] > div { min-height: 44px; }
+[data-testid="stCheckbox"] label { min-height: 44px; align-items: center; }
 /* Hide only the Deploy button, the footer and Streamlit branding; the main menu (theme switch) stays. */
 [data-testid="stAppDeployButton"], .stDeployButton, footer, [data-testid="stDecoration"] { display: none !important; }
 @media (max-width: 640px) {

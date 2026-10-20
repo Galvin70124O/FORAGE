@@ -47,11 +47,21 @@ def section(title: str, note: str | None = None) -> None:
         st.caption(note)
 
 
+KITCHEN_PAGES = {"views/home.py", "views/bought.py", "views/pantry.py", "views/shopping.py", "views/my_data.py"}
+
+
+def go_to_kitchen(page: str) -> None:
+    """Switch to Kitchen mode and open `page` on the next run (app.py performs the switch)."""
+    st.session_state.update(app_mode="kitchen", app_mode_chosen=True, goto=page)
+
+
 def empty_state(title: str, body: str, *, page: str | None = None, page_label: str | None = None) -> None:
     with st.container(border=True):
         st.markdown(f"**{title}**")
         st.write(body)
-        if page:
+        if page and page in KITCHEN_PAGES and st.session_state.get("app_mode") != "kitchen":
+            st.button(page_label or "Open", on_click=go_to_kitchen, args=(page,), key=f"goto_{page}")
+        elif page:
             st.page_link(page, label=page_label or "Open")
 
 
