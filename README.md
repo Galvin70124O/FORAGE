@@ -59,10 +59,13 @@ app.py                     page config, logo, two modes (Kitchen / Project insig
 views/                     one file per page; *_section.py are shared renderers
 services/
   data.py                  cached loaders and model results (st.cache_resource), precomputed-result lookup
-  overview.py              dashboard KPIs, charts and actions
+  overview.py              dashboard KPIs, charts and actions (part of the precomputed-results fingerprint)
+  pantry_view.py           Overview pantry labels, waste-gauge target and the three expiry shelves
   session.py               secrets, mode, Google sign-in + allowlist, st.connection("sql")
   personal.py              signed-in user, cached personal reads (ttl 60 s, cleared after writes)
-ui/                        theme (registered Altair theme, CSS), charts, components, kitchen (tiles, walkthrough, language)
+ui/                        theme.py (Fresh Shelf tokens, the one stylesheet, Plotly template), charts.py (Plotly builders),
+                           components.py (label cards, freshness meter, shelves, waste gauge, demand cards, empty states),
+                           kitchen.py (tiles, walkthrough, language)
 src/                       analysis logic: pure functions, no Streamlit, unit-tested
   store.py                 the ONLY database module: every query filtered by user
   identity.py              who may use the personal pages (allowlist, local user only without [auth])
@@ -80,6 +83,30 @@ data/                      demo CSVs, messy sample, logging templates, precomput
 docs/                      deploy.md, google_login_setup.md, data_licences.md
 tests/                     pytest suite
 ```
+
+## Look and feel: Fresh Shelf
+
+FORAGE's visual identity is a well-kept hostel pantry shelf with handwritten jar labels: linen background, white
+cards with warm 1 px borders, herb green (#2E6B4F) for the brand, **Fraunces** for titles and big numbers and
+**DM Sans** for everything else (tabular figures for quantities and ₹). Status colours mean the same everywhere:
+fresh = green, use soon = turmeric, expired / wasted = tomato, neutral = stone. Every text colour is at least
+4.5:1 against its background in light and dark mode. Dark mode follows the device setting.
+
+| Piece | Where |
+| --- | --- |
+| Jar-label KPI cards (double rule, small-caps name, value, comparison with last month) | every KPI row; Overview shows Purchased, Consumed, Wasted %, Money lost |
+| Freshness meter (days left written on it) | every jar on a shelf |
+| Shelves: Expired, Use within 2 days, This week | Overview preview, Waste & Expiry → Expiry |
+| Waste-bin gauge against a target (half the first month's rate, SDG 12.3) | Overview |
+| Demand cards with a Buy less / same / more stamp and the model's confidence | Forecasting (demo), Recommendations |
+
+All of it is presentation: the same numbers come from the same functions. Purchased, Consumed and Money lost use the
+existing valuation (quantity × each food's median price per unit), so Money lost equals ₹ wasted elsewhere.
+
+Code: `ui/theme.py` holds the tokens, all injected CSS and the Plotly templates (applied once per run from
+`app.py`); `ui/components.py` holds `label_card`/`kpi_row`, `freshness_bar`, `shelf`, `waste_gauge`, `demand_card`
+and `empty_state`; `ui/charts.py` draws every chart with the one template. Pages call these and never repeat HTML.
+Screenshots for review: `docs/ui-review/`.
 
 ## Run locally
 

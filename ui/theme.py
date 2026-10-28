@@ -117,7 +117,15 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
 [data-testid="stVerticalBlockBorderWrapper"], [data-testid="stVerticalBlock"][class*="border"] { border-radius: 16px; }
 [data-testid="stExpander"] details { border-radius: 16px; border-color: var(--fs-line); background: var(--fs-card); }
 [data-testid="stExpander"] summary p { font-weight: 600; }
-[data-testid="stAlertContainer"] { border-radius: 12px; }
+[data-testid="stAlertContainer"] { border-radius: 12px; border: 1px solid var(--fs-line); }
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentInfo"]) { background: var(--fs-stone-tint); }
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentWarning"]) { background: var(--fs-soon-tint); }
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentSuccess"]) { background: var(--fs-fresh-tint); }
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentError"]) { background: var(--fs-gone-tint); }
+[data-testid="stAlertContentInfo"], [data-testid="stAlertContentInfo"] * { color: var(--fs-text) !important; }
+[data-testid="stAlertContentWarning"], [data-testid="stAlertContentWarning"] * { color: var(--fs-soon-text) !important; }
+[data-testid="stAlertContentSuccess"], [data-testid="stAlertContentSuccess"] * { color: var(--fs-fresh-text) !important; }
+[data-testid="stAlertContentError"], [data-testid="stAlertContentError"] * { color: var(--fs-gone-text) !important; }
 [data-testid="stDataFrame"], [data-testid="stTable"] { font-variant-numeric: tabular-nums; }
 [data-testid="stTabs"] [data-baseweb="tab"] p { font-weight: 600; }
 [data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"] p { color: var(--fs-on-brand) !important; }
