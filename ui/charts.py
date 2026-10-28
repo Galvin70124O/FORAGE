@@ -153,6 +153,10 @@ def line(data: pd.DataFrame, x: str, y: str, *, y_title: str, x_title: str | Non
             fig.add_trace(go.Scatter(x=[last[x]], y=[last[y]], mode="markers", hoverinfo="skip",
                                      marker=dict(size=10, color=palette["accent"], line=dict(width=2, color=palette["card"]))))
     fig.update_xaxes(title=x_title, type=_x_kind(x_type), tickformat=x_format if x_type == "T" else None)
+    if x_type == "T" and not data.empty:
+        start, end = pd.to_datetime(data[x]).min(), pd.to_datetime(data[x]).max()
+        pad = (end - start) * 0.03
+        fig.update_xaxes(range=[start - pad, end + pad])
     fig.update_yaxes(title=y_title, rangemode="tozero" if zero else "normal", tickformat=y_format.replace("+", ""))
     if label_last and not series:
         fig.update_layout(margin=dict(r=56))

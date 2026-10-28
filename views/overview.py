@@ -7,8 +7,12 @@ import streamlit as st
 
 from services.data import SOURCES
 from ui import charts
-from ui.components import empty_state, kpi_row, methods, section, table
+from ui.components import chips, empty_state, fmt_date, greeting, kpi_row, methods, section, shelf, table, waste_gauge
 from views.common import begin
+
+SHELVES = (("expired", "Expired", "Nothing has gone off. Lovely."),
+           ("soon", "Use within 2 days", "Nothing needs using up right now."),
+           ("week", "This week", "Nothing else expires this week."))
 
 CAPABILITIES = pd.DataFrame({
     "Analysis": ["Descriptive statistics", "Waste and expiry", "Forecasting", "Recommendations"],
@@ -19,41 +23,85 @@ CAPABILITIES = pd.DataFrame({
 })
 
 
+TAG_TONES = {"Use first": "fs-soon", "Expires soon": "fs-soon", "Buy less": "fs-gone", "Reduce stock": "fs-gone",
+             "Restock": "fs-fresh", "Regular list": "fs-fresh"}
+
+
 def action_list(actions: list[dict], empty: str) -> None:
     section("Action list", "The most urgent items and what to do about them")
     if not actions:
         st.write(empty)
         return
     html = "".join(
-        f'<div class="fg-action"><div class="fg-action-title"><span class="fg-tag">{escape(a["tag"])}</span>'
-        f'{escape(a["title"])}</div><div class="fg-action-why">{escape(a["why"])}</div></div>' for a in actions)
+        f'<div class="fg-action"><div class="fg-action-title"><span class="fg-tag {TAG_TONES.get(a["tag"], "")}">'
+        f'{escape(a["tag"])}</span>{escape(a["title"])}</div><div class="fg-action-why">{escape(a["why"])}</div></div>'
+        for a in actions)
     st.markdown(html, unsafe_allow_html=True)
 
 
-def rupee_charts(monthly: pd.Series, by_food: pd.Series, *, illustrative: bool) -> None:
+def waste_trend(monthly: pd.Series, note: str) -> None:
+    if len(monthly) >= 2:
+        change = (monthly.iloc[-1] - monthly.iloc[-2]) / monthly.iloc[-2] * 100 if monthly.iloc[-2] else 0
+        title = (f"₹{monthly.iloc[-1]:,.0f} wasted in {monthly.index[-1]:%b}, "
+                 f"{abs(change):.0f}% {'less' if change < 0 else 'more'} than {monthly.index[-2]:%b}")
+    else:
+        title = f"₹{monthly.sum():,.0f} wasted so far"
+    charts.line(monthly.rename_axis("Month").reset_index(), "Month", "Rupees", x_title=None, y_title="₹ wasted",
+                y_format=",.0f", x_format="%b %Y", title=title, subtitle=f"₹ wasted per month · {note}",
+                label_last=True, height=300)
+
+
+def top_wasted(by_food: pd.Series, note: str) -> None:
+    top = by_food.head(8)
+    if top.empty:
+        empty_state("Nothing wasted yet", "No food has been thrown away in the periods so far. Keep it up.")
+        return
+    share = top.iloc[0] / by_food.sum() * 100 if by_food.sum() else 0
+    charts.bar(top.rename_axis("Food").reset_index(), "Food", "Rupees", value_title="₹ wasted",
+               value_format=",.0f", title=f"{top.index[0]} is the costliest waste: {share:.0f}% of all ₹ wasted",
+               subtitle=f"Top {len(top)} foods by ₹ wasted · {note}")
+
+
+def shelves_preview(source: str, df: pd.DataFrame, as_of: pd.Timestamp) -> None:
+    from services.overview import shelf_items
+    groups = shelf_items(source, df, as_of)
+    st.html(f'<p class="fs-chart-title">On the shelf</p><p class="fs-chart-sub">As of {fmt_date(as_of)} · '
+            "the items needing attention soonest on each shelf</p>")
+    for key, title, empty in SHELVES:
+        shelf(title, groups[key], empty=empty, limit=2)
+    st.page_link("views/waste.py", label="See every shelf", icon=":material/arrow_forward:")
+
+
+def pantry_dashboard(source: str, df: pd.DataFrame, board: dict, now: pd.Period, as_of: pd.Timestamp) -> None:
+    """Demo and My data: four pantry labels, the waste gauge and trend, top wasted foods and the shelves."""
+    from services.overview import label_items, pantry_labels
+    illustrative = source == "demo"
     note = "Illustrative (synthetic prices)" if illustrative else "From the prices you paid"
+    labels = pantry_labels(df, source, now)
+    kpi_row(label_items(labels, illustrative=illustrative))
+    chips([(name, value + (f" ({delta})" if delta else "")) for name, value, _, delta, _ in board["kpis"][2:]])
+    st.caption(f"This month = {labels['month']}" + (", the last month in the demo data" if illustrative else "")
+               + f". Each label compares with {labels['previous']}. ₹ values use each food's median price per unit.")
+    gauge, trend = st.columns([1, 2], gap="large")
+    with gauge:
+        if pd.isna(labels["target"]):
+            empty_state("No waste target yet", "The target is half of your first month's waste. It appears once a "
+                        "month has a pantry check.")
+        else:
+            waste_gauge(labels["now"]["rate"], labels["target"], previous=labels["before"]["rate"],
+                        note=f"Target {labels['target']:.1f}%: half of {labels['first'].to_timestamp():%b %Y}'s "
+                             f"{labels['first_rate']:.1f}% (SDG 12.3: halve food waste).")
+    with trend:
+        waste_trend(board["monthly"], note)
     left, right = st.columns(2, gap="large")
     with left:
-        if len(monthly) >= 2:
-            change = (monthly.iloc[-1] - monthly.iloc[-2]) / monthly.iloc[-2] * 100 if monthly.iloc[-2] else 0
-            title = (f"₹{monthly.iloc[-1]:,.0f} wasted in {monthly.index[-1]:%b}, "
-                     f"{abs(change):.0f}% {'less' if change < 0 else 'more'} than {monthly.index[-2]:%b}")
-        else:
-            title = f"₹{monthly.sum():,.0f} wasted so far"
-        charts.line(monthly.rename_axis("Month").reset_index(), "Month", "Rupees", x_title=None, y_title="₹ wasted",
-                    y_format=",.0f", x_format="%b %Y", title=title, subtitle=f"₹ wasted per month · {note}",
-                    label_last=True)
+        top_wasted(board["by_food"], note)
     with right:
-        top = by_food.head(8)
-        if not top.empty:
-            share = top.iloc[0] / by_food.sum() * 100 if by_food.sum() else 0
-            charts.bar(top.rename_axis("Food").reset_index(), "Food", "Rupees", value_title="₹ wasted",
-                       value_format=",.0f", title=f"{top.index[0]} is the costliest waste: {share:.0f}% of all ₹ wasted",
-                       subtitle=f"Top {len(top)} foods by ₹ wasted · {note}")
+        shelves_preview(source, df, as_of)
 
 
 source, df = begin("Overview", "Where food is bought, used and wasted, and what to do next. FORAGE is framed by "
-                   "UN SDG target 12.3: halve per-capita food waste by 2030.", feature=None)
+                   "UN SDG target 12.3: halve per-capita food waste by 2030.", feature=None, greeting=greeting())
 methods(['Each figure compares this month with last month; arrows show the direction and colour is never the only cue.',
          "Waste rate = wasted ÷ purchased for each food, averaged across foods. ₹ wasted = wasted quantity × the food's median price per unit.",
          'Forecast accuracy = 1 − WAPE: one minus the total absolute forecast error divided by total actual demand.'])
@@ -67,20 +115,15 @@ elif df is not None:
     if source == "demo":
         from services.overview import demo_dashboard
         board = demo_dashboard()
-        kpi_row(board["kpis"])
-        st.caption(f"This month = {board['month']}, the last month in the demo data. Forecast accuracy = 1 − WAPE "
-                   "(total absolute error ÷ total actual).")
-        rupee_charts(board["monthly"], board["by_food"], illustrative=True)
-        action_list(board["actions"], "Nothing urgent in the plan.")
+        pantry_dashboard(source, df, board, df["Date"].max().to_period("M"), df["Date"].max())
+        action_list(board["actions"], "Nothing urgent in the plan. Enjoy your week.")
     elif source == "personal":
         from services.overview import personal_dashboard
         from services.personal import personal_data
         board = personal_dashboard(*personal_data())
-        kpi_row(board["kpis"])
-        st.caption(f"This month = {board['month']}. Changes compare with last month; they appear once both months "
-                   "have data.")
-        rupee_charts(board["monthly"], board["by_food"], illustrative=False)
-        action_list(board["actions"], "Nothing is close to expiring or at risk of being wasted.")
+        today = pd.Timestamp.today().normalize()
+        pantry_dashboard(source, df, board, today.to_period("M"), today)
+        action_list(board["actions"], "Nothing is close to expiring or at risk of being wasted. Nice work.")
     elif source == "m5":
         from services.overview import m5_dashboard
         board = m5_dashboard()

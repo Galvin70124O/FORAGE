@@ -32,7 +32,8 @@ PERIOD_NOTE = ("My data is recorded per pantry-check period, not per day, so day
                "checks, not an error.")
 
 
-def begin(title: str, purpose: str, *, feature: str | None = "waste") -> tuple[str, pd.DataFrame | None]:
+def begin(title: str, purpose: str, *, feature: str | None = "waste",
+          greeting: str | None = None) -> tuple[str, pd.DataFrame | None]:
     """Render the page header and return (source key, data). Data is None when nothing can be shown.
 
     For My data, `feature` names the pantry.UNLOCK rule that must be met before
@@ -41,7 +42,7 @@ def begin(title: str, purpose: str, *, feature: str | None = "waste") -> tuple[s
     """
     source = current_source()
     df = load(source)
-    page_header(title, purpose, pill=SOURCES[source], detail=describe(source, df))
+    page_header(title, purpose, pill=SOURCES[source], detail=describe(source, df), greeting=greeting)
     if df is None:
         empty_state(f"{SOURCES[source]} results have not been built",
                     f"Download the dataset into dataset/, run `{EXTRACT_COMMAND}`, then "

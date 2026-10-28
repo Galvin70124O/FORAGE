@@ -36,6 +36,23 @@ def page_header(title: str, purpose: str, *, pill: str | None = None, detail: st
         st.markdown(f'<div class="fg-detail">{escape(detail)}</div>', unsafe_allow_html=True)
 
 
+def greeting() -> str:
+    """"Good morning" / "afternoon" / "evening" in the viewer's time zone, with their first name when signed in."""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    try:
+        zone = ZoneInfo(st.context.timezone) if st.context.timezone else None
+    except Exception:
+        zone = None
+    hour = datetime.now(zone).hour
+    part = "Good morning" if 5 <= hour < 12 else "Good afternoon" if 12 <= hour < 17 else "Good evening"
+    try:
+        name = st.user.get("given_name") if st.user.is_logged_in else None
+    except Exception:
+        name = None
+    return f"{part}, {name}" if name else part
+
+
 def source_label(name: str, detail: str) -> None:
     """Detail line for pages that render their own header (personal pages)."""
     st.markdown(f'<div class="fg-detail">{escape(name)} · {escape(detail)}</div>', unsafe_allow_html=True)
@@ -113,10 +130,11 @@ def days_text(days_left: float) -> str:
 
 
 def freshness_bar(days_left: float, horizon: float = 7) -> str:
-    """Slim meter: the filled share is the freshness left (days left ÷ horizon), coloured by status,
-    with the days written on it so colour is never the only cue."""
+    """Slim meter: the filled share is the freshness left (days left ÷ shelf life, capped at two weeks so
+    long-life foods still read), coloured by status, with the days written on it so colour is never the only cue."""
     status = freshness_status(days_left)
-    share = 1.0 if days_left < 0 else min(max((days_left + 1) / (max(horizon, 1) + 1), 0.12), 1.0)
+    scale = min(max(horizon, 1), 14)
+    share = 1.0 if days_left < 0 else min(max((days_left + 1) / (scale + 1), 0.22), 1.0)
     text = days_text(days_left)
     return (f'<div class="fs-meter" role="img" aria-label="{text}"><div class="fs-meter-fill fs-{status}" '
             f'style="width:{share * 100:.0f}%"></div><div class="fs-meter-text">{text}</div></div>')
