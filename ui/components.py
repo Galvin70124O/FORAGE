@@ -42,13 +42,13 @@ def greeting() -> str:
     from zoneinfo import ZoneInfo
     try:
         zone = ZoneInfo(st.context.timezone) if st.context.timezone else None
-    except Exception:
+    except Exception:  # noqa: BLE001 - an unknown zone or auth setup must never break the greeting
         zone = None
     hour = datetime.now(zone).hour
     part = "Good morning" if 5 <= hour < 12 else "Good afternoon" if 12 <= hour < 17 else "Good evening"
     try:
         name = st.user.get("given_name") if st.user.is_logged_in else None
-    except Exception:
+    except Exception:  # noqa: BLE001 - an unknown zone or auth setup must never break the greeting
         name = None
     return f"{part}, {name}" if name else part
 
@@ -123,7 +123,7 @@ def freshness_status(days_left: float) -> str:
 
 
 def days_text(days_left: float) -> str:
-    days = int(math.floor(days_left))
+    days = math.floor(days_left)
     if days < 0:
         return "Expired yesterday" if days == -1 else f"Expired {-days} days ago"
     return "Use today" if days == 0 else "1 day left" if days == 1 else f"{days} days left"
@@ -228,7 +228,7 @@ def demand_card(name: str, value: str, unit: str, *, stamp: str, what: str = "pr
     if level:
         dots = "".join(f'<i class="{"on" if i < LEVELS[level] else ""}"></i>' for i in range(3))
         confidence = (f'<div class="fs-confidence"><span class="fs-dots" aria-hidden="true">{dots}</span>'
-                      f"{level} confidence · typical error ±{relative_error:.0f}%</div>")
+                      f"{level} confidence (±{relative_error:.0f}%)</div>")
     return (f'<div class="fs-demand"><div class="fs-demand-top"><div class="fs-demand-name">{escape(name)}</div>'
             f'<span class="fs-stamp fs-{stamp}">{STAMPS[stamp]}</span></div>'
             f'<div class="fs-demand-value">{escape(value)} <span>{escape(unit)}</span></div>'

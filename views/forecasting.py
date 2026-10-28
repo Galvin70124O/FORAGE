@@ -25,7 +25,7 @@ from ui.components import (
     section,
     table,
 )
-from views.common import begin, not_available
+from views.common import STAMP_NOTE, begin, demo_demand_cards, not_available
 
 ONE_STEP = ("Next-day forecasts are one-step-ahead: the prediction for each day uses the actual figure from the day "
             "before (and the week before), so they measure how well a model tracks tomorrow's demand.")
@@ -171,6 +171,11 @@ if df is not None:
 
         day_tab, week_tab, folds_tab, explain_tab = st.tabs(["Next day", "Next 7 days", "Rolling backtest", "Explanations"])
         with day_tab:
+            if source == "demo":
+                section("Tomorrow at a glance", "The 8 foods with the highest predicted demand, from the selected "
+                        "model refit on all history (the same forecasts as the purchase plan)")
+                demo_demand_cards(limit=8)
+                st.caption(STAMP_NOTE + " Every food is on the Recommendations page.")
             selected_kpis(summary, best, unit)
             st.info(ONE_STEP)
             section("Model comparison", f"{FOLDS} rolling folds covering {fmt_date(per_fold['Cutoff'].min())} "

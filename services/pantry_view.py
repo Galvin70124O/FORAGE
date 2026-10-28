@@ -66,6 +66,9 @@ def label_items(labels: dict, *, illustrative: bool) -> list[tuple]:
 
 
 SHELF_WINDOW = 7
+SHELVES = (("expired", "Expired", "Past its date in the last week", "Nothing has gone off. Lovely."),
+           ("soon", "Use within 2 days", "Eat these first", "Nothing needs using up right now."),
+           ("week", "This week", "Expiring in 3 to 7 days", "Nothing else expires this week."))
 
 
 def shelf_items(source: str, df: pd.DataFrame | None, as_of) -> dict[str, list[dict]]:

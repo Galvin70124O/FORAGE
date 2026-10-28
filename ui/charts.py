@@ -90,9 +90,9 @@ def bar(data: pd.DataFrame, category: str, value: str, *, value_title: str, cate
     span = (values.max() - min(values.min(), 0)) if len(values) else 1
     pad = (span or 1) * (0.16 if show_labels else 0.04)
     value_range = [min(values.min(), 0) - (pad if values.min() < 0 else 0), max(values.max(), 0) + pad] if len(values) else None
-    common = dict(marker=dict(color=bar_colors, line=dict(width=0)), customdata=custom, cliponaxis=False,
-                  texttemplate=f"%{{{'x' if horizontal else 'y'}:{value_format}}}" if show_labels else None,
-                  textposition="outside", textfont=dict(color=palette["muted"], size=11))
+    common = {"marker": {"color": bar_colors, "line": {"width": 0}}, "customdata": custom, "cliponaxis": False,
+                  "texttemplate": f"%{{{'x' if horizontal else 'y'}:{value_format}}}" if show_labels else None,
+                  "textposition": "outside", "textfont": {"color": palette["muted"], "size": 11}}
     if horizontal:
         hover = f"<b>%{{y}}</b><br>{escape(value_title)}: %{{x:{value_format}}}"
         fig = go.Figure(go.Bar(x=values, y=data[category], orientation="h", **common,
@@ -135,23 +135,23 @@ def line(data: pd.DataFrame, x: str, y: str, *, y_title: str, x_title: str | Non
             part = data[data[series] == name].sort_values(x)
             fig.add_trace(go.Scatter(
                 x=part[x], y=part[y], name=str(name), mode="lines",
-                line=dict(color=palette["accent"] if name == focus else palette["context"], width=2.2 if name == focus else 1.8,
-                          dash="dash" if name in (dashed or []) else "solid"),
+                line={"color": palette["accent"] if name == focus else palette["context"], "width": 2.2 if name == focus else 1.8,
+                          "dash": "dash" if name in (dashed or []) else "solid"},
                 hovertemplate=f"{escape(str(name))}: %{{y:{y_format}}}<extra></extra>"))
         fig.update_layout(showlegend=True, hovermode="x unified")
     else:
         part = data.sort_values(x)
-        fig.add_trace(go.Scatter(x=part[x], y=part[y], mode="lines+markers", line=dict(color=palette["accent"], width=2.4),
-                                 marker=dict(size=5, color=palette["accent"]), fill="tozeroy" if zero else None,
+        fig.add_trace(go.Scatter(x=part[x], y=part[y], mode="lines+markers", line={"color": palette["accent"], "width": 2.4},
+                                 marker={"size": 5, "color": palette["accent"]}, fill="tozeroy" if zero else None,
                                  fillcolor=_alpha(palette["accent"], 0.07),
                                  hovertemplate=f"<b>{x_hover}</b><br>{escape(y_title)}: %{{y:{y_format}}}<extra></extra>"))
         fig.update_layout(showlegend=False, hovermode="closest")
         if label_last and not part.empty:
             last = part.iloc[-1]
             fig.add_annotation(x=last[x], y=last[y], text=f"<b>{_fmt(last[y], y_format)}</b>", showarrow=False,
-                               xanchor="left", xshift=8, font=dict(color=palette["text"], size=12))
+                               xanchor="left", xshift=8, font={"color": palette["text"], "size": 12})
             fig.add_trace(go.Scatter(x=[last[x]], y=[last[y]], mode="markers", hoverinfo="skip",
-                                     marker=dict(size=10, color=palette["accent"], line=dict(width=2, color=palette["card"]))))
+                                     marker={"size": 10, "color": palette["accent"], "line": {"width": 2, "color": palette["card"]}}))
     fig.update_xaxes(title=x_title, type=_x_kind(x_type), tickformat=x_format if x_type == "T" else None)
     if x_type == "T" and not data.empty:
         start, end = pd.to_datetime(data[x]).min(), pd.to_datetime(data[x]).max()
@@ -159,7 +159,7 @@ def line(data: pd.DataFrame, x: str, y: str, *, y_title: str, x_title: str | Non
         fig.update_xaxes(range=[start - pad, end + pad])
     fig.update_yaxes(title=y_title, rangemode="tozero" if zero else "normal", tickformat=y_format.replace("+", ""))
     if label_last and not series:
-        fig.update_layout(margin=dict(r=56))
+        fig.update_layout(margin={"r": 56})
     _show(fig, height or HEIGHTS["medium"], title, subtitle)
 
 
@@ -183,7 +183,7 @@ def histogram(data: pd.DataFrame, value: str, *, value_title: str, bins: int = 3
     """Histogram of raw values, or of pre-counted values when `weight` names the count column."""
     palette = colors()
     trace = go.Histogram(x=data[value], y=data[weight] if weight else None, histfunc="sum" if weight else "count",
-                         nbinsx=bins, marker=dict(color=palette["accent"], line=dict(width=1, color=palette["bg"])),
+                         nbinsx=bins, marker={"color": palette["accent"], "line": {"width": 1, "color": palette["bg"]}},
                          hovertemplate=f"{escape(value_title)}: %{{x}}<br>{escape(count_title)}: %{{y:,}}<extra></extra>")
     fig = go.Figure(trace)
     fig.update_xaxes(title=value_title)
@@ -203,14 +203,14 @@ def scatter(data: pd.DataFrame, x: str, y: str, *, x_title: str, y_title: str, l
     labelled = data[(ranked <= label_extremes) | (ranked > len(data) - label_extremes)]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=data[x], y=data[y], mode="markers", customdata=custom,
-                             marker=dict(size=11, color=palette["accent"], opacity=0.85,
-                                         line=dict(width=1, color=palette["card"])),
+                             marker={"size": 11, "color": palette["accent"], "opacity": 0.85,
+                                         "line": {"width": 1, "color": palette["card"]}},
                              hovertemplate=_hover(specs) + "<extra></extra>"))
     fig.add_trace(go.Scatter(x=labelled[x], y=labelled[y], mode="text", text=labelled[label], textposition="middle right",
-                             textfont=dict(color=palette["muted"], size=11), hoverinfo="skip", cliponaxis=False))
+                             textfont={"color": palette["muted"], "size": 11}, hoverinfo="skip", cliponaxis=False))
     fig.update_xaxes(title=x_title, type="log" if log_x else "linear", showgrid=True, gridcolor=palette["grid"])
     fig.update_yaxes(title=y_title)
-    fig.update_layout(showlegend=False, margin=dict(r=72))
+    fig.update_layout(showlegend=False, margin={"r": 72})
     _show(fig, height or HEIGHTS["large"], title, subtitle)
 
 
@@ -243,7 +243,7 @@ def correlation_heatmap(corr: pd.DataFrame, *, height: int | None = None, title:
         for j, column in enumerate(order):
             if text[i][j]:
                 fig.add_annotation(x=column, y=row, text=text[i][j], showarrow=False,
-                                   font=dict(size=11, color=text_colors[i][j]))
+                                   font={"size": 11, "color": text_colors[i][j]})
     fig.update_xaxes(showgrid=False, showline=False, tickangle=-35)
     fig.update_yaxes(showgrid=False, autorange="reversed")
     _show(fig, height or 380, title)

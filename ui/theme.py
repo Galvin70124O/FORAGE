@@ -65,22 +65,22 @@ def colors() -> dict:
 
 def _template(name: str) -> go.layout.Template:
     p = PALETTE[name]
-    axis = dict(gridcolor=p["grid"], linecolor=p["axis"], tickcolor=p["axis"], zerolinecolor=p["axis"],
-                title=dict(font=dict(color=p["muted"], size=12)), tickfont=dict(color=p["muted"], size=11),
-                automargin=True, ticks="", showline=False, zeroline=False)
-    return go.layout.Template(layout=dict(
-        font=dict(family=FONT, color=p["text"], size=12),
-        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        colorway=p["series"],
-        xaxis=dict(axis, showgrid=False, showline=True),
-        yaxis=dict(axis, showgrid=True),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0, title=None,
-                    font=dict(color=p["muted"], size=11), bgcolor="rgba(0,0,0,0)"),
-        hoverlabel=dict(bgcolor=p["card"], bordercolor=p["line_strong"], font=dict(family=FONT, color=p["text"], size=12)),
-        margin=dict(l=8, r=16, t=16, b=8),
-        bargap=0.3,
-        dragmode=False,
-    ))
+    axis = {"gridcolor": p["grid"], "linecolor": p["axis"], "tickcolor": p["axis"], "zerolinecolor": p["axis"],
+                "title": {"font": {"color": p["muted"], "size": 12}}, "tickfont": {"color": p["muted"], "size": 11},
+                "automargin": True, "ticks": "", "showline": False, "zeroline": False}
+    return go.layout.Template(layout={
+        "font": {"family": FONT, "color": p["text"], "size": 12},
+        "paper_bgcolor": "rgba(0,0,0,0)", "plot_bgcolor": "rgba(0,0,0,0)",
+        "colorway": p["series"],
+        "xaxis": dict(axis, showgrid=False, showline=True),
+        "yaxis": dict(axis, showgrid=True),
+        "legend": {"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "left", "x": 0, "title": None,
+                    "font": {"color": p["muted"], "size": 11}, "bgcolor": "rgba(0,0,0,0)"},
+        "hoverlabel": {"bgcolor": p["card"], "bordercolor": p["line_strong"], "font": {"family": FONT, "color": p["text"], "size": 12}},
+        "margin": {"l": 8, "r": 16, "t": 16, "b": 8},
+        "bargap": 0.3,
+        "dragmode": False,
+    })
 
 
 for _name in PALETTE:

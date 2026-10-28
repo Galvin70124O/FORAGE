@@ -14,6 +14,7 @@ from ui.components import (
     number,
     percent_bar,
     section,
+    shelf,
     table,
 )
 from ui.components import rupees as rupees_column
@@ -130,19 +131,26 @@ elif df is not None:
                       else f"As of today, {fmt_date(as_of)}.")
         st.caption(as_of_text + (" Stock is what should be on hand now (last pantry check + purchases since − usual "
                    "use), split into the purchases it most likely came from (newest first)." if source == "personal" else
-                   " Stock is each purchase's recorded remaining quantity, assumed still on hand until it expires;")
-                   + " batches already past expiry are excluded.")
+                   " Stock is each purchase's recorded remaining quantity, assumed still on hand until it expires.")
+                   + " The Expired shelf shows stock that passed its date in the last week; the tables leave it out.")
         expiry_columns = {"Quantity_Unit": "Unit", "Remaining": number("Remaining", "%.2f"),
                           "Batches": number("Batches", "%d"), "Earliest_Expiry": st.column_config.DateColumn("Earliest expiry", format="D MMM YYYY"),
                           "Days_Left": number("Days left", "%d")}
-        left, right = st.columns(2, gap="large")
-        for column, frame, days in ((left, soon_3, 3), (right, soon_7, 7)):
-            with column:
-                section(f"Expiring within {days} days", f"{len(frame)} foods")
-                if frame.empty:
-                    st.write(f"No remaining stock expires within {days} days.")
-                else:
-                    table(frame.drop(columns=["Category"], errors="ignore"), expiry_columns, max_rows=8)
+        from services.pantry_view import SHELVES, shelf_items
+        groups = shelf_items(source, df, as_of)
+        for key, title, note, empty in SHELVES:
+            shelf(title, groups[key], note=note, empty=empty, limit=10)
+        st.caption("Each jar is one food's stock in that window; a food with batches in two windows sits on both. "
+                   "The meter is the share of its shelf life left (capped at two weeks).")
+        with st.expander("Expiring stock as tables (within 3 and 7 days)"):
+            left, right = st.columns(2, gap="large")
+            for column, frame, days in ((left, soon_3, 3), (right, soon_7, 7)):
+                with column:
+                    section(f"Expiring within {days} days", f"{len(frame)} foods")
+                    if frame.empty:
+                        st.write(f"No remaining stock expires within {days} days.")
+                    else:
+                        table(frame.drop(columns=["Category"], errors="ignore"), expiry_columns, max_rows=8)
 
         left, right = st.columns([1.2, 1], gap="large")
         with left:

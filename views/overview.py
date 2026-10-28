@@ -7,12 +7,19 @@ import streamlit as st
 
 from services.data import SOURCES
 from ui import charts
-from ui.components import chips, empty_state, fmt_date, greeting, kpi_row, methods, section, shelf, table, waste_gauge
+from ui.components import (
+    chips,
+    empty_state,
+    fmt_date,
+    greeting,
+    kpi_row,
+    methods,
+    section,
+    shelf,
+    table,
+    waste_gauge,
+)
 from views.common import begin
-
-SHELVES = (("expired", "Expired", "Nothing has gone off. Lovely."),
-           ("soon", "Use within 2 days", "Nothing needs using up right now."),
-           ("week", "This week", "Nothing else expires this week."))
 
 CAPABILITIES = pd.DataFrame({
     "Analysis": ["Descriptive statistics", "Waste and expiry", "Forecasting", "Recommendations"],
@@ -63,11 +70,11 @@ def top_wasted(by_food: pd.Series, note: str) -> None:
 
 
 def shelves_preview(source: str, df: pd.DataFrame, as_of: pd.Timestamp) -> None:
-    from services.pantry_view import shelf_items
+    from services.pantry_view import SHELVES, shelf_items
     groups = shelf_items(source, df, as_of)
     st.html(f'<p class="fs-chart-title">On the shelf</p><p class="fs-chart-sub">As of {fmt_date(as_of)} · '
             "the items needing attention soonest on each shelf</p>")
-    for key, title, empty in SHELVES:
+    for key, title, _, empty in SHELVES:
         shelf(title, groups[key], empty=empty, limit=2)
     st.page_link("views/waste.py", label="See every shelf", icon=":material/arrow_forward:")
 
