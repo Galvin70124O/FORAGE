@@ -32,7 +32,7 @@ ONE_STEP = ("Next-day forecasts are one-step-ahead: the prediction for each day 
 SEVEN_DAY = ("7-day forecasts are made at the end of a day for the total of the next seven days, using only what is "
              "known that evening (direct strategy). Training forecasts whose 7 days overlap the test period are "
              "left out.")
-HIGHLIGHT = "font-weight: 600; background-color: rgba(57, 135, 229, 0.14)"
+HIGHLIGHT = "font-weight: 600; background-color: rgba(63, 135, 99, 0.16)"
 OFFLINE_ITEMS = "Per-item detail was computed offline on the full dataset; online the page shows aggregates."
 
 

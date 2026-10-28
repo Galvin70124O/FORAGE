@@ -95,29 +95,6 @@ def install_help() -> None:
         st.caption(t("install_after"))
 
 
-KITCHEN_CSS = """
-<style>
-/* Kitchen mode: readable text and touch targets of at least 44 px. */
-.block-container p, .block-container li, .block-container label p { font-size: 1.02rem; }
-[class*="st-key-fg-tiles"] button { min-height: 56px; min-width: 104px; font-size: 1.02rem; padding: 0 1rem; }
-[class*="st-key-fg-levels"] button { min-height: 64px; min-width: 120px; font-size: 1.05rem; flex: 1 1 40%; }
-[class*="st-key-fg-tiles"], [class*="st-key-fg-levels"] { gap: 0.5rem; }
-[data-testid="stButtonGroup"] button { min-height: 44px; padding: 0 1rem; font-size: 1rem; }
-.fg-message { padding: 0.75rem 1rem; border: 1px solid var(--fg-border); border-radius: 8px; margin: 0; }
-.fg-message b { font-weight: 600; }
-.fg-list { margin: 0; padding-left: 1.2rem; }
-.fg-list li { padding: 0.2rem 0; }
-@media (max-width: 640px) {
-  [class*="st-key-fg-tiles"] button { flex: 1 1 calc(33% - 0.5rem); min-width: 96px; }
-}
-</style>
-"""
-
-
-def apply_kitchen_styles() -> None:
-    st.markdown(KITCHEN_CSS, unsafe_allow_html=True)
-
-
 def message(text: str) -> None:
     """A plain bordered message line (no colour coding, readable on a phone)."""
     from html import escape

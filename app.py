@@ -23,7 +23,7 @@ import public_data  # noqa: E402
 from kitchen import default_mode  # noqa: E402
 from services.data import SOURCES, data_as_of  # noqa: E402
 from services.session import personal_available, render_account, store, user_id  # noqa: E402
-from ui.kitchen import apply_kitchen_styles, install_help, language_picker, t  # noqa: E402
+from ui.kitchen import install_help, language_picker, t  # noqa: E402
 from ui.theme import VERSION, apply_styles  # noqa: E402
 
 
@@ -73,21 +73,21 @@ def render_licence(source: str) -> None:
                    + (f"  \nResults built {built['built']}." if built else ""))
 
 
-def footer(text: str) -> None:
-    st.markdown(f'<div class="fg-footer">{text}<br>FORAGE {VERSION}</div>', unsafe_allow_html=True)
+def account_block(text: str) -> None:
+    """The signed-in user (or sign-in button) and the data note, at the bottom of the sidebar."""
+    with st.container(key="fs-account"):
+        render_account()
+        st.markdown(f'<div class="fg-footer">{text}<br>FORAGE {VERSION} · Fresh Shelf</div>', unsafe_allow_html=True)
 
 
 def render_kitchen_sidebar(signed_in: bool) -> None:
     with st.sidebar:
         db, uid = (store(), user_id()) if signed_in else (None, None)
         language_picker(db, uid)
-        st.divider()
-        render_account()
         install_help()
-        st.divider()
         st.button(t("switch_to_insights"), on_click=switch_mode, args=("insights",), width="stretch",
                   icon=":material/insights:", help=t("switch_insights_help"), key="switch_mode")
-        footer(t("section_kitchen"))
+        account_block(t("section_kitchen"))
 
 
 def render_insights_sidebar(signed_in: bool) -> None:
@@ -99,12 +99,9 @@ def render_insights_sidebar(signed_in: bool) -> None:
                  help="Every Insights page uses only the selected source. Sources are never combined.")
         with st.expander("Source & licence"):
             render_licence(st.session_state["source"])
-        st.divider()
-        render_account()
-        st.divider()
         st.button(t("switch_to_kitchen"), on_click=switch_mode, args=("kitchen",), width="stretch",
                   icon=":material/kitchen:", help=t("switch_kitchen_help"), key="switch_mode")
-        footer(data_as_of(st.session_state["source"]))
+        account_block(data_as_of(st.session_state["source"]))
 
 
 def main() -> None:
@@ -112,11 +109,11 @@ def main() -> None:
     st.set_page_config(page_title="FORAGE", page_icon=str(ASSETS / "forage_icon.svg"), layout="wide",
                        initial_sidebar_state="auto")
     st.logo(str(ASSETS / "forage_wordmark.svg"), icon_image=str(ASSETS / "forage_icon.svg"), size="large")
-    apply_styles()
     st.session_state.setdefault("source", "demo")
     signed_in = personal_available()
-    if current_mode(signed_in) == "kitchen":
-        apply_kitchen_styles()
+    kitchen = current_mode(signed_in) == "kitchen"
+    apply_styles(kitchen=kitchen)
+    if kitchen:
         navigation = st.navigation({t("section_kitchen"): kitchen_pages()}, position="sidebar")
         render_kitchen_sidebar(signed_in)
     else:

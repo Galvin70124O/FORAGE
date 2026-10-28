@@ -1,6 +1,7 @@
 # Exact versions tested with Python 3.12 (choose Python 3.12 when deploying on Streamlit Community Cloud).
 streamlit==1.65.0
 altair==6.3.0
+plotly==7.1.0
 pandas==3.0.6
 numpy==2.5.4
 scipy==1.18.1
