@@ -63,7 +63,7 @@ def top_wasted(by_food: pd.Series, note: str) -> None:
 
 
 def shelves_preview(source: str, df: pd.DataFrame, as_of: pd.Timestamp) -> None:
-    from services.overview import shelf_items
+    from services.pantry_view import shelf_items
     groups = shelf_items(source, df, as_of)
     st.html(f'<p class="fs-chart-title">On the shelf</p><p class="fs-chart-sub">As of {fmt_date(as_of)} · '
             "the items needing attention soonest on each shelf</p>")
@@ -74,7 +74,7 @@ def shelves_preview(source: str, df: pd.DataFrame, as_of: pd.Timestamp) -> None:
 
 def pantry_dashboard(source: str, df: pd.DataFrame, board: dict, now: pd.Period, as_of: pd.Timestamp) -> None:
     """Demo and My data: four pantry labels, the waste gauge and trend, top wasted foods and the shelves."""
-    from services.overview import label_items, pantry_labels
+    from services.pantry_view import label_items, pantry_labels
     illustrative = source == "demo"
     note = "Illustrative (synthetic prices)" if illustrative else "From the prices you paid"
     labels = pantry_labels(df, source, now)
