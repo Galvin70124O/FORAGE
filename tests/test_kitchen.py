@@ -177,6 +177,48 @@ def test_log_a_purchase_with_a_tile_and_an_everyday_amount(local_app):
     assert buys[["food", "quantity", "unit"]].values.tolist() == [["Milk", 1.0, "L"]]
 
 
+def test_tile_after_a_saved_search_pick_saves_the_tile_food(local_app):
+    """A food picked in the search box and saved must not come back when a tile is tapped next."""
+    local_app.session_state["onboarded"] = True
+    local_app.run()
+    uid = local_app.session_state["user_id"]
+    db, day = _store(), pd.Timestamp.today().normalize() - pd.Timedelta(days=3)
+    for food in kitchen.STARTER_FOODS:  # nine usual foods fill the tiles
+        for _ in range(3):  # more than Paneer will have, so it stays out of the tiles after it is saved
+            db.add_purchase(uid, day, food, 1.0, kitchen.guess(food)[0], 50.0)
+    db.add_purchase(uid, day, "Paneer", 200.0, "g", 90.0)  # bought once: only reachable through search
+    _fresh_reads()
+    local_app.switch_page("views/bought.py").run()
+
+    def search():
+        return next(s for s in local_app.selectbox if s.label == translate("search_food", "en"))
+
+    picked = search().set_value("Paneer")
+    stale_id = picked.id
+    local_app.run()
+    _button(local_app, "Save").click().run()
+    assert search().value is None  # the search box is cleared after a save
+
+    def browser_keeps_shown_value():
+        # A browser keeps showing (and sends back) a widget's value unless the server resets that widget;
+        # popping its session_state key does not. AppTest rebuilds values from the server, so mimic the browser.
+        if search().id == stale_id:
+            search().set_value("Paneer")
+
+    _button(local_app, "Milk").click()
+    browser_keeps_shown_value()
+    local_app.run()
+    local_app.number_input(key="k_price_Milk").set_value(99.0)
+    browser_keeps_shown_value()
+    local_app.run()
+    _button(local_app, "Save").click()
+    browser_keeps_shown_value()
+    local_app.run()
+    assert not local_app.exception
+    latest = _store().purchases(uid).sort_values("id").tail(2)
+    assert latest[["food", "total_price"]].values.tolist() == [["Paneer", 90.0], ["Milk", 99.0]]
+
+
 def test_pantry_level_button_stores_the_remaining_quantity(local_app):
     local_app.session_state["onboarded"] = True
     local_app.run()

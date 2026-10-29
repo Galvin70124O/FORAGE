@@ -34,14 +34,20 @@ def describe(row) -> str:
     return f"{preset_for(row['unit'], row['quantity']) or amount_text(row['quantity'], row['unit'])}"
 
 
+def search_key() -> str:
+    # A new key on every reset: popping the old key leaves the pick in the browser, which sends it back on the next
+    # tap and would make it the food saved instead of the one shown.
+    return f"k_search_{st.session_state.get('k_search_n', 0)}"
+
+
 def choose(food: str | None) -> None:
     st.session_state["k_food"] = food
-    st.session_state.pop("k_search", None)
+    st.session_state["k_search_n"] = st.session_state.get("k_search_n", 0) + 1
 
 
 def picked_from_search() -> None:
-    if st.session_state.get("k_search"):
-        st.session_state["k_food"] = str(st.session_state["k_search"]).strip()
+    if st.session_state.get(search_key()):
+        st.session_state["k_food"] = str(st.session_state[search_key()]).strip()
 
 
 @st.dialog(t("repeat_week_title"))
@@ -54,6 +60,7 @@ def confirm_repeat_week(rows: pd.DataFrame) -> None:
                 db.add_purchase(uid, today, row["food"], float(row["quantity"]), row["unit"],
                                 None if pd.isna(row["total_price"]) else float(row["total_price"]))
             success(t("saved_many", n=len(rows)))
+            choose(None)
             st.rerun()
         if st.button(t("cancel")):
             st.rerun()
@@ -69,6 +76,7 @@ if last is not None or not week.empty:
             db.add_purchase(uid, today, last["food"], float(last["quantity"]), last["unit"],
                             None if pd.isna(last["total_price"]) else float(last["total_price"]))
             success(t("saved_purchase", food=last["food"], amount=describe(last), price=""))
+            choose(None)
             st.rerun()
         if not week.empty and st.button(t("repeat_week", n=len(week)), icon=":material/event_repeat:"):
             confirm_repeat_week(week)
@@ -83,7 +91,7 @@ if tapped:
     st.rerun()
 names = sorted(set(foods["name"]) if not foods.empty else set()) or []
 st.selectbox(t("search_food"), [n for n in names if n not in usual], index=None, accept_new_options=True,
-             key="k_search", placeholder=t("search_placeholder"), on_change=picked_from_search)
+             key=search_key(), placeholder=t("search_placeholder"), on_change=picked_from_search)
 
 if food:
     previous = buys[buys["food"].str.lower() == food.lower()] if not buys.empty else buys
@@ -162,6 +170,7 @@ with st.expander(t("paste_bill")):
                                     row.total_price if row.total_price > 0 else None)
                 st.session_state.pop("bill_rows", None)
                 success(t("saved_many", n=len(chosen)))
+                choose(None)
                 st.rerun()
 
 if not buys.empty:
