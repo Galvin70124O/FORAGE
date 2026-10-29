@@ -276,6 +276,22 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
   .gdg-clip-region textarea { font-size: 16px !important; }
 }
 
+/* ---------- Taps: no grey flash, no 300 ms wait, no text selection on buttons, a slight press. FORAGE adds no
+   hover styles of its own; any added later go inside @media (hover: hover) and (pointer: fine) so they don't stick
+   after a tap on a phone ---------- */
+html { -webkit-tap-highlight-color: transparent; }
+button, a, [role="button"], [role="tab"], label, summary, [data-baseweb="select"] { touch-action: manipulation; }
+button, [role="button"], [role="tab"] { -webkit-user-select: none; user-select: none; }
+.stButton button, .stDownloadButton button, .stFormSubmitButton button, .stLinkButton a, [data-testid="stPageLink"] a,
+[data-testid="stButtonGroup"] button { transition: transform 120ms ease-out, background-color 120ms ease-out; }
+.stButton button:active, .stDownloadButton button:active, .stFormSubmitButton button:active, .stLinkButton a:active,
+[data-testid="stPageLink"] a:active, [data-testid="stButtonGroup"] button:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) {
+  .stButton button, .stDownloadButton button, .stFormSubmitButton button, .stLinkButton a, [data-testid="stPageLink"] a,
+  [data-testid="stButtonGroup"] button { transition: none; }
+  .stButton button:active, .stDownloadButton button:active, .stFormSubmitButton button:active, .stLinkButton a:active,
+  [data-testid="stPageLink"] a:active, [data-testid="stButtonGroup"] button:active { transform: none; }
+}
 /* ---------- Phone width: one column, no sideways scrolling ---------- */
 @media (max-width: 640px) {
   .block-container { padding-left: 1rem; padding-right: 1rem; padding-top: 3.5rem; }
