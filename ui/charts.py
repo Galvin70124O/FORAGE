@@ -122,10 +122,14 @@ def _x_kind(x_type: str) -> str:
 def line(data: pd.DataFrame, x: str, y: str, *, y_title: str, x_title: str | None = None,
          series: str | None = None, order: list[str] | None = None, slot: int = 0, height: int | None = None,
          y_format: str = ",.2f", x_type: str = "T", dashed: list[str] | None = None,
-         zero: bool = True, x_format: str | None = None, highlight: str | None = None,
+         zero: bool = False, x_format: str | None = None, highlight: str | None = None,
          title: str | None = None, subtitle: str | None = None, label_last: bool = False) -> None:
     """Line chart. With `series`, `highlight` (default: the first in `order`) is drawn in the accent
-    colour and the others in grey; dashed series also differ in stroke, so colour is never the only cue."""
+    colour and the others in grey; dashed series also differ in stroke, so colour is never the only cue.
+
+    No area fill and, by default, no forced zero: the line uses the chart's height instead of hugging its top
+    (bars keep their zero). With a title or subtitle the y-axis title is left off, since the heading already
+    says what is measured; `y_title` still labels the hover."""
     palette = colors()
     x_hover = f"%{{x|{x_format}}}" if x_format and x_type == "T" else "%{x}"
     fig = go.Figure()
@@ -143,8 +147,7 @@ def line(data: pd.DataFrame, x: str, y: str, *, y_title: str, x_title: str | Non
     else:
         part = data.sort_values(x)
         fig.add_trace(go.Scatter(x=part[x], y=part[y], mode="lines+markers", line={"color": palette["accent"], "width": 2.4},
-                                 marker={"size": 5, "color": palette["accent"]}, fill="tozeroy" if zero else None,
-                                 fillcolor=_alpha(palette["accent"], 0.07),
+                                 marker={"size": 5, "color": palette["accent"]},
                                  hovertemplate=f"<b>{x_hover}</b><br>{escape(y_title)}: %{{y:{y_format}}}<extra></extra>"))
         fig.update_layout(showlegend=False, hovermode="closest")
         if label_last and not part.empty:
@@ -158,15 +161,10 @@ def line(data: pd.DataFrame, x: str, y: str, *, y_title: str, x_title: str | Non
         start, end = pd.to_datetime(data[x]).min(), pd.to_datetime(data[x]).max()
         pad = (end - start) * 0.03
         fig.update_xaxes(range=[start - pad, end + pad])
-    fig.update_yaxes(title=y_title, rangemode="tozero" if zero else "normal", tickformat=y_format.replace("+", ""))
+    fig.update_yaxes(title=None if (title or subtitle) else y_title, rangemode="tozero" if zero else "normal", tickformat=y_format.replace("+", ""))
     if label_last and not series:
         fig.update_layout(margin={"r": 56})
     _show(fig, height or HEIGHTS["medium"], title, subtitle)
-
-
-def _alpha(hex_color: str, alpha: float) -> str:
-    r, g, b = (int(hex_color[i:i + 2], 16) for i in (1, 3, 5))
-    return f"rgba({r},{g},{b},{alpha})"
 
 
 def _fmt(value: float, d3: str) -> str:

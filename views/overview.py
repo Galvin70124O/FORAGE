@@ -57,7 +57,7 @@ def waste_trend(monthly: pd.Series, note: str) -> None:
         title = f"₹{monthly.sum():,.0f} wasted so far"
     charts.line(monthly.rename_axis("Month").reset_index(), "Month", "Rupees", x_title=None, y_title="₹ wasted",
                 y_format=",.0f", x_format="%b %Y", title=title, subtitle=f"₹ wasted per month · {note}",
-                label_last=True, height=300)
+                label_last=True, height=200)
 
 
 def top_wasted(by_food: pd.Series, note: str) -> None:
@@ -147,7 +147,7 @@ elif df is not None:
         with left:
             weekly = board["weekly"]
             charts.line(weekly.rename_axis("Week").reset_index(), "Week", "Units", x_title=None,
-                        y_title="Units sold per week", y_format=",.0f", label_last=True,
+                        y_title="Units sold per week", y_format=",.0f", label_last=True, height=200,
                         title=f"{weekly.iloc[-2]:,.0f} units in the last full week",
                         subtitle="Weekly unit sales, 100 food items, store CA_1")
         with right:

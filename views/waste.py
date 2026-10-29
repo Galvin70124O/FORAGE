@@ -101,7 +101,7 @@ elif df is not None:
             monthly = rupees["monthly"]
             peak = monthly.idxmax()
             charts.line(monthly.rename_axis("Month").reset_index(), "Month", "Rupees", x_title=None,
-                        y_title="₹ wasted", y_format=",.0f", x_format="%b %Y", label_last=True,
+                        y_title="₹ wasted", y_format=",.0f", x_format="%b %Y", label_last=True, height=200,
                         title=f"Waste peaked in {peak:%B} at ₹{monthly.max():,.0f}",
                         subtitle=f"₹ wasted per month · {note}")
         with right:
