@@ -18,7 +18,7 @@ from pantry import parse_bill
 from services.personal import foods as cached_foods
 from services.personal import purchases as cached_purchases
 from services.personal import require_user
-from ui.components import fit_height, fmt_date, number, section
+from ui.components import fit_height, fmt_date, quantity, rupees, section
 from ui.kitchen import flash, page_title, success, t, tiles
 
 page_title("nav_bought", "bought_purpose")
@@ -152,9 +152,9 @@ with st.expander(t("paste_bill")):
         else:
             edited = st.data_editor(rows.assign(Save=True), hide_index=True, width="stretch", num_rows="fixed",
                                     key="bill_editor", height=fit_height(len(rows), 10), column_config={
-                                        "food": "Food", "quantity": number("Quantity"),
+                                        "food": "Food", "quantity": quantity("Quantity"),
                                         "unit": st.column_config.SelectboxColumn("Unit", options=UNITS),
-                                        "total_price": number("₹"), "Save": st.column_config.CheckboxColumn("Save")})
+                                        "total_price": rupees("₹"), "Save": st.column_config.CheckboxColumn("Save")})
             chosen = edited[edited["Save"]]
             if st.button(t("save_n", n=len(chosen)), type="primary", disabled=chosen.empty):
                 for row in chosen.itertuples():

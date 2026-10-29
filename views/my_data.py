@@ -9,7 +9,7 @@ import streamlit as st
 from pantry import read_import
 from services import personal
 from services.personal import queue_toast, require_user, toast_pending
-from ui.components import fit_height, kpi_row, number, section, table
+from ui.components import fit_height, kpi_row, quantity, rupees, section, table
 from ui.kitchen import page_title, t
 
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "data" / "templates"
@@ -83,13 +83,13 @@ date_column = st.column_config.DateColumn("Date", format="D MMM YYYY")
 
 with purchases_tab:
     editable_table(buys, "purchases", ["date", "quantity", "unit", "total_price"], {
-        "date": date_column, "food": "Food", "category": "Category", "quantity": number("Quantity"),
-        "unit": "Unit", "total_price": number("Total paid (₹)"), "shelf_life_days": None})
+        "date": date_column, "food": "Food", "category": "Category", "quantity": quantity("Quantity", min_value=0),
+        "unit": "Unit", "total_price": rupees("Total paid (₹)", min_value=0), "shelf_life_days": None})
 
 with checks_tab:
     editable_table(checks, "pantry checks", ["date", "remaining", "wasted"], {
-        "date": date_column, "food": "Food", "category": None, "unit": "Unit", "remaining": number("Left"),
-        "wasted": number("Thrown away"), "shelf_life_days": None})
+        "date": date_column, "food": "Food", "category": None, "unit": "Unit", "remaining": quantity("Left", min_value=0),
+        "wasted": quantity("Thrown away", min_value=0), "shelf_life_days": None})
 
 with foods_tab:
     if foods.empty:

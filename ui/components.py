@@ -311,6 +311,38 @@ def fmt_date(value) -> str:
     return f"{stamp.day} {stamp:%b %Y}"
 
 
+PLURAL_UNITS = {"piece": "pieces", "pc": "pcs", "loaf": "loaves", "pack": "packs", "packet": "packets",
+                "bunch": "bunches", "unit": "units"}
+
+
+def fmt_qty(value, unit: str | None = None, decimals: int = 2) -> str:
+    """A quantity as people write it: thousands separators (as in the KPI cards), no trailing zeros and the
+    unit after it: "12 pieces", "200 g", "0.5 kg", "1,234.5 g". Decimals only where they carry something."""
+    if value is None or pd.isna(value):
+        return "–"
+    text = f"{float(value):,.{decimals}f}"
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    if text in ("0", "-0"):
+        text = "0" if float(value) == 0 else "<" + f"{0.1 ** decimals:.{decimals}f}"
+    if not isinstance(unit, str) or not unit:
+        return text
+    return f"{text} {unit if text == '1' else PLURAL_UNITS.get(unit, unit)}"
+
+
+_DECIMAL = re.compile(r"(?<![\d.])(\d[\d,]*)\.(\d+)(?![\d.])")
+
+
+def tidy_numbers(sentence: str) -> str:
+    """Drop trailing zeros from the decimals in a ready-made sentence ("Use up 200.00 g" -> "Use up 200 g",
+    "1.50 kg" -> "1.5 kg"). For text built elsewhere with fixed decimals (services/overview.py is part of
+    the precomputed-results fingerprint, so its wording is tidied where it is shown)."""
+    def strip(match: re.Match) -> str:
+        decimals = match.group(2).rstrip("0")
+        return match.group(1) + (f".{decimals}" if decimals else "")
+    return _DECIMAL.sub(strip, sentence)
+
+
 def row_px() -> int:
     """Height of one st.dataframe / st.data_editor row, and of its header row, in px.
 
@@ -351,8 +383,21 @@ def number(label: str, fmt: str = "%.2f", help: str | None = None):
     return st.column_config.NumberColumn(label, format=fmt, help=help)
 
 
-def rupees(label: str, help: str | None = None):
-    return st.column_config.NumberColumn(label, format="₹%.0f", help=help)
+def count(label: str, help: str | None = None):
+    """Whole-number counts with thousands separators: 7,300."""
+    return st.column_config.NumberColumn(label, format="%,d", help=help)
+
+
+def quantity(label: str, help: str | None = None, **options):
+    """Food quantities with thousands separators and no trailing zeros: 12, 200, 0.5, 1,234.5 (up to six
+    significant digits, so a stored 0.15000000000000002 shows as 0.15). Round computed values to 2 decimals
+    before showing them; `options` go to st.column_config.NumberColumn (min_value, width ...)."""
+    return st.column_config.NumberColumn(label, format="%,.6g", help=help, **options)
+
+
+def rupees(label: str, help: str | None = None, **options):
+    """₹ amounts in whole rupees with thousands separators, as in the KPI cards: ₹21,923."""
+    return st.column_config.NumberColumn(label, format="₹%,.0f", help=help, **options)
 
 
 def percent_bar(label: str, help: str | None = None, max_value: float = 100):

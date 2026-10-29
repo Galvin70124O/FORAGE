@@ -102,18 +102,18 @@ def demand_stamp(predicted: float, usual: float, band: float = STAMP_BAND) -> st
 def demo_demand_cards(limit: int | None = None) -> None:
     """Demand cards for the demo next-day plan, highest predicted demand first."""
     from services.data import demo_plan_with_risk, forecaster_explanations
-    from ui.components import demand_card, demand_cards
+    from ui.components import demand_card, demand_cards, fmt_qty
     plan = demo_plan_with_risk().sort_values("Predicted_Demand", ascending=False)
     error = forecaster_explanations("demo")["by_item"].set_index("Food")["Relative_MAE"]
     cards = []
     for row in plan.head(limit).itertuples() if limit else plan.itertuples():
-        note = (f"Buy {row.Recommended_Purchase_Quantity:.2f} {row.Quantity_Unit} · usable stock "
-                f"{row.Usable_Remaining_Stock:.2f}")
+        note = (f"Buy {fmt_qty(row.Recommended_Purchase_Quantity, row.Quantity_Unit)} · usable stock "
+                f"{fmt_qty(row.Usable_Remaining_Stock)}")
         if "likely to be wasted" in row.Alerts:
             note += f" · waste risk {row.Waste_Risk:.0f}%, buy carefully"
-        cards.append(demand_card(row.Food, f"{row.Predicted_Demand:.2f}", row.Quantity_Unit,
+        cards.append(demand_card(row.Food, fmt_qty(row.Predicted_Demand), row.Quantity_Unit,
                                  stamp=demand_stamp(row.Predicted_Demand, row.Historical_Average_Consumption),
                                  what=f"predicted for {pd.Timestamp(row.Forecast_Date):%a %d %b} · usual "
-                                      f"{row.Historical_Average_Consumption:.2f}",
+                                      f"{fmt_qty(row.Historical_Average_Consumption)}",
                                  relative_error=error.get(row.Food), note=note))
     demand_cards(cards)

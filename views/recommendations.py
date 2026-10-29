@@ -14,6 +14,7 @@ from services.data import (
 )
 from ui import charts
 from ui.components import (
+    count,
     demand_card,
     demand_cards,
     fmt_date,
@@ -22,6 +23,7 @@ from ui.components import (
     methods,
     number,
     percent_bar,
+    quantity,
     section,
     table,
     text,
@@ -124,8 +126,8 @@ if df is not None:
             formula("need = your usual daily use (last 4 pantry-check periods) × 7 days")
             formula("buy = max(0, need − stock that will still be good during the week)")
             (st.caption if reliable else st.warning)(note)
-            table(plan[["Food", "Buy", "Unit", "Need", "Usable_Stock"]],
-                  {"Need": number("Need (7 days)"), "Usable_Stock": number("Good stock"), "Buy": number("Buy")},
+            table(plan[["Food", "Buy", "Unit", "Need", "Usable_Stock"]].round({"Buy": 2, "Need": 2, "Usable_Stock": 2}),
+                  {"Need": quantity("Need (7 days)"), "Usable_Stock": quantity("Good stock"), "Buy": quantity("Buy")},
                   max_rows=15)
 
         with backtest_tab:
@@ -219,5 +221,5 @@ if df is not None:
             charts.bar(products.head(12), "Product_Name", "Reorder_Rate", value_title="Reorder rate (%)",
                        category_title="Product", value_format=".1f", height=380)
             table(products.head(50), {"Product_Name": "Product", "Department": "Department",
-                                      "Order_Lines": number("Order lines", "%d"), "Customers": number("Customers", "%d"),
+                                      "Order_Lines": count("Order lines"), "Customers": count("Customers"),
                                       "Reorder_Rate": number("Reorder rate (%)", "%.1f")}, max_rows=10)

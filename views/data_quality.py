@@ -11,6 +11,7 @@ from services.data import (
     raw_demo,
 )
 from ui.components import (
+    count,
     date,
     empty_state,
     fmt_num,
@@ -18,6 +19,7 @@ from ui.components import (
     kpi_row,
     methods,
     number,
+    quantity,
     section,
     table,
     text,
@@ -37,7 +39,7 @@ CLEANING_STEPS = [
     ("outliers_flagged", "IQR outlier (quantities or price)", "Flagged, kept"),
     ("rows_kept", "Rows kept for analysis", "–"),
 ]
-STEP_COLUMNS = {"Check": text("Check", "large"), "Rows": number("Rows", "%d"), "Action": text("Action", "small")}
+STEP_COLUMNS = {"Check": text("Check", "large"), "Rows": count("Rows"), "Action": text("Action", "small")}
 
 
 def steps_table(summary: dict) -> pd.DataFrame:
@@ -49,16 +51,16 @@ HOUSEHOLD_NUMERIC = ["Quantity_Purchased", "Quantity_Consumed", "Quantity_Wasted
 
 def profile_table(df: pd.DataFrame | None, *, profile: pd.DataFrame | None = None) -> None:
     table(column_profile(df) if profile is None else profile, {
-        "Missing": number("Missing", "%d"),
+        "Missing": count("Missing"),
         "Missing (%)": number("Missing (%)", "%.1f"),
-        "Distinct": number("Distinct values", "%d"),
+        "Distinct": count("Distinct values"),
     }, max_rows=None)
 
 
 def outlier_table(df: pd.DataFrame | None, columns: list[str], *, outliers: pd.DataFrame | None = None) -> None:
     table(iqr_outliers(df, columns) if outliers is None else outliers, {
         "Lower bound": number("Lower bound"), "Upper bound": number("Upper bound"),
-        "Outliers": number("Outliers", "%d"), "Outliers (%)": number("Outliers (%)", "%.1f"),
+        "Outliers": count("Outliers"), "Outliers (%)": number("Outliers (%)", "%.1f"),
     })
 
 
@@ -92,11 +94,13 @@ if source == "personal":
         else:
             shown = frame[["Food", "Period_Start", "Date", "Days", "Opening_Stock", "Quantity_Purchased",
                            "Quantity_Wasted", "Remaining_Quantity", "Quantity_Consumed", "Impossible"]]
-            table(shown.sort_values(["Impossible", "Date"], ascending=[False, False]), {
-                "Period_Start": date("From"), "Date": date("To (check)"), "Days": number("Days", "%d"),
-                "Opening_Stock": number("Left at start"), "Quantity_Purchased": number("Bought"),
-                "Quantity_Wasted": number("Thrown away"), "Remaining_Quantity": number("Left now"),
-                "Quantity_Consumed": number("Consumed (derived)"),
+            amounts = ["Opening_Stock", "Quantity_Purchased", "Quantity_Wasted", "Remaining_Quantity",
+                       "Quantity_Consumed"]
+            table(shown.round({c: 2 for c in amounts}).sort_values(["Impossible", "Date"], ascending=[False, False]), {
+                "Period_Start": date("From"), "Date": date("To (check)"), "Days": count("Days"),
+                "Opening_Stock": quantity("Left at start"), "Quantity_Purchased": quantity("Bought"),
+                "Quantity_Wasted": quantity("Thrown away"), "Remaining_Quantity": quantity("Left now"),
+                "Quantity_Consumed": quantity("Consumed (derived)"),
                 "Impossible": st.column_config.CheckboxColumn("Impossible")}, max_rows=10)
             if impossible:
                 st.warning(f"{impossible} period(s) have more left at the check than was available. Usually a "
@@ -153,7 +157,7 @@ elif df is not None:
                 examples = audit[audit["Action"] == action].groupby("Rule").head(2)
                 st.markdown(f"**{action}** ({(audit['Action'] == action).sum()} rows)")
                 table(examples[["Row", "Food", "Rule", "Detail"]], {
-                    "Row": number("Row", "%d"), "Food": "Food as written", "Rule": text("Rule", "medium"),
+                    "Row": count("Row"), "Food": "Food as written", "Rule": text("Rule", "medium"),
                     "Detail": text("What was wrong", "large")}, max_rows=10)
             st.download_button("Download the messy sample", messy.to_csv(index=False).encode("utf-8"),
                                "messy_food_data.csv", "text/csv")
@@ -177,7 +181,7 @@ elif df is not None:
             section("Extraction checks", "Recorded when the extract was built from the raw files")
             checks = {k: v for k, v in report.items() if isinstance(v, (int, float)) and k != "rows"}
             table(pd.DataFrame({"Check": [k.replace("_", " ").capitalize() for k in checks], "Count": list(checks.values())}),
-                  {"Count": number("Count", "%d")})
+                  {"Count": count("Count")})
             if source == "m5":
                 st.caption("Event_Name and Event_Type are blank on days without a calendar event; that is expected, "
                            "not missing data.")

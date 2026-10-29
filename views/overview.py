@@ -17,6 +17,7 @@ from ui.components import (
     section,
     shelf,
     table,
+    tidy_numbers,
     waste_gauge,
 )
 from views.common import begin
@@ -41,7 +42,8 @@ def action_list(actions: list[dict], empty: str) -> None:
         return
     html = "".join(
         f'<div class="fg-action"><div class="fg-action-title"><span class="fg-tag {TAG_TONES.get(a["tag"], "")}">'
-        f'{escape(a["tag"])}</span>{escape(a["title"])}</div><div class="fg-action-why">{escape(a["why"])}</div></div>'
+        f'{escape(a["tag"])}</span>{escape(tidy_numbers(a["title"]))}</div>'
+        f'<div class="fg-action-why">{escape(tidy_numbers(a["why"]))}</div></div>'
         for a in actions)
     st.markdown(html, unsafe_allow_html=True)
 

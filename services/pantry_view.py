@@ -10,6 +10,7 @@ from __future__ import annotations
 import pandas as pd
 
 from services.overview import _delta, _month_label, month_rate
+from ui.components import fmt_qty
 
 
 def available_rate(frame: pd.DataFrame, period: pd.Period) -> float:
@@ -101,7 +102,7 @@ def shelf_items(source: str, df: pd.DataFrame | None, as_of) -> dict[str, list[d
         grouped = part.groupby(["Food", "Unit"], as_index=False).agg(
             Quantity=("Quantity", "sum"), Days_Left=("Days_Left", pick), Shelf_Life=("Shelf_Life", "median"))
         grouped = grouped.sort_values(["Days_Left", "Quantity"], ascending=[pick == "min", False])
-        return [{"name": r.Food, "quantity": f"{r.Quantity:,.2f} {r.Unit}", "days_left": int(r.Days_Left),
+        return [{"name": r.Food, "quantity": fmt_qty(r.Quantity, r.Unit), "days_left": int(r.Days_Left),
                  "horizon": float(r.Shelf_Life) if pd.notna(r.Shelf_Life) else SHELF_WINDOW}
                 for r in grouped.itertuples()]
 

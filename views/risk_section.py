@@ -5,7 +5,7 @@ import streamlit as st
 
 from explain import top_feature_sentence
 from ui import charts
-from ui.components import kpi_row, number, section, table
+from ui.components import count, kpi_row, number, section, table
 from waste_risk import HIGH_WASTE_PCT, TARGET_RECALL
 
 DEMO_NOTE = ("How the demo data was generated matters here: waste is a random 20–70% share of whatever was bought "
@@ -47,7 +47,7 @@ def render(result: dict, *, source: str) -> None:
         section("Confusion matrix", f"{chosen['Model']}, test period")
         matrix = pd.DataFrame({"": ["Actually high waste", "Actually not"],
                                "Alerted": [chosen["TP"], chosen["FP"]], "Not alerted": [chosen["FN"], chosen["TN"]]})
-        table(matrix, {"Alerted": number("Alert raised", "%d"), "Not alerted": number("No alert", "%d")})
+        table(matrix, {"Alerted": count("Alert raised"), "Not alerted": count("No alert")})
     with right:
         if "importance" in result:
             section("What drives the prediction", "Permutation importance on the test period (drop in ROC-AUC)")
