@@ -131,13 +131,14 @@ def days_text(days_left: float) -> str:
 
 def freshness_bar(days_left: float, horizon: float = 7) -> str:
     """Slim meter: the filled share is the freshness left (days left ÷ shelf life, capped at two weeks so
-    long-life foods still read), coloured by status, with the days written on it so colour is never the only cue."""
+    long-life foods still read), coloured by status, with the days written just above it: colour is never
+    the only cue and the bar never covers the text."""
     status = freshness_status(days_left)
     scale = min(max(horizon, 1), 14)
     share = 1.0 if days_left < 0 else min(max((days_left + 1) / (scale + 1), 0.22), 1.0)
     text = days_text(days_left)
-    return (f'<div class="fs-meter" role="img" aria-label="{text}"><div class="fs-meter-fill fs-{status}" '
-            f'style="width:{share * 100:.0f}%"></div><div class="fs-meter-text">{text}</div></div>')
+    return (f'<div class="fs-meter-text fs-{status}">{text}</div><div class="fs-meter" aria-hidden="true">'
+            f'<div class="fs-meter-fill fs-{status}" style="width:{share * 100:.0f}%"></div></div>')
 
 
 def jar(name: str, quantity: str, days_left: float, horizon: float = 7) -> str:

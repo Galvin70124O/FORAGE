@@ -184,14 +184,15 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
 .fs-chip b { color: var(--fs-text); font-weight: 600; }
 
 /* ---------- 2. Freshness meter ---------- */
-.fs-meter { position: relative; height: 20px; border-radius: 999px; background: var(--fs-stone-tint); overflow: hidden;
-  margin-top: 8px; }
+.fs-meter { position: relative; height: 6px; border-radius: 999px; background: var(--fs-stone-tint); overflow: hidden;
+  margin-top: 4px; }
 .fs-meter-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; }
-.fs-meter-fill.fs-fresh { background: var(--fs-fresh-tint); box-shadow: inset -3px 0 0 var(--fs-fresh); }
-.fs-meter-fill.fs-soon { background: var(--fs-soon-tint); box-shadow: inset -3px 0 0 var(--fs-soon); }
-.fs-meter-fill.fs-gone { background: var(--fs-gone-tint); box-shadow: inset -3px 0 0 var(--fs-gone); }
-.fs-meter-text { position: relative; font-size: 0.72rem; font-weight: 700; line-height: 20px; padding: 0 9px;
-  color: var(--fs-text); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.fs-meter-fill.fs-fresh { background: var(--fs-fresh); } .fs-meter-fill.fs-soon { background: var(--fs-soon); }
+.fs-meter-fill.fs-gone { background: var(--fs-gone); }
+.fs-meter-text { font-size: 0.75rem; font-weight: 700; line-height: 1.2; margin-top: 8px; white-space: nowrap;
+  font-variant-numeric: tabular-nums; }
+.fs-meter-text.fs-fresh { color: var(--fs-fresh-text); } .fs-meter-text.fs-soon { color: var(--fs-soon-text); }
+.fs-meter-text.fs-gone { color: var(--fs-gone-text); }
 
 /* ---------- 3. Shelves ---------- */
 .fs-shelf { margin: 4px 0 8px 0; }
@@ -265,10 +266,18 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
   .block-container { padding-left: 1rem; padding-right: 1rem; padding-top: 3.5rem; }
   .fg-pill { float: none; margin: 0.5rem 0 0 0; }
   h1 { font-size: 1.6rem !important; }
-  .fs-labels, .fs-demands { grid-template-columns: 1fr; }
+  .fs-labels { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .fs-label { padding: 12px 12px 10px; }
+  .fs-label-name { font-size: 0.85rem; }
+  .fs-label-compare { font-size: 0.75rem; }
+  .fs-demands { grid-template-columns: 1fr; }
   .fs-shelf-row { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
-  .fs-label-value { font-size: 1.6rem; }
+  .fs-label-value { font-size: 1.4rem; }
+  .fs-label-value.fs-small { font-size: 1.1rem; }
   [data-testid="stElementToolbar"] { display: none; }
+}
+@media (max-width: 340px) {
+  .fs-labels { grid-template-columns: 1fr; }
 }
 """
 

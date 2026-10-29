@@ -65,7 +65,7 @@ def top_wasted(by_food: pd.Series, note: str) -> None:
         return
     share = top.iloc[0] / by_food.sum() * 100 if by_food.sum() else 0
     charts.bar(top.rename_axis("Food").reset_index(), "Food", "Rupees", value_title="₹ wasted",
-               value_format=",.0f", title=f"{top.index[0]} is the costliest waste: {share:.0f}% of all ₹ wasted",
+               value_format=",.0f", title=f"By ₹, {top.index[0]} is the costliest waste: {share:.0f}% of all ₹ wasted",
                subtitle=f"Top {len(top)} foods by ₹ wasted · {note}")
 
 
@@ -74,13 +74,16 @@ def shelves_preview(source: str, df: pd.DataFrame, as_of: pd.Timestamp) -> None:
     groups = shelf_items(source, df, as_of)
     st.html(f'<p class="fs-chart-title">On the shelf</p><p class="fs-chart-sub">As of {fmt_date(as_of)} · '
             "the items needing attention soonest on each shelf</p>")
-    for key, title, _, empty in SHELVES:
-        shelf(title, groups[key], empty=empty, limit=2)
+    for column, (key, title, _, empty) in zip(st.columns(3, gap="medium"), SHELVES):
+        with column:
+            shelf(title, groups[key], empty=empty, limit=2)
     st.page_link("views/waste.py", label="See every shelf", icon=":material/arrow_forward:")
 
 
-def pantry_dashboard(source: str, df: pd.DataFrame, board: dict, now: pd.Period, as_of: pd.Timestamp) -> None:
-    """Demo and My data: four pantry labels, the waste gauge and trend, top wasted foods and the shelves."""
+def pantry_dashboard(source: str, df: pd.DataFrame, board: dict, now: pd.Period, as_of: pd.Timestamp,
+                     actions: list[dict], no_actions: str) -> None:
+    """Demo and My data: four pantry labels, the waste gauge and trend, top wasted foods beside the action
+    list, then the three shelves side by side."""
     from services.pantry_view import label_items, pantry_labels
     illustrative = source == "demo"
     note = "Illustrative (synthetic prices)" if illustrative else "From the prices you paid"
@@ -104,7 +107,8 @@ def pantry_dashboard(source: str, df: pd.DataFrame, board: dict, now: pd.Period,
     with left:
         top_wasted(board["by_food"], note)
     with right:
-        shelves_preview(source, df, as_of)
+        action_list(actions, no_actions)
+    shelves_preview(source, df, as_of)
 
 
 source, df = begin("Overview", "Where food is bought, used and wasted, and what to do next. FORAGE is framed by "
@@ -122,15 +126,15 @@ elif df is not None:
     if source == "demo":
         from services.overview import demo_dashboard
         board = demo_dashboard()
-        pantry_dashboard(source, df, board, df["Date"].max().to_period("M"), df["Date"].max())
-        action_list(board["actions"], "Nothing urgent in the plan. Enjoy your week.")
+        pantry_dashboard(source, df, board, df["Date"].max().to_period("M"), df["Date"].max(), board["actions"],
+                         "Nothing urgent in the plan. Enjoy your week.")
     elif source == "personal":
         from services.overview import personal_dashboard
         from services.personal import personal_data
         board = personal_dashboard(*personal_data())
         today = pd.Timestamp.today().normalize()
-        pantry_dashboard(source, df, board, today.to_period("M"), today)
-        action_list(board["actions"], "Nothing is close to expiring or at risk of being wasted. Nice work.")
+        pantry_dashboard(source, df, board, today.to_period("M"), today, board["actions"],
+                         "Nothing is close to expiring or at risk of being wasted. Nice work.")
     elif source == "m5":
         from services.overview import m5_dashboard
         board = m5_dashboard()

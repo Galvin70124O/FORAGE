@@ -85,9 +85,10 @@ def not_available(source: str, what: str, reason: str, *, alternatives: list[str
 
 
 STAMP_BAND = 10  # % either side of usual use that still counts as "Buy same"
-STAMP_NOTE = ("Stamp: what to buy (predicted demand − usable stock) against the food's usual daily use. Buy more / "
-              "Buy less when it is more than 10% above / below, otherwise Buy same. Confidence comes from the model's "
-              "typical error for that food (High under 25% of its average, Medium under 50%).")
+STAMP_NOTE = ("Stamp: predicted demand against the food's usual daily use. Buy more / Buy less when demand is more "
+              "than 10% above / below usual, otherwise Buy same. The last line is the stock-adjusted amount to buy "
+              "(predicted demand − usable stock). Confidence comes from the model's typical error for that food "
+              "(High under 25% of its average, Medium under 50%).")
 
 
 def demand_stamp(predicted: float, usual: float, band: float = STAMP_BAND) -> str:
@@ -111,8 +112,7 @@ def demo_demand_cards(limit: int | None = None) -> None:
         if "likely to be wasted" in row.Alerts:
             note += f" · waste risk {row.Waste_Risk:.0f}%, buy carefully"
         cards.append(demand_card(row.Food, f"{row.Predicted_Demand:.2f}", row.Quantity_Unit,
-                                 stamp=demand_stamp(row.Recommended_Purchase_Quantity,
-                                                    row.Historical_Average_Consumption),
+                                 stamp=demand_stamp(row.Predicted_Demand, row.Historical_Average_Consumption),
                                  what=f"predicted for {pd.Timestamp(row.Forecast_Date):%a %d %b} · usual "
                                       f"{row.Historical_Average_Consumption:.2f}",
                                  relative_error=error.get(row.Food), note=note))

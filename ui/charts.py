@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from html import escape
 
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -195,22 +196,29 @@ def histogram(data: pd.DataFrame, value: str, *, value_title: str, bins: int = 3
 def scatter(data: pd.DataFrame, x: str, y: str, *, x_title: str, y_title: str, label: str,
             log_x: bool = False, height: int | None = None, tooltip: list | None = None, label_extremes: int = 3,
             title: str | None = None, subtitle: str | None = None) -> None:
-    """Scatter with direct labels only on the highest and lowest `label_extremes` points; hover shows the rest."""
+    """Scatter with direct labels only on the `label_extremes` highest points, on short leader lines clear of
+    the dots; hover names every point. A log x-axis gets readable day ticks (1, 3, 7, 14, 30 ...)."""
     palette = colors()
     specs = [_tip_spec(e) for e in (tooltip or [label, f"{x}:Q", f"{y}:Q"])]
     custom = data[[s["field"] for s in specs]].to_numpy()
-    ranked = data[y].rank(method="first")
-    labelled = data[(ranked <= label_extremes) | (ranked > len(data) - label_extremes)]
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=data[x], y=data[y], mode="markers", customdata=custom,
                              marker={"size": 11, "color": palette["accent"], "opacity": 0.85,
-                                         "line": {"width": 1, "color": palette["card"]}},
+                                     "line": {"width": 1, "color": palette["card"]}},
                              hovertemplate=_hover(specs) + "<extra></extra>"))
-    fig.add_trace(go.Scatter(x=labelled[x], y=labelled[y], mode="text", text=labelled[label], textposition="middle right",
-                             textfont={"color": palette["muted"], "size": 11}, hoverinfo="skip", cliponaxis=False))
+    top = data.nlargest(label_extremes, y).sort_values(x) if label_extremes else data.iloc[0:0]
+    for i, (px, py, name) in enumerate(zip(top[x], top[y], top[label])):
+        fig.add_annotation(x=np.log10(px) if log_x else px, y=py, text=str(name), showarrow=True, arrowhead=0,
+                           arrowwidth=1, arrowcolor=palette["axis"], standoff=7, ax=(-1) ** i * 34,
+                           ay=-26 - 12 * (i % 2), font={"color": palette["muted"], "size": 11})
     fig.update_xaxes(title=x_title, type="log" if log_x else "linear", showgrid=True, gridcolor=palette["grid"])
+    if log_x and not data.empty:
+        low, high = data[x].min(), data[x].max()
+        ticks = [t for t in (1, 3, 7, 14, 30, 60, 90, 180, 365, 730) if low / 1.5 <= t <= high * 1.5]
+        fig.update_xaxes(tickvals=ticks, ticktext=[str(t) for t in ticks],
+                         range=[np.log10(low / 1.3), np.log10(high * 1.3)])
     fig.update_yaxes(title=y_title)
-    fig.update_layout(showlegend=False, margin={"r": 72})
+    fig.update_layout(showlegend=False, margin={"r": 64, "t": 48})
     _show(fig, height or HEIGHTS["large"], title, subtitle)
 
 
