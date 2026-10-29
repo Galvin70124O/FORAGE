@@ -9,12 +9,13 @@ import streamlit as st
 from pantry import read_import
 from services import personal
 from services.personal import queue_toast, require_user, toast_pending
-from ui.components import kpi_row, number, section, table
+from ui.components import fit_height, kpi_row, number, section, table
 from ui.kitchen import page_title, t
 
 TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "data" / "templates"
 TEMPLATES = {"purchases": TEMPLATE_DIR / "purchases_template.csv",
              "pantry checks": TEMPLATE_DIR / "pantry_checks_template.csv"}
+VISIBLE_ROWS = 10  # editors show at most this many whole rows and scroll for the rest
 
 page_title("nav_my_data", "my_data_purpose")
 db, uid = require_user()
@@ -55,7 +56,7 @@ def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: 
     disabled = [c for c in view.columns if c not in editable + ["Select"]]
     edited = st.data_editor(view, hide_index=True, width="stretch", num_rows="fixed", key=f"edit_{kind}",
                             disabled=disabled, column_config={"id": None, "Select": st.column_config.CheckboxColumn(
-                                "Select", width="small"), **config}, height=380)
+                                "Select", width="small"), **config}, height=fit_height(len(view), VISIBLE_ROWS))
     selected = edited.loc[edited["Select"], "id"].astype(int).tolist()
     changed = edited.drop(columns="Select").compare(view.drop(columns="Select")).index
     with st.container(horizontal=True):
@@ -95,7 +96,7 @@ with foods_tab:
         st.write(t("no_entries"))
     else:
         edited = st.data_editor(foods, hide_index=True, width="stretch", num_rows="fixed", key="edit_foods",
-                                disabled=["id"], column_config={
+                                height=fit_height(len(foods), VISIBLE_ROWS), disabled=["id"], column_config={
                                     "id": None, "name": "Food", "category": "Category", "unit": "Default unit",
                                     "shelf_life_days": st.column_config.NumberColumn("Shelf life (days)", min_value=1, step=1)})
         changed = edited.compare(foods).index

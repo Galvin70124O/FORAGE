@@ -311,13 +311,27 @@ def fmt_date(value) -> str:
     return f"{stamp.day} {stamp:%b %Y}"
 
 
-ROW_PX = 35
+def row_px() -> int:
+    """Height of one st.dataframe / st.data_editor row, and of its header row, in px.
+
+    Streamlit draws them 2.1875rem tall and its rem is theme.baseFontSize: 33 px with FORAGE's 15 px base
+    (.streamlit/config.toml), 35 px at Streamlit's default of 16.
+    """
+    try:
+        base = float(st.get_option("theme.baseFontSize") or 16)
+    except Exception:  # noqa: BLE001 - an unknown option must never break a table
+        base = 16.0
+    return round(2.1875 * base)
+
+
+TABLE_BORDER_PX = 2  # 1 px top and bottom
 
 
 def fit_height(rows: int, max_rows: int | None = None) -> int:
-    """Pixel height that shows `rows` rows plus the header with no empty padding rows."""
-    shown = min(rows, max_rows) if max_rows else rows
-    return ROW_PX * (shown + 1) + 3
+    """Pixel height that shows `rows` whole rows (at most `max_rows`, scrolling for the rest) plus the header:
+    never a row cut in half and no empty padding rows. Pass it as `height` to st.dataframe / st.data_editor."""
+    shown = max(min(rows, max_rows) if max_rows else rows, 1)
+    return row_px() * (shown + 1) + TABLE_BORDER_PX
 
 
 def table(df: pd.DataFrame, columns: dict | None = None, *, max_rows: int | None = 12, hide_index: bool = True) -> None:
