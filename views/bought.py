@@ -147,7 +147,7 @@ with st.expander(t("paste_bill")):
                         placeholder="Milk 2 L 120\nEggs x12 84\nTomato 1kg 40")
     if st.button(t("read_bill")):
         if bill.strip():
-            rows, skipped = parse_bill(bill)
+            rows, skipped = parse_bill(bill, names)
             st.session_state["bill_rows"], st.session_state["bill_skipped"] = rows, skipped
         else:
             st.error(t("paste_first"))

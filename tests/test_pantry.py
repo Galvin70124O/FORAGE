@@ -137,6 +137,33 @@ def test_parse_bill_reads_common_formats_and_reports_the_rest():
     assert skipped == ["Thank you for shopping"]
 
 
+@pytest.mark.parametrize("line, food, quantity, unit, price", [
+    ("Bread 1 45", "Bread", 1.0, "unit", 45.0),        # a bare count is the quantity, not part of the name
+    ("Bread 2 90", "Bread", 2.0, "unit", 90.0),
+    ("Bread 45", "Bread", 1.0, "unit", 45.0),
+    ("Milk 2 L 60", "Milk", 2.0, "L", 60.0),
+    ("7up 2 40", "7Up", 2.0, "unit", 40.0),            # a number at the start of a name stays (title-cased)
+    ("7up 40", "7Up", 1.0, "unit", 40.0),
+    ("Vitamin B12 3 150", "Vitamin B12", 3.0, "unit", 150.0),
+    ("Bread 0 45", "Bread 0", 1.0, "unit", 45.0),      # zero is never a quantity
+    ("Rice 2.5 120", "Rice", 2.5, "unit", 120.0),
+    ("Eggs 12 x 84", "Eggs", 12.0, "piece", 84.0),
+])
+def test_parse_bill_reads_a_bare_number_before_the_price_as_the_quantity(line, food, quantity, unit, price):
+    rows, skipped = parse_bill(line)
+    assert rows.to_dict("records") == [{"food": food, "quantity": quantity, "unit": unit, "total_price": price}]
+    assert skipped == []
+
+
+def test_parse_bill_keeps_a_known_food_whose_name_ends_in_a_number():
+    assert parse_bill("Club 7 90")[0].iloc[0][["food", "quantity"]].tolist() == ["Club", 7.0]
+    rows, _ = parse_bill("Club 7 90\nclub  7 2 180", known=["Club 7"])
+    assert rows[["food", "quantity"]].values.tolist() == [["Club 7", 1.0], ["Club 7", 2.0]]
+    # a "Bread 1" left by the old parser does not win over Bread
+    rows, _ = parse_bill("Bread 1 45", known=["Bread", "Bread 1"])
+    assert rows[["food", "quantity"]].values.tolist() == [["Bread", 1.0]]
+
+
 def test_read_import_recognises_kind_and_removes_invalid_rows():
     raw = pd.DataFrame({"Date": ["2026-03-01", "2026-03-01", "bad", "2026-03-02", "2026-03-03"],
                         "Item": ["milk", "milk", "Milk", " MILK", "Eggs"],
