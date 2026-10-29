@@ -375,7 +375,8 @@ def table(df: pd.DataFrame, columns: dict | None = None, *, max_rows: int | None
     st.dataframe(df, column_config=config, hide_index=hide_index, width="stretch", height=height)
 
 
-def text(label: str, width: str = "medium"):
+def text(label: str, width: str | int | None = "medium"):
+    """A text column; width "small" / "medium" / "large", pixels, or None to fit the content."""
     return st.column_config.TextColumn(label, width=width)
 
 

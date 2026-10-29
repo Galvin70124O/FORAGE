@@ -6,16 +6,18 @@ import streamlit as st
 from stats import describe_strength
 from ui import charts
 from ui.components import (
+    count,
+    date,
     fmt_date,
     fmt_pct,
     formula,
     kpi_row,
     methods,
-    number,
     percent_bar,
     section,
     shelf,
     table,
+    text,
 )
 from ui.components import rupees as rupees_column
 from views import risk_section
@@ -120,11 +122,10 @@ elif df is not None:
             top3 = foods.head(3)
             section("Waste by food", "Top 3: " + "; ".join(f"{row.Food} {fmt_pct(row.Waste_Rate)}"
                                                          for row in top3.itertuples()))
-            by_food = foods.assign(Rupees=foods["Food"].map(rupees["by_food"]))
-            table(by_food[[c for c in ["Food", "Quantity_Unit", "Waste_Rate", "Wasted", "Rupees"]
-                           if c in by_food]], {
-                "Quantity_Unit": "Unit", "Waste_Rate": percent_bar("Waste rate"),
-                "Wasted": number("Wasted (unit)", "%.1f"), "Rupees": rupees_column("₹ wasted")}, max_rows=9)
+            from services.pantry_view import waste_by_food_rows
+            table(waste_by_food_rows(foods, rupees["by_food"]), {
+                "Food": text("Food"), "Rupees": rupees_column("₹ wasted", width="small"),
+                "Waste_Rate": percent_bar("Waste rate"), "Wasted": text("Wasted", None)}, max_rows=9)
 
     with expiry_tab:
         as_of_text = (f"As of {fmt_date(as_of)}, the last date in the demo data." if source == "demo"
@@ -133,10 +134,9 @@ elif df is not None:
                    "use), split into the purchases it most likely came from (newest first)." if source == "personal" else
                    " Stock is each purchase's recorded remaining quantity, assumed still on hand until it expires.")
                    + " The Expired shelf shows stock that passed its date in the last week; the tables leave it out.")
-        expiry_columns = {"Quantity_Unit": "Unit", "Remaining": number("Remaining", "%.2f"),
-                          "Batches": number("Batches", "%d"), "Earliest_Expiry": st.column_config.DateColumn("Earliest expiry", format="D MMM YYYY"),
-                          "Days_Left": number("Days left", "%d")}
-        from services.pantry_view import SHELVES, shelf_items
+        expiry_columns = {"Food": text("Food"), "Days_Left": count("Days left"), "Left": text("Left", None),
+                          "Earliest_Expiry": date("Expires")}
+        from services.pantry_view import SHELVES, expiring_rows, shelf_items
         groups = shelf_items(source, df, as_of)
         for key, title, note, empty in SHELVES:
             shelf(title, groups[key], note=note, empty=empty, limit=10)
@@ -150,7 +150,7 @@ elif df is not None:
                     if frame.empty:
                         st.write(f"No remaining stock expires within {days} days.")
                     else:
-                        table(frame.drop(columns=["Category"], errors="ignore"), expiry_columns, max_rows=8)
+                        table(expiring_rows(frame), expiry_columns, max_rows=8)
 
         left, right = st.columns([1.2, 1], gap="large")
         with left:

@@ -113,3 +113,25 @@ def shelf_items(source: str, df: pd.DataFrame | None, as_of) -> dict[str, list[d
     days = frame["Days_Left"]
     return {"expired": items(frame[days < 0], "max"), "soon": items(frame[days.between(0, 2)], "min"),
             "week": items(frame[days.between(3, SHELF_WINDOW)], "min")}
+
+
+# --- Waste & Expiry tables, phone first ----------------------------------------
+# On a phone only the first two or three columns fit, so the food and its key number come first and the unit
+# is written into the amount ("12.5 kg") instead of taking a column of its own.
+
+def waste_by_food_rows(foods: pd.DataFrame, rupees_by_food: pd.Series) -> pd.DataFrame:
+    """Per-food waste: Food, Rupees (₹ wasted), Waste_Rate, Wasted ("12.5 kg"), in food_waste's order."""
+    units = foods["Quantity_Unit"] if "Quantity_Unit" in foods else pd.Series(None, index=foods.index, dtype=object)
+    return pd.DataFrame({
+        "Food": foods["Food"], "Rupees": foods["Food"].map(rupees_by_food), "Waste_Rate": foods["Waste_Rate"],
+        "Wasted": [fmt_qty(amount, unit) for amount, unit in zip(foods["Wasted"], units)],
+    }).reset_index(drop=True)
+
+
+def expiring_rows(frame: pd.DataFrame) -> pd.DataFrame:
+    """Expiring stock: Food, Days_Left, Left ("1.5 kg"), Earliest_Expiry; category and batch count dropped."""
+    return pd.DataFrame({
+        "Food": frame["Food"], "Days_Left": frame["Days_Left"],
+        "Left": [fmt_qty(amount, unit) for amount, unit in zip(frame["Remaining"], frame["Quantity_Unit"])],
+        "Earliest_Expiry": frame["Earliest_Expiry"],
+    }).reset_index(drop=True)
