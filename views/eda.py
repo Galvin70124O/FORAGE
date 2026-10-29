@@ -11,7 +11,7 @@ from stats import (
     strongest_correlations,
 )
 from ui import charts
-from ui.components import methods, number, section, table
+from ui.components import count, methods, number, section, table
 from views import tests_section
 from views.common import UNIT_NOTE, begin
 
