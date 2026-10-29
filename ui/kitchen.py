@@ -95,27 +95,19 @@ def install_help() -> None:
         st.caption(t("install_after"))
 
 
-KITCHEN_CSS = """
-<style>
-/* Kitchen mode: readable text and touch targets of at least 44 px. */
-.block-container p, .block-container li, .block-container label p { font-size: 1.02rem; }
-[class*="st-key-fg-tiles"] button { min-height: 56px; min-width: 104px; font-size: 1.02rem; padding: 0 1rem; }
-[class*="st-key-fg-levels"] button { min-height: 64px; min-width: 120px; font-size: 1.05rem; flex: 1 1 40%; }
-[class*="st-key-fg-tiles"], [class*="st-key-fg-levels"] { gap: 0.5rem; }
-[data-testid="stButtonGroup"] button { min-height: 44px; padding: 0 1rem; font-size: 1rem; }
-.fg-message { padding: 0.75rem 1rem; border: 1px solid var(--fg-border); border-radius: 8px; margin: 0; }
-.fg-message b { font-weight: 600; }
-.fg-list { margin: 0; padding-left: 1.2rem; }
-.fg-list li { padding: 0.2rem 0; }
-@media (max-width: 640px) {
-  [class*="st-key-fg-tiles"] button { flex: 1 1 calc(33% - 0.5rem); min-width: 96px; }
-}
-</style>
-"""
-
-
-def apply_kitchen_styles() -> None:
-    st.markdown(KITCHEN_CSS, unsafe_allow_html=True)
+def message_list(rows: list[tuple[str, str | None, str | None]]) -> None:
+    """Several messages as one card with dividers: (sentence, food to bold, short note on the right such as
+    "Tomorrow"). Replaces a stack of separately bordered boxes."""
+    from html import escape
+    items = []
+    for text, food, aside in rows:
+        body = escape(text)
+        if food:
+            body = body.replace(escape(food), f"<b>{escape(food)}</b>", 1)
+        note = f'<span class="fg-message-aside">{escape(aside)}</span>' if aside else ""
+        items.append(f"<li><span>{body}</span>{note}</li>")
+    if items:
+        st.markdown(f'<ul class="fg-messages">{"".join(items)}</ul>', unsafe_allow_html=True)
 
 
 def message(text: str) -> None:

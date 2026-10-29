@@ -11,7 +11,7 @@ from stats import (
     strongest_correlations,
 )
 from ui import charts
-from ui.components import methods, number, section, table
+from ui.components import count, methods, number, section, table
 from views import tests_section
 from views.common import UNIT_NOTE, begin
 
@@ -66,14 +66,14 @@ if df is not None:
         st.caption(note + " Missing values are excluded from each statistic and counted separately. "
                    "Std is the sample standard deviation; IQR = Q3 − Q1; the mode is the most frequent recorded value.")
         table(stats, {
-            "Column": "Variable", "Count": number("Count", "%d"), "Missing": number("Missing", "%d"),
+            "Column": "Variable", "Count": count("Count"), "Missing": count("Missing"),
             **{name: number(name, "%.2f") for name in ["Mean", "Median", "Mode", "Std", "Min", "Max", "Q1", "Q3", "IQR"]},
         })
 
         left, right = st.columns([1, 1.35], gap="large")
         with left:
             section("Frequency table", frequency_title)
-            table(frequencies, {"Count": number("Count", "%d"), "Share (%)": number("Share (%)", "%.1f")})
+            table(frequencies, {"Count": count("Count"), "Share (%)": number("Share (%)", "%.1f")})
         with right:
             section("Correlation matrix", "Pearson r between the variables above")
             charts.correlation_heatmap(corr, height=380)

@@ -18,7 +18,7 @@ from pantry import parse_bill
 from services.personal import foods as cached_foods
 from services.personal import purchases as cached_purchases
 from services.personal import require_user
-from ui.components import fmt_date, number, section
+from ui.components import fit_height, fmt_date, quantity, rupees, section
 from ui.kitchen import flash, page_title, success, t, tiles
 
 page_title("nav_bought", "bought_purpose")
@@ -34,14 +34,20 @@ def describe(row) -> str:
     return f"{preset_for(row['unit'], row['quantity']) or amount_text(row['quantity'], row['unit'])}"
 
 
+def search_key() -> str:
+    # A new key on every reset: popping the old key leaves the pick in the browser, which sends it back on the next
+    # tap and would make it the food saved instead of the one shown.
+    return f"k_search_{st.session_state.get('k_search_n', 0)}"
+
+
 def choose(food: str | None) -> None:
     st.session_state["k_food"] = food
-    st.session_state.pop("k_search", None)
+    st.session_state["k_search_n"] = st.session_state.get("k_search_n", 0) + 1
 
 
 def picked_from_search() -> None:
-    if st.session_state.get("k_search"):
-        st.session_state["k_food"] = str(st.session_state["k_search"]).strip()
+    if st.session_state.get(search_key()):
+        st.session_state["k_food"] = str(st.session_state[search_key()]).strip()
 
 
 @st.dialog(t("repeat_week_title"))
@@ -54,6 +60,7 @@ def confirm_repeat_week(rows: pd.DataFrame) -> None:
                 db.add_purchase(uid, today, row["food"], float(row["quantity"]), row["unit"],
                                 None if pd.isna(row["total_price"]) else float(row["total_price"]))
             success(t("saved_many", n=len(rows)))
+            choose(None)
             st.rerun()
         if st.button(t("cancel")):
             st.rerun()
@@ -69,6 +76,7 @@ if last is not None or not week.empty:
             db.add_purchase(uid, today, last["food"], float(last["quantity"]), last["unit"],
                             None if pd.isna(last["total_price"]) else float(last["total_price"]))
             success(t("saved_purchase", food=last["food"], amount=describe(last), price=""))
+            choose(None)
             st.rerun()
         if not week.empty and st.button(t("repeat_week", n=len(week)), icon=":material/event_repeat:"):
             confirm_repeat_week(week)
@@ -83,7 +91,7 @@ if tapped:
     st.rerun()
 names = sorted(set(foods["name"]) if not foods.empty else set()) or []
 st.selectbox(t("search_food"), [n for n in names if n not in usual], index=None, accept_new_options=True,
-             key="k_search", placeholder=t("search_placeholder"), on_change=picked_from_search)
+             key=search_key(), placeholder=t("search_placeholder"), on_change=picked_from_search)
 
 if food:
     previous = buys[buys["food"].str.lower() == food.lower()] if not buys.empty else buys
@@ -139,7 +147,7 @@ with st.expander(t("paste_bill")):
                         placeholder="Milk 2 L 120\nEggs x12 84\nTomato 1kg 40")
     if st.button(t("read_bill")):
         if bill.strip():
-            rows, skipped = parse_bill(bill)
+            rows, skipped = parse_bill(bill, names)
             st.session_state["bill_rows"], st.session_state["bill_skipped"] = rows, skipped
         else:
             st.error(t("paste_first"))
@@ -151,10 +159,10 @@ with st.expander(t("paste_bill")):
             st.write(t("nothing_recognised"))
         else:
             edited = st.data_editor(rows.assign(Save=True), hide_index=True, width="stretch", num_rows="fixed",
-                                    key="bill_editor", column_config={
-                                        "food": "Food", "quantity": number("Quantity"),
+                                    key="bill_editor", height=fit_height(len(rows), 10), column_config={
+                                        "food": "Food", "quantity": quantity("Quantity"),
                                         "unit": st.column_config.SelectboxColumn("Unit", options=UNITS),
-                                        "total_price": number("₹"), "Save": st.column_config.CheckboxColumn("Save")})
+                                        "total_price": rupees("₹"), "Save": st.column_config.CheckboxColumn("Save")})
             chosen = edited[edited["Save"]]
             if st.button(t("save_n", n=len(chosen)), type="primary", disabled=chosen.empty):
                 for row in chosen.itertuples():
@@ -162,6 +170,7 @@ with st.expander(t("paste_bill")):
                                     row.total_price if row.total_price > 0 else None)
                 st.session_state.pop("bill_rows", None)
                 success(t("saved_many", n=len(chosen)))
+                choose(None)
                 st.rerun()
 
 if not buys.empty:

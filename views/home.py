@@ -19,8 +19,8 @@ from pantry import (
 from services.personal import checks as personal_checks
 from services.personal import purchases as personal_purchases
 from services.personal import require_user
-from ui.components import empty_state, fmt_date, section
-from ui.kitchen import flash, message, page_title, t, walkthrough
+from ui.components import empty_state, fmt_date, placeholder_lines, section
+from ui.kitchen import flash, message_list, page_title, t, walkthrough
 
 page_title("nav_home", "home_purpose")
 db, uid = require_user()
@@ -46,6 +46,7 @@ batches = stock_batches(buys, stock)
 # Use first: what expires soon, then what will not be finished in time at the usual pace.
 section(t("use_first"))
 soon = expiring_soon(batches, today, 3)
+use_first: list[tuple[str, str, str | None]] = []  # one list with dividers: sentence, food (bold), when
 if soon.empty:
     st.write(t("nothing_expiring"))
 else:
@@ -53,7 +54,8 @@ else:
     for row in soon.itertuples():
         days = int(max(row.Days_Left, 0))
         key = "use_today" if days == 0 else "use_tomorrow" if days == 1 else "use_in_days"
-        message(t(key, food=row.Food, days=days))
+        when = t("when_today") if days == 0 else t("when_tomorrow") if days == 1 else t("when_days", days=days)
+        use_first.append((t(key, food=row.Food, days=days), row.Food, when))
 if unlocked("buy_list", cover)[0]:
     risk = likely_wasted(batches, today)
     if not risk.empty:
@@ -61,7 +63,9 @@ if unlocked("buy_list", cover)[0]:
         risk = risk.groupby("Food", as_index=False)["Value"].sum()
         for row in risk[~risk["Food"].isin(already)].itertuples():
             value = round_rupees(row.Value) if pd.notna(row.Value) and row.Value > 0 else 0
-            message(t("at_risk", food=row.Food, amount=f"{value:,}") if value else t("at_risk_plain", food=row.Food))
+            use_first.append((t("at_risk", food=row.Food, amount=f"{value:,}") if value
+                              else t("at_risk_plain", food=row.Food), row.Food, None))
+message_list(use_first)
 
 # This week's shopping
 section(t("shopping_head"))
@@ -72,8 +76,7 @@ if not shown:
 else:
     items, enough = shopping_items(buy_list(stock, batches, today, 7))
     st.write(t("to_buy_count", n=len(items)) if items else t("to_buy_none"))
-    for food in enough[:3]:
-        message(t("enough_skip", food=food))
+    message_list([(t("enough_skip", food=food), food, None) for food in enough[:3]])
     if items:
         st.page_link("views/shopping.py", label=t("open_list"), icon=":material/list_alt:")
     if not reliable:
@@ -81,22 +84,30 @@ else:
         if weeks > 0:
             st.caption(t("smarter_after", weeks=weeks, s="" if weeks == 1 else "s"))
 
-# This month
-section(t("this_month"))
+# This month: deriving the periods takes a few seconds on a long history, so placeholder lines hold the
+# section's final size while the figures are computed; the heading never stands alone and nothing jumps.
+show_waste = unlocked("waste", cover)[0]
+month_slot = st.empty()
+with month_slot.container():
+    section(t("this_month"))
+    placeholder_lines([62, 48] if show_waste else [48], caption_width=36)
+
 frame = analysis_frame(buys, checks)
 month = frame[frame["Date"] >= today.replace(day=1)] if not frame.empty else frame
 spent = buys.loc[buys["date"] >= today.replace(day=1), "total_price"].sum()
-if unlocked("waste", cover)[0]:
-    wasted = float(wasted_value(month).sum(min_count=1)) if not month.empty else 0.0
-    wasted = 0.0 if pd.isna(wasted) else wasted
-    st.write(t("wasted_month", amount=f"{round_rupees(wasted):,}") if wasted >= 5 else t("no_waste_month"))
-st.write(t("spent_month", amount=f"{spent:,.0f}"))
+wasted = float(wasted_value(month).sum(min_count=1)) if show_waste and not month.empty else 0.0
+wasted = 0.0 if pd.isna(wasted) else wasted
 
-if checks.empty:
-    st.caption(t("no_check_yet"))
-else:
-    last = checks["date"].max()
-    days = int((today - last).days)
-    st.caption(t("last_check", date=fmt_date(last)))
-    if days >= 8:
-        st.warning(t("check_due", days=days))
+with month_slot.container():
+    section(t("this_month"))
+    if show_waste:
+        st.write(t("wasted_month", amount=f"{round_rupees(wasted):,}") if wasted >= 5 else t("no_waste_month"))
+    st.write(t("spent_month", amount=f"{spent:,.0f}"))
+    if checks.empty:
+        st.caption(t("no_check_yet"))
+    else:
+        last = checks["date"].max()
+        days = int((today - last).days)
+        st.caption(t("last_check", date=fmt_date(last)))
+        if days >= 8:
+            st.warning(t("check_due", days=days))

@@ -4,7 +4,7 @@ import pandas as pd
 import streamlit as st
 
 from ui import charts
-from ui.components import kpi_row, number, table
+from ui.components import kpi_row, number, rupees, table
 
 ASSUMPTIONS = [
     "Every household eats exactly the recorded consumption of each day, so demand is identical.",
@@ -47,7 +47,7 @@ def render(summary: pd.DataFrame, days: int, *, reference: float | None = None, 
                    title=f"At the cost of stock-outs on {plan['Stockout_Pct']:.0f}% of food-days",
                    subtitle="Food-days on which demand was not fully met, by household")
     table(chart_data[["Policy", "Waste_Pct", "Wasted_Rupees", "Stockout_Pct", "Unmet_Pct", "Leftover"]], {
-        "Waste_Pct": number("Waste (%)", "%.1f"), "Wasted_Rupees": number("₹ wasted", "₹%.0f"),
+        "Waste_Pct": number("Waste (%)", "%.1f"), "Wasted_Rupees": rupees("₹ wasted"),
         "Stockout_Pct": number("Stock-out food-days (%)", "%.1f"), "Unmet_Pct": number("Demand unmet (%)", "%.1f"),
         "Leftover": number("Stock left at the end", "%.1f")})
     if reference is not None:

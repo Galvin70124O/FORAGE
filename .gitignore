@@ -27,3 +27,6 @@ Thumbs.db
 
 # Local single-user database (offline / demo mode)
 *.db
+
+# Graphify map output
+graphify-out/

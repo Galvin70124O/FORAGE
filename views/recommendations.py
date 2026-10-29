@@ -9,22 +9,27 @@ from services.data import (
     demo_plan_with_risk,
     demo_recommendations,
     demo_week,
+    forecaster_explanations,
     load_demo,
 )
 from ui import charts
 from ui.components import (
+    count,
+    demand_card,
+    demand_cards,
     fmt_date,
     formula,
     kpi_row,
     methods,
     number,
     percent_bar,
+    quantity,
     section,
     table,
     text,
 )
 from views import backtest_section
-from views.common import begin
+from views.common import STAMP_NOTE, begin, demo_demand_cards
 
 PLAN_COLUMNS = {
     "Food": text("Food", "small"), "Recommended_Purchase_Quantity": number("Buy", "%.2f"),
@@ -73,6 +78,10 @@ if df is not None:
                        f"foods (≥ {high_waste:.1f}%); Low stock = usable stock below demand; Expires soon = stock expiring "
                        f"within {short_life:.0f} days (the shortest quarter).")
 
+            section("Food by food", "Predicted demand for each food, highest first, with what to buy")
+            demo_demand_cards()
+            st.caption(STAMP_NOTE)
+
             section("Purchase plan", "Sorted by quantity to buy; quantities are in each food's own unit")
             shown = plan.assign(Alerts=plan["Alerts"].map(short_alerts))
             table(shown[list(PLAN_COLUMNS)], PLAN_COLUMNS, max_rows=None)
@@ -117,8 +126,8 @@ if df is not None:
             formula("need = your usual daily use (last 4 pantry-check periods) × 7 days")
             formula("buy = max(0, need − stock that will still be good during the week)")
             (st.caption if reliable else st.warning)(note)
-            table(plan[["Food", "Buy", "Unit", "Need", "Usable_Stock"]],
-                  {"Need": number("Need (7 days)"), "Usable_Stock": number("Good stock"), "Buy": number("Buy")},
+            table(plan[["Food", "Buy", "Unit", "Need", "Usable_Stock"]].round({"Buy": 2, "Need": 2, "Usable_Stock": 2}),
+                  {"Need": quantity("Need (7 days)"), "Usable_Stock": quantity("Good stock"), "Buy": quantity("Buy")},
                   max_rows=15)
 
         with backtest_tab:
@@ -148,16 +157,26 @@ if df is not None:
             st.caption("Computed offline on the full dataset; online the page shows the 5 largest increases and "
                        "the 5 largest decreases.")
         shown = 10 if not df.offline else 5
-        left, right = st.columns([1, 1], gap="large")
-        with left:
-            section("Largest increases")
-            charts.bar(trend.head(shown), "Product_ID", "Change", value_title="Change in mean daily units (%)",
-                       category_title="Item", value_format="+.0f", height=320)
-        with right:
-            section("Largest decreases")
-            charts.bar(trend.tail(shown), "Product_ID", "Change", value_title="Change in mean daily units (%)",
-                       category_title="Item", value_format="+.0f", sort="x", slot=1, height=320,
-                       highlight=[trend.iloc[-1]["Product_ID"]])
+        explained = forecaster_explanations("m5").get("by_item")
+        error = (explained.set_index("Product_ID")["Relative_MAE"]
+                 if explained is not None and "Product_ID" in explained else pd.Series(dtype=float))
+
+        def trend_cards(rows: pd.DataFrame) -> None:
+            demand_cards([demand_card(
+                row.Product_ID, f"{row.Recent:.1f}", "units/day",
+                stamp="more" if row.Change >= 20 else "less" if row.Change <= -20 else "same",
+                what=f"last 28 days · was {row.Previous:.1f} ({row.Change:+.0f}%)",
+                relative_error=error.get(row.Product_ID),
+                note="Rising: keep more on the shelf." if row.Change >= 20 else
+                     "Falling: order less to avoid overstock." if row.Change <= -20 else "Steady demand.")
+                for row in rows.itertuples()])
+
+        section("Largest increases", "Restock: demand is up 20% or more")
+        trend_cards(trend.head(shown))
+        section("Largest decreases", "Order less: demand is down 20% or more")
+        trend_cards(trend.tail(shown).sort_values("Change"))
+        st.caption("Stamps: Buy more for a rise of 20% or more, Buy less for a fall of 20% or more. Confidence, where "
+                   "shown, comes from the forecasting model's typical error for that item.")
         table(trend, {"Product_ID": "Item", "Recent": number("Last 28 days (units/day)"),
                       "Previous": number("Previous 28 days (units/day)"), "Change": number("Change (%)", "%+.1f")},
               max_rows=10)
@@ -202,5 +221,5 @@ if df is not None:
             charts.bar(products.head(12), "Product_Name", "Reorder_Rate", value_title="Reorder rate (%)",
                        category_title="Product", value_format=".1f", height=380)
             table(products.head(50), {"Product_Name": "Product", "Department": "Department",
-                                      "Order_Lines": number("Order lines", "%d"), "Customers": number("Customers", "%d"),
+                                      "Order_Lines": count("Order lines"), "Customers": count("Customers"),
                                       "Reorder_Rate": number("Reorder rate (%)", "%.1f")}, max_rows=10)

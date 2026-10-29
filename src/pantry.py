@@ -296,15 +296,23 @@ UNIT_ALIASES = {
 _QTY_UNIT = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)\s*(" + "|".join(sorted(UNIT_ALIASES, key=len, reverse=True)) + r")\b", re.I)
 _TIMES = re.compile(r"(?:\bx\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*x\b)", re.I)
 _PRICE = re.compile(r"(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d{1,2})?)\s*$", re.I)
+_COUNT = re.compile(r"\s(\d+(?:\.\d+)?)$")  # a bare number after the name: 'Bread 1 45'
 
 
-def parse_bill(text: str) -> tuple[pd.DataFrame, list[str]]:
-    """Parse lines like 'Milk 2 L 120', 'Eggs x12 84', 'Tomato 1kg - ₹40' into purchase rows.
+def _name_key(name: str) -> str:
+    return re.sub(r"\s+", " ", name).strip().lower()
+
+
+def parse_bill(text: str, known: list[str] | tuple = ()) -> tuple[pd.DataFrame, list[str]]:
+    """Parse lines like 'Milk 2 L 120', 'Eggs x12 84', 'Tomato 1kg - ₹40', 'Bread 2 90' into purchase rows.
 
     Rule-based, no guessing: a line needs a food name and a final price;
-    quantity and unit are optional (default 1 unit). Returns (rows, lines that
+    quantity and unit are optional (default 1 unit). A bare number before the
+    price is the quantity unless the whole name is one of the `known` foods
+    (a name that ends in a number, such as 'Club 7'). Returns (rows, lines that
     could not be read). The user confirms the rows before anything is saved.
     """
+    known_names = {_name_key(name) for name in known}
     rows, skipped = [], []
     for raw in str(text).splitlines():
         line = raw.strip().strip("-•*").strip()
@@ -323,9 +331,14 @@ def parse_bill(text: str) -> tuple[pd.DataFrame, list[str]]:
             rest = (rest[:unit_match.start()] + rest[unit_match.end():]).strip()
         else:
             times = _TIMES.search(rest)
+            count = _COUNT.search(rest)
             if times:
                 quantity, unit = float(times.group(1) or times.group(2)), "piece"
                 rest = (rest[:times.start()] + rest[times.end():]).strip()
+            elif count and float(count.group(1)) > 0 and not (
+                    _name_key(rest) in known_names and _name_key(rest[:count.start()]) not in known_names):
+                # a known 'Club 7' stays whole; 'Bread 1' is Bread × 1 when Bread is known too (an old mis-read)
+                quantity, rest = float(count.group(1)), rest[:count.start()].strip()
         food = re.sub(r"\s+", " ", re.sub(r"[^\w\s&'-]", " ", rest)).strip(" -")
         if not food or food.isdigit():
             skipped.append(raw)

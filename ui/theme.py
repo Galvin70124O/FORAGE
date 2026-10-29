@@ -1,62 +1,54 @@
-"""Design tokens, the registered Altair themes and the small amount of CSS Streamlit's theme cannot express.
+"""Fresh Shelf: FORAGE's design tokens, the one stylesheet and the one Plotly template.
 
-Surfaces, text, the accent and fonts live in .streamlit/config.toml. Charts use
-one registered Altair theme per mode ("forage_light" / "forage_dark"): one
-accent colour for the series that matters, grey for context, hairline grids,
-the same font and heights everywhere. Contrast of every text colour against its
-surface is at least WCAG AA (4.5:1); chart marks are at least 3:1.
+Surfaces, text colour and fonts for Streamlit's own widgets live in .streamlit/config.toml.
+Everything else is defined here and injected once per run by app.py:
+
+- PALETTE: light and dark tokens. Status colours mean the same in both modes:
+  fresh (green), use soon (turmeric), expired / wasted (tomato), neutral (stone).
+  Every text colour is at least 4.5:1 against its surface; fills used only as
+  marks (turmeric, light stone) are at least 3:1.
+- CSS: Streamlit chrome, the pantry-label KPI cards, freshness meters, shelves,
+  the waste gauge, demand cards and empty states (see ui/components.py).
+- Plotly templates "forage_light" / "forage_dark": transparent background,
+  hairline grid, one accent colour, DM Sans; used by every chart in ui/charts.py.
 """
 
-import altair as alt
+import plotly.graph_objects as go
+import plotly.io as pio
 import streamlit as st
 
-VERSION = "2.0"
+VERSION = "3.0"
 
 PALETTE = {
     "light": {
-        "accent": "#2a78d6", "context": "#a3a29d", "second": "#d9662b",
-        "series": ["#2a78d6", "#a3a29d", "#d9662b"],
-        "text": "#1b1b19", "muted": "#5f5e5a", "grid": "#e8e7e2", "axis": "#c9c8c1",
-        "surface": "#fbfbfa", "diverging": ["#d9534f", "#efeeea", "#2a78d6"], "text_on_strong": "#ffffff",
+        "bg": "#F6F3EA", "card": "#FFFFFF", "text": "#1F2420", "muted": "#5C625B", "line": "#E4DFD2",
+        "line_strong": "#CFC8B6", "brand": "#2E6B4F", "brand_tint": "#E3EFE7", "logo": "#3F8763",
+        "fresh": "#2F7D4F", "fresh_text": "#2A6E45", "fresh_tint": "#D5EADC",
+        "soon": "#B7791F", "soon_text": "#8A5A12", "soon_tint": "#F5E2BC",
+        "gone": "#B84A32", "gone_text": "#9E3D28", "gone_tint": "#F3D3CA",
+        "stone": "#77736A", "stone_text": "#6A665D", "stone_tint": "#EFECE4",
+        "wood": "#C49A68", "wood_dark": "#8E6A41", "on_brand": "#FFFFFF", "grid": "#ECE8DD", "axis": "#CFC8B6",
+        # chart roles
+        "accent": "#2E6B4F", "context": "#A7A296", "second": "#B7791F",
+        "series": ["#2E6B4F", "#A7A296", "#B7791F"],
+        "diverging": ["#B84A32", "#F1EDE2", "#2E6B4F"], "text_on_strong": "#FFFFFF", "surface": "#F6F3EA",
     },
     "dark": {
-        "accent": "#5598e7", "context": "#6f6e69", "second": "#e07a45",
-        "series": ["#5598e7", "#6f6e69", "#e07a45"],
-        "text": "#ecebe7", "muted": "#a3a29d", "grid": "#2a2a27", "axis": "#46453f",
-        "surface": "#171716", "diverging": ["#e06c69", "#34342f", "#5598e7"], "text_on_strong": "#ffffff",
+        "bg": "#161A17", "card": "#1F2420", "text": "#ECE8DD", "muted": "#A9AEA5", "line": "#323A34",
+        "line_strong": "#46504A", "brand": "#7CC29E", "brand_tint": "#22382B", "logo": "#3F8763",
+        "fresh": "#74C690", "fresh_text": "#86D3A0", "fresh_tint": "#284A35",
+        "soon": "#D99A3A", "soon_text": "#E2B160", "soon_tint": "#4A3819",
+        "gone": "#EE8A6E", "gone_text": "#F29C83", "gone_tint": "#4C2A21",
+        "stone": "#ADA89C", "stone_text": "#ADA89C", "stone_tint": "#2A302B",
+        "wood": "#7A5C3C", "wood_dark": "#56402A", "on_brand": "#161A17", "grid": "#2A302B", "axis": "#46504A",
+        "accent": "#7CC29E", "context": "#6E6A61", "second": "#D99A3A",
+        "series": ["#7CC29E", "#6E6A61", "#D99A3A"],
+        "diverging": ["#EE8A6E", "#2A302B", "#7CC29E"], "text_on_strong": "#161A17", "surface": "#161A17",
     },
 }
-FONT = "Inter, system-ui, -apple-system, Segoe UI, sans-serif"
+FONT = "DM Sans, system-ui, -apple-system, Segoe UI, sans-serif"
+SERIF = "Fraunces, Georgia, 'Times New Roman', serif"
 HEIGHTS = {"small": 220, "medium": 280, "large": 340}
-
-
-def _theme(mode: str) -> dict:
-    p = PALETTE[mode]
-    axis = {"labelColor": p["muted"], "titleColor": p["muted"], "labelFont": FONT, "titleFont": FONT,
-            "labelFontSize": 11, "titleFontSize": 11, "titleFontWeight": 500, "gridColor": p["grid"],
-            "domainColor": p["axis"], "tickColor": p["axis"], "labelPadding": 6, "titlePadding": 10}
-    return {"config": {
-        "background": "transparent",
-        "font": FONT,
-        "view": {"stroke": None},
-        "axis": axis,
-        "axisX": {"grid": False},
-        "axisY": {"domain": False, "ticks": False},
-        "legend": {"labelColor": p["muted"], "titleColor": p["muted"], "labelFont": FONT, "labelFontSize": 11,
-                   "orient": "top", "direction": "horizontal", "symbolType": "stroke"},
-        "title": {"color": p["text"], "font": FONT, "fontSize": 13, "fontWeight": 600, "anchor": "start",
-                  "subtitleColor": p["muted"], "subtitleFont": FONT, "subtitleFontSize": 11, "offset": 12},
-        "range": {"category": p["series"]},
-        "bar": {"color": p["accent"], "cornerRadiusEnd": 3},
-        "line": {"color": p["accent"], "strokeWidth": 2},
-        "point": {"color": p["accent"]},
-        "text": {"color": p["muted"], "font": FONT, "fontSize": 11},
-        "header": {"labelColor": p["muted"], "titleColor": p["muted"]},
-    }}
-
-
-for _mode in ("light", "dark"):
-    alt.theme.register(f"forage_{_mode}", enable=False)(lambda m=_mode: _theme(m))
 
 
 def mode() -> str:
@@ -69,56 +61,283 @@ def colors() -> dict:
     return PALETTE[mode()]
 
 
-def altair_theme() -> str:
+# --- Plotly ------------------------------------------------------------------
+
+def _template(name: str) -> go.layout.Template:
+    p = PALETTE[name]
+    axis = {"gridcolor": p["grid"], "linecolor": p["axis"], "tickcolor": p["axis"], "zerolinecolor": p["axis"],
+                "title": {"font": {"color": p["muted"], "size": 12}}, "tickfont": {"color": p["muted"], "size": 11},
+                "automargin": True, "ticks": "", "showline": False, "zeroline": False}
+    return go.layout.Template(layout={
+        "font": {"family": FONT, "color": p["text"], "size": 12},
+        "paper_bgcolor": "rgba(0,0,0,0)", "plot_bgcolor": "rgba(0,0,0,0)",
+        "colorway": p["series"],
+        "xaxis": dict(axis, showgrid=False, showline=True),
+        "yaxis": dict(axis, showgrid=True),
+        "legend": {"orientation": "h", "yanchor": "bottom", "y": 1.02, "xanchor": "left", "x": 0, "title": None,
+                    "font": {"color": p["muted"], "size": 11}, "bgcolor": "rgba(0,0,0,0)"},
+        "hoverlabel": {"bgcolor": p["card"], "bordercolor": p["line_strong"], "font": {"family": FONT, "color": p["text"], "size": 12}},
+        "margin": {"l": 8, "r": 16, "t": 16, "b": 8},
+        "bargap": 0.3,
+        "dragmode": False,
+    })
+
+
+for _name in PALETTE:
+    pio.templates[f"forage_{_name}"] = _template(_name)
+
+
+def plotly_template() -> str:
     return f"forage_{mode()}"
 
 
+# --- CSS ---------------------------------------------------------------------
+
+def _variables(p: dict) -> str:
+    keys = ["bg", "card", "text", "muted", "line", "line_strong", "brand", "brand_tint", "fresh", "fresh_text",
+            "fresh_tint", "soon", "soon_text", "soon_tint", "gone", "gone_text", "gone_tint", "stone", "stone_text",
+            "stone_tint", "wood", "wood_dark", "on_brand"]
+    return " ".join(f"--fs-{key.replace('_', '-')}: {p[key]};" for key in keys)
+
+
 CSS = """
-<style>
-/* Layout: ~1200 px content width, 8 px spacing grid. */
-.block-container { padding-top: 3.5rem; padding-bottom: 4rem; max-width: 1232px; }
+/* ---------- Streamlit chrome: no menu, footer or Deploy button; tighter top ---------- */
+[data-testid="stMainMenu"], [data-testid="stAppDeployButton"], .stDeployButton, footer,
+[data-testid="stDecoration"] { display: none !important; }
+header[data-testid="stHeader"] { background: transparent; }
+.block-container { padding-top: 2.5rem; padding-bottom: 4rem; max-width: 1232px; }
 [data-testid="stVerticalBlock"] { gap: 1rem; }
-h1 { letter-spacing: -0.015em; margin: 0 !important; padding: 0 !important; }
-h2 { letter-spacing: -0.005em; padding-top: 0.5rem !important; }
+h1 { letter-spacing: -0.01em; margin: 0 !important; padding: 0 !important; line-height: 1.15 !important; }
+h2 { padding-top: 0.5rem !important; }
 h3 { padding-bottom: 0 !important; }
-hr { margin: 0.5rem 0 !important; }
-.fg-purpose { margin: 0.25rem 0 0 0; font-size: 0.97rem; opacity: 0.86; max-width: 48rem; line-height: 1.5; }
-.fg-detail { font-size: 0.8rem; opacity: 0.72; margin-top: 0.25rem; }
+hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
+[data-testid="stCaptionContainer"], .stCaption { color: var(--fs-muted); }
+
+/* ---------- Surfaces: 16 px cards, 1 px warm borders, almost no shadow ---------- */
+[data-testid="stVerticalBlockBorderWrapper"], [data-testid="stVerticalBlock"][class*="border"] { border-radius: 16px; }
+[data-testid="stExpander"] details { border-radius: 16px; border-color: var(--fs-line); background: var(--fs-card); }
+[data-testid="stExpander"] summary p { font-weight: 600; }
+[data-testid="stAlertContainer"] { border-radius: 12px; border: 1px solid var(--fs-line); }
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentInfo"]) { background: var(--fs-stone-tint); }
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentWarning"]) { background: var(--fs-soon-tint); }
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentSuccess"]) { background: var(--fs-fresh-tint); }
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentError"]) { background: var(--fs-gone-tint); }
+[data-testid="stAlertContentInfo"], [data-testid="stAlertContentInfo"] * { color: var(--fs-text) !important; }
+[data-testid="stAlertContentWarning"], [data-testid="stAlertContentWarning"] * { color: var(--fs-soon-text) !important; }
+[data-testid="stAlertContentSuccess"], [data-testid="stAlertContentSuccess"] * { color: var(--fs-fresh-text) !important; }
+[data-testid="stAlertContentError"], [data-testid="stAlertContentError"] * { color: var(--fs-gone-text) !important; }
+[data-testid="stDataFrame"], [data-testid="stTable"] { font-variant-numeric: tabular-nums; }
+[data-testid="stTabs"] [data-baseweb="tab"] p { font-weight: 600; }
+[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"] p { color: var(--fs-on-brand) !important; }
+[data-testid="stPlotlyChart"] { margin-top: -0.5rem; }
+
+/* ---------- Sidebar: brand, navigation, signed-in user ---------- */
+[data-testid="stSidebarHeader"] { padding-bottom: 0.5rem; }
+[data-testid="stSidebarNav"] a { border-radius: 10px; min-height: 40px; }
+[data-testid="stSidebarNav"] a[aria-current="page"] { background: var(--fs-brand-tint); }
+[data-testid="stSidebarNav"] a[aria-current="page"] span { color: var(--fs-brand); font-weight: 600; }
+[data-testid="stNavSectionHeader"] span { font-variant: all-small-caps; letter-spacing: 0.1em; font-weight: 600; }
+.st-key-fs-account { border-top: 1px solid var(--fs-line); padding-top: 0.75rem; }
+.fg-footer { font-size: 0.75rem; color: var(--fs-muted); line-height: 1.6; }
+
+/* ---------- Page header ---------- */
+.fg-purpose { margin: 0.25rem 0 0 0; font-size: 0.97rem; color: var(--fs-muted); max-width: 48rem; line-height: 1.5; }
+.fg-detail { font-size: 0.8rem; color: var(--fs-muted); margin-top: 0.25rem; }
 .fg-pill { display: inline-block; float: right; margin-top: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 999px;
-  border: 1px solid var(--fg-border); font-size: 0.78rem; font-weight: 500; white-space: nowrap; }
-.fg-pill b { font-weight: 600; }
-.fg-brand { font-weight: 700; letter-spacing: 0.16em; font-size: 0.95rem; margin: 0; }
-.fg-tagline { font-size: 0.8rem; opacity: 0.72; margin: 0.25rem 0 0.5rem 0; }
-.fg-footer { font-size: 0.75rem; opacity: 0.72; line-height: 1.6; }
+  border: 1px solid var(--fs-line-strong); background: var(--fs-card); font-size: 0.78rem; font-weight: 500;
+  white-space: nowrap; color: var(--fs-muted); }
+.fg-pill b { font-weight: 600; color: var(--fs-text); }
 .fg-formula { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85rem;
-  opacity: 0.9; }
-.fg-action { padding: 0.5rem 0; border-bottom: 1px solid var(--fg-border); }
+  color: var(--fs-muted); }
+.fs-chart-title { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 1.05rem; line-height: 1.3;
+  margin: 0; color: var(--fs-text); }
+.fs-chart-sub { font-size: 0.8rem; color: var(--fs-muted); margin: 0.15rem 0 0 0; }
+
+/* ---------- Action list ---------- */
+.fg-action { padding: 0.75rem 0; border-bottom: 1px solid var(--fs-line); }
 .fg-action:last-child { border-bottom: none; }
 .fg-action-title { font-weight: 600; }
-.fg-action-why { font-size: 0.85rem; opacity: 0.8; }
-.fg-tag { display: inline-block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em; padding: 0.05rem 0.5rem;
-  border-radius: 999px; border: 1px solid var(--fg-border); margin-right: 0.5rem; vertical-align: 1px; }
-[data-testid="stMetricValue"] { font-size: 1.65rem; font-weight: 600; }
-[data-testid="stMetricLabel"] p { font-size: 0.8rem; opacity: 0.8; }
-/* Touch targets of at least 44 px for buttons, links, inputs and checkboxes. */
+.fg-action-why { font-size: 0.85rem; color: var(--fs-muted); }
+.fg-tag { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 0.1rem 0.6rem; border-radius: 999px;
+  margin-right: 0.5rem; vertical-align: 1px; white-space: nowrap; background: var(--fs-stone-tint); color: var(--fs-stone-text); }
+.fg-tag.fs-gone { background: var(--fs-gone-tint); color: var(--fs-gone-text); }
+.fg-tag.fs-soon { background: var(--fs-soon-tint); color: var(--fs-soon-text); }
+.fg-tag.fs-fresh { background: var(--fs-fresh-tint); color: var(--fs-fresh-text); }
+
+/* ---------- 1. Pantry-label KPI cards ---------- */
+.fs-labels { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.fs-label { position: relative; background: var(--fs-card); border: 1px solid var(--fs-line-strong); border-radius: 16px;
+  padding: 14px 18px 14px; box-shadow: inset 0 0 0 4px var(--fs-card), inset 0 0 0 5px var(--fs-line); min-width: 0; }
+.fs-label-name { font-weight: 500; font-size: 13px; color: var(--fs-muted); line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fs-label-value { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 1.85rem; line-height: 1.15;
+  margin-top: 4px; color: var(--fs-text); font-variant-numeric: tabular-nums lining-nums; overflow-wrap: anywhere; }
+.fs-label-value.fs-small { font-size: 1.3rem; }
+.fs-label-value.fs-text { font-family: DM Sans, system-ui, sans-serif; font-size: 1.15rem; line-height: 1.3; margin-top: 8px;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: break-word; }
+.fs-label-compare { font-size: 0.82rem; color: var(--fs-muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
+.fs-label-compare b { font-weight: 700; }
+.fs-good { color: var(--fs-fresh-text); } .fs-bad { color: var(--fs-gone-text); } .fs-flat { color: var(--fs-stone-text); }
+.fs-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -4px; }
+.fs-chip { font-size: 0.8rem; color: var(--fs-muted); background: var(--fs-card); border: 1px solid var(--fs-line);
+  border-radius: 999px; padding: 2px 10px; font-variant-numeric: tabular-nums; }
+.fs-chip b { color: var(--fs-text); font-weight: 600; }
+
+/* ---------- 2. Freshness meter ---------- */
+.fs-meter { position: relative; height: 6px; border-radius: 999px; background: var(--fs-stone-tint); overflow: hidden;
+  margin-top: 4px; }
+.fs-meter-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; }
+.fs-meter-fill.fs-fresh { background: var(--fs-fresh); } .fs-meter-fill.fs-soon { background: var(--fs-soon); }
+.fs-meter-fill.fs-gone { background: var(--fs-gone); }
+.fs-meter-text { font-size: 0.75rem; font-weight: 700; line-height: 1.2; margin-top: 8px; white-space: nowrap;
+  font-variant-numeric: tabular-nums; }
+.fs-meter-text.fs-fresh { color: var(--fs-fresh-text); } .fs-meter-text.fs-soon { color: var(--fs-soon-text); }
+.fs-meter-text.fs-gone { color: var(--fs-gone-text); }
+
+/* ---------- 3. Shelves ---------- */
+.fs-shelf { margin: 4px 0 8px 0; }
+.fs-shelf-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.fs-shelf-title { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 1.1rem; margin: 0; }
+.fs-shelf-count { font-size: 0.75rem; font-weight: 700; border-radius: 999px; padding: 1px 9px; background: var(--fs-stone-tint);
+  color: var(--fs-stone-text); font-variant-numeric: tabular-nums; }
+.fs-shelf-note { font-size: 0.82rem; color: var(--fs-muted); }
+.fs-shelf-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 14px;
+  align-items: end; padding: 8px 6px 10px; }
+.fs-shelf-empty { font-size: 0.9rem; color: var(--fs-muted); padding: 10px 6px 12px; font-style: italic; }
+.fs-plank { position: relative; height: 9px; border-radius: 3px; margin: 0 0 18px 0;
+  background: linear-gradient(180deg, var(--fs-wood) 0%, var(--fs-wood) 55%, var(--fs-wood-dark) 100%); }
+.fs-plank::before, .fs-plank::after { content: ""; position: absolute; top: 9px; width: 10px; height: 8px;
+  background: var(--fs-wood-dark); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.fs-plank::before { left: 7%; } .fs-plank::after { right: 7%; }
+.fs-jar { position: relative; background: var(--fs-card); border: 1px solid var(--fs-line-strong); border-radius: 12px;
+  padding: 12px 12px 10px; margin-top: 6px; box-shadow: inset 0 0 0 3px var(--fs-card), inset 0 0 0 4px var(--fs-line); }
+.fs-jar::before { content: ""; position: absolute; left: 22%; right: 22%; top: -6px; height: 6px; border-radius: 4px 4px 0 0;
+  background: var(--fs-stone); }
+.fs-jar.fs-fresh::before { background: var(--fs-fresh); } .fs-jar.fs-soon::before { background: var(--fs-soon); }
+.fs-jar.fs-gone::before { background: var(--fs-gone); }
+.fs-jar-name { font-weight: 600; font-size: 0.95rem; line-height: 1.25; overflow-wrap: anywhere; }
+.fs-jar-qty { font-size: 0.8rem; color: var(--fs-muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- 4. Waste-bin gauge ---------- */
+.fs-gauge { background: var(--fs-card); border: 1px solid var(--fs-line); border-radius: 16px; padding: 16px 18px;
+  text-align: center; height: 100%; }
+.fs-gauge svg { width: 100%; max-width: 260px; height: auto; display: block; margin: 4px auto 0; }
+.fs-gauge-name { font-weight: 500; font-size: 13px; color: var(--fs-muted); text-align: left; }
+.fs-gauge-sentence { font-size: 0.95rem; margin: 6px 0 0 0; line-height: 1.4; }
+.fs-gauge-note { font-size: 0.78rem; color: var(--fs-muted); margin-top: 4px; }
+
+/* ---------- 5. Demand cards ---------- */
+.fs-demands { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.fs-demand { position: relative; background: var(--fs-card); border: 1px solid var(--fs-line-strong); border-radius: 16px;
+  padding: 14px 16px; box-shadow: inset 0 0 0 4px var(--fs-card), inset 0 0 0 5px var(--fs-line); min-width: 0; }
+.fs-demand-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.fs-demand-name { font-weight: 600; font-size: 1rem; line-height: 1.25; overflow-wrap: anywhere; }
+.fs-demand-value { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 1.6rem; line-height: 1.1;
+  margin-top: 8px; font-variant-numeric: tabular-nums lining-nums; }
+.fs-demand-value span { font-family: DM Sans, system-ui, sans-serif; font-size: 0.85rem; font-weight: 500; color: var(--fs-muted); }
+.fs-demand-what { font-size: 0.78rem; color: var(--fs-muted); }
+.fs-confidence { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; margin-top: 10px; color: var(--fs-muted); }
+.fs-dots { display: inline-flex; gap: 3px; }
+.fs-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--fs-stone-tint); border: 1px solid var(--fs-line-strong); }
+.fs-dots i.on { background: var(--fs-brand); border-color: var(--fs-brand); }
+.fs-demand-note { font-size: 0.8rem; color: var(--fs-muted); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--fs-line);
+  line-height: 1.4; }
+.fs-stamp { display: inline-block; flex: none; border-radius: 999px; padding: 0.1rem 0.6rem; font-weight: 600;
+  font-size: 0.78rem; line-height: 1.4; white-space: nowrap; }
+.fs-stamp.fs-more { background: var(--fs-fresh-tint); color: var(--fs-fresh-text); }
+.fs-stamp.fs-less { background: var(--fs-gone-tint); color: var(--fs-gone-text); }
+
+/* ---------- 6. Empty states ---------- */
+[class*="st-key-fs-empty"] { text-align: center; align-items: center; border-style: dashed !important; }
+.fs-empty svg { width: 56px; height: 56px; display: block; margin: 4px auto 6px; }
+.fs-empty-title { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 1.15rem; margin: 0; }
+.fs-empty-body { color: var(--fs-muted); margin: 4px auto 0; max-width: 34rem; line-height: 1.5; }
+
+/* ---------- 7. Loading placeholders: a grey bar inside the same paragraph / caption element as the text it
+   stands in for, so the line keeps its final height ---------- */
+.fs-skeleton { display: inline-block; height: 0.75em; border-radius: 6px; vertical-align: -0.05em;
+  background: linear-gradient(90deg, var(--fs-stone-tint) 30%, var(--fs-line) 50%, var(--fs-stone-tint) 70%);
+  background-size: 300% 100%; animation: fs-shimmer 1.6s ease-in-out infinite; }
+@keyframes fs-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .fs-skeleton { animation: none; } }
+
+/* ---------- Touch targets of at least 44 px ---------- */
 .stButton button, .stDownloadButton button, .stFormSubmitButton button, .stLinkButton a { min-height: 44px; }
 [data-testid="stPageLink"] a { min-height: 44px; display: flex; align-items: center; }
 [data-baseweb="input"], [data-baseweb="select"] > div { min-height: 44px; }
 [data-testid="stCheckbox"] label { min-height: 44px; align-items: center; }
-/* Hide only the Deploy button, the footer and Streamlit branding; the main menu (theme switch) stays. */
-[data-testid="stAppDeployButton"], .stDeployButton, footer, [data-testid="stDecoration"] { display: none !important; }
+
+/* ---------- Touch screens: text fields at 16 px, the size below which iPhone Safari zooms in on focus
+   (with baseFontSize 15 Streamlit draws them at 13 px). Covers Streamlit's inputs, selects and text areas and the data
+   editor's cell editors (glide-data-grid overlay). Zoom itself is never disabled. ---------- */
+@media (pointer: coarse) {
+  input, textarea, select, [data-baseweb="input"] input, [data-baseweb="textarea"] textarea,
+  [data-baseweb="select"] > div, .gdg-growing-entry textarea, .gdg-input, .gdg-clip-region input,
+  .gdg-clip-region textarea { font-size: 16px !important; }
+}
+
+/* ---------- Taps: no grey flash, no 300 ms wait, no text selection on buttons, a slight press. FORAGE adds no
+   hover styles of its own; any added later go inside @media (hover: hover) and (pointer: fine) so they don't stick
+   after a tap on a phone ---------- */
+html { -webkit-tap-highlight-color: transparent; }
+button, a, [role="button"], [role="tab"], label, summary, [data-baseweb="select"] { touch-action: manipulation; }
+button, [role="button"], [role="tab"] { -webkit-user-select: none; user-select: none; }
+.stButton button, .stDownloadButton button, .stFormSubmitButton button, .stLinkButton a, [data-testid="stPageLink"] a,
+[data-testid="stButtonGroup"] button { transition: transform 120ms ease-out, background-color 120ms ease-out; }
+.stButton button:active, .stDownloadButton button:active, .stFormSubmitButton button:active, .stLinkButton a:active,
+[data-testid="stPageLink"] a:active, [data-testid="stButtonGroup"] button:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) {
+  .stButton button, .stDownloadButton button, .stFormSubmitButton button, .stLinkButton a, [data-testid="stPageLink"] a,
+  [data-testid="stButtonGroup"] button { transition: none; }
+  .stButton button:active, .stDownloadButton button:active, .stFormSubmitButton button:active, .stLinkButton a:active,
+  [data-testid="stPageLink"] a:active, [data-testid="stButtonGroup"] button:active { transform: none; }
+}
+/* ---------- Phone width: one column, no sideways scrolling ---------- */
 @media (max-width: 640px) {
-  .block-container { padding-left: 1rem; padding-right: 1rem; padding-top: 4.5rem; }
+  .block-container { padding-left: 1rem; padding-right: 1rem; padding-top: 3.5rem; }
   .fg-pill { float: none; margin: 0.5rem 0 0 0; }
-  [data-testid="stMetricValue"] { font-size: 1.35rem; }
-  h1 { font-size: 1.5rem !important; }
-  /* The table toolbar would sit on top of the section subtitle on a phone. */
+  h1 { font-size: 1.6rem !important; }
+  .fs-labels { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .fs-label { padding: 12px 12px 10px; }
+  .fs-label-name { font-size: 12px; white-space: normal; }
+  .fs-labels > .fs-label:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .fs-label-compare { font-size: 0.75rem; }
+  .fs-demands { grid-template-columns: 1fr; }
+  .fs-shelf-row { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .fs-label-value { font-size: 1.4rem; }
+  .fs-label-value.fs-small { font-size: 1.1rem; }
   [data-testid="stElementToolbar"] { display: none; }
 }
-</style>
+@media (max-width: 340px) {
+  .fs-labels { grid-template-columns: 1fr; }
+}
+"""
+
+KITCHEN_CSS = """
+/* Kitchen mode: readable text and touch targets of at least 44 px. */
+.block-container p, .block-container li, .block-container label p { font-size: 1.02rem; }
+[class*="st-key-fg-tiles"] button { min-height: 56px; min-width: 104px; font-size: 1.02rem; padding: 0 1rem; }
+[class*="st-key-fg-levels"] button { min-height: 64px; min-width: 120px; font-size: 1.05rem; flex: 1 1 40%; }
+[class*="st-key-fg-tiles"], [class*="st-key-fg-levels"] { gap: 0.5rem; }
+[data-testid="stButtonGroup"] button { min-height: 44px; padding: 0 1rem; font-size: 1rem; }
+.fg-message { padding: 0.75rem 1rem; border: 1px solid var(--fs-line); background: var(--fs-card); border-radius: 12px; margin: 0; }
+.fg-message b { font-weight: 600; }
+.fg-messages { list-style: none; margin: 0; padding: 0 1rem; border: 1px solid var(--fs-line); background: var(--fs-card);
+  border-radius: 12px; }
+.fg-messages li { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.7rem 0;
+  border-bottom: 1px solid var(--fs-line); margin: 0; }
+.fg-messages li:last-child { border-bottom: none; }
+.fg-messages b { font-weight: 600; }
+.fg-message-aside { flex: none; color: var(--fs-muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; text-align: right; }
+.fg-list { margin: 0; padding-left: 1.2rem; }
+.fg-list li { padding: 0.2rem 0; }
+@media (max-width: 640px) {
+  [class*="st-key-fg-tiles"] button { flex: 1 1 calc(33% - 0.5rem); min-width: 96px; }
+}
 """
 
 
-def apply_styles() -> None:
-    border = "#e1e0d9" if mode() == "light" else "#33332f"
-    st.markdown(CSS.replace("<style>", f"<style>:root {{ --fg-border: {border}; }}", 1), unsafe_allow_html=True)
+def apply_styles(*, kitchen: bool = False) -> None:
+    """Inject the stylesheet (called once per run from app.py), with the tokens of the active mode."""
+    css = f":root {{ {_variables(colors())} }}\n{CSS}" + (KITCHEN_CSS if kitchen else "")
+    st.html(f"<style>{css}</style>")

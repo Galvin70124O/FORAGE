@@ -6,15 +6,18 @@ import streamlit as st
 from stats import describe_strength
 from ui import charts
 from ui.components import (
+    count,
+    date,
     fmt_date,
     fmt_pct,
     formula,
     kpi_row,
     methods,
-    number,
     percent_bar,
     section,
+    shelf,
     table,
+    text,
 )
 from ui.components import rupees as rupees_column
 from views import risk_section
@@ -77,8 +80,8 @@ elif df is not None:
          + (" Illustrative: the demo prices are synthetic." if illustrative else "")),
         ("Waste rate", fmt_pct(headline["rate"]), "Mean of the food-level rates (wasted ÷ purchased). "
          f"Pooled across all units: {fmt_pct(headline['pooled_rate'])}."),
-        ("Highest-waste food", f"{top['Food']}", f"{fmt_pct(top['Waste_Rate'])} of purchases wasted."),
-        ("Highest-waste category", categories.index[0], f"{fmt_pct(categories.iloc[0]['Waste_Rate'])} on average."),
+        ("Worst food", f"{top['Food']}", f"Highest waste rate: {fmt_pct(top['Waste_Rate'])} of purchases wasted."),
+        ("Worst category", categories.index[0], f"Highest waste rate: {fmt_pct(categories.iloc[0]['Waste_Rate'])} on average."),
         ("Expiring in 7 days", f"{len(soon_7)} foods", f"Foods with stock that expires by {fmt_date(as_of + pd.Timedelta(days=7))}."),
     ])
     formula("waste rate = wasted ÷ purchased × 100")
@@ -98,7 +101,7 @@ elif df is not None:
             monthly = rupees["monthly"]
             peak = monthly.idxmax()
             charts.line(monthly.rename_axis("Month").reset_index(), "Month", "Rupees", x_title=None,
-                        y_title="₹ wasted", y_format=",.0f", x_format="%b %Y", label_last=True,
+                        y_title="₹ wasted", y_format=",.0f", x_format="%b %Y", label_last=True, height=200,
                         title=f"Waste peaked in {peak:%B} at ₹{monthly.max():,.0f}",
                         subtitle=f"₹ wasted per month · {note}")
         with right:
@@ -119,30 +122,35 @@ elif df is not None:
             top3 = foods.head(3)
             section("Waste by food", "Top 3: " + "; ".join(f"{row.Food} {fmt_pct(row.Waste_Rate)}"
                                                          for row in top3.itertuples()))
-            by_food = foods.assign(Rupees=foods["Food"].map(rupees["by_food"]))
-            table(by_food[[c for c in ["Food", "Quantity_Unit", "Waste_Rate", "Wasted", "Rupees"]
-                           if c in by_food]], {
-                "Quantity_Unit": "Unit", "Waste_Rate": percent_bar("Waste rate"),
-                "Wasted": number("Wasted (unit)", "%.1f"), "Rupees": rupees_column("₹ wasted")}, max_rows=9)
+            from services.pantry_view import waste_by_food_rows
+            table(waste_by_food_rows(foods, rupees["by_food"]), {
+                "Food": text("Food"), "Rupees": rupees_column("₹ wasted", width="small"),
+                "Waste_Rate": percent_bar("Waste rate"), "Wasted": text("Wasted", None)}, max_rows=9)
 
     with expiry_tab:
         as_of_text = (f"As of {fmt_date(as_of)}, the last date in the demo data." if source == "demo"
                       else f"As of today, {fmt_date(as_of)}.")
         st.caption(as_of_text + (" Stock is what should be on hand now (last pantry check + purchases since − usual "
                    "use), split into the purchases it most likely came from (newest first)." if source == "personal" else
-                   " Stock is each purchase's recorded remaining quantity, assumed still on hand until it expires;")
-                   + " batches already past expiry are excluded.")
-        expiry_columns = {"Quantity_Unit": "Unit", "Remaining": number("Remaining", "%.2f"),
-                          "Batches": number("Batches", "%d"), "Earliest_Expiry": st.column_config.DateColumn("Earliest expiry", format="D MMM YYYY"),
-                          "Days_Left": number("Days left", "%d")}
-        left, right = st.columns(2, gap="large")
-        for column, frame, days in ((left, soon_3, 3), (right, soon_7, 7)):
-            with column:
-                section(f"Expiring within {days} days", f"{len(frame)} foods")
-                if frame.empty:
-                    st.write(f"No remaining stock expires within {days} days.")
-                else:
-                    table(frame.drop(columns=["Category"], errors="ignore"), expiry_columns, max_rows=8)
+                   " Stock is each purchase's recorded remaining quantity, assumed still on hand until it expires.")
+                   + " The Expired shelf shows stock that passed its date in the last week; the tables leave it out.")
+        expiry_columns = {"Food": text("Food"), "Days_Left": count("Days left"), "Left": text("Left", None),
+                          "Earliest_Expiry": date("Expires")}
+        from services.pantry_view import SHELVES, expiring_rows, shelf_items
+        groups = shelf_items(source, df, as_of)
+        for key, title, note, empty in SHELVES:
+            shelf(title, groups[key], note=note, empty=empty, limit=10)
+        st.caption("Each jar is one food's stock in that window; a food with batches in two windows sits on both. "
+                   "The meter is the share of its shelf life left (capped at two weeks).")
+        with st.expander("Expiring stock as tables (within 3 and 7 days)"):
+            left, right = st.columns(2, gap="large")
+            for column, frame, days in ((left, soon_3, 3), (right, soon_7, 7)):
+                with column:
+                    section(f"Expiring within {days} days", f"{len(frame)} foods")
+                    if frame.empty:
+                        st.write(f"No remaining stock expires within {days} days.")
+                    else:
+                        table(expiring_rows(frame), expiry_columns, max_rows=8)
 
         left, right = st.columns([1.2, 1], gap="large")
         with left:

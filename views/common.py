@@ -32,7 +32,8 @@ PERIOD_NOTE = ("My data is recorded per pantry-check period, not per day, so day
                "checks, not an error.")
 
 
-def begin(title: str, purpose: str, *, feature: str | None = "waste") -> tuple[str, pd.DataFrame | None]:
+def begin(title: str, purpose: str, *, feature: str | None = "waste",
+          greeting: str | None = None) -> tuple[str, pd.DataFrame | None]:
     """Render the page header and return (source key, data). Data is None when nothing can be shown.
 
     For My data, `feature` names the pantry.UNLOCK rule that must be met before
@@ -41,7 +42,7 @@ def begin(title: str, purpose: str, *, feature: str | None = "waste") -> tuple[s
     """
     source = current_source()
     df = load(source)
-    page_header(title, purpose, pill=SOURCES[source], detail=describe(source, df))
+    page_header(title, purpose, pill=SOURCES[source], detail=describe(source, df), greeting=greeting)
     if df is None:
         empty_state(f"{SOURCES[source]} results have not been built",
                     f"Download the dataset into dataset/, run `{EXTRACT_COMMAND}`, then "
@@ -81,3 +82,38 @@ def switch_buttons(options: list[str], key: str) -> None:
 def not_available(source: str, what: str, reason: str, *, alternatives: list[str], key: str) -> None:
     empty_state(f"{what} is not available for {SOURCES[source]}", reason)
     switch_buttons(alternatives, key)
+
+
+STAMP_BAND = 10  # % either side of usual use that still counts as "Buy same"
+STAMP_NOTE = ("Tag: predicted demand against the food's usual daily use. Buy more / Buy less when demand is more "
+              "than 10% above / below usual; no tag means about the usual amount. The last line is the "
+              "stock-adjusted amount to buy (predicted demand − usable stock). Confidence comes from the model's typical error for that food "
+              "(High under 25% of its average, Medium under 50%).")
+
+
+def demand_stamp(predicted: float, usual: float, band: float = STAMP_BAND) -> str:
+    """"more", "less" or "same": the forecast against usual use, with a ±band % dead zone."""
+    if not usual or pd.isna(usual):
+        return "same"
+    change = (predicted - usual) / usual * 100
+    return "more" if change > band else "less" if change < -band else "same"
+
+
+def demo_demand_cards(limit: int | None = None) -> None:
+    """Demand cards for the demo next-day plan, highest predicted demand first."""
+    from services.data import demo_plan_with_risk, forecaster_explanations
+    from ui.components import demand_card, demand_cards, fmt_qty
+    plan = demo_plan_with_risk().sort_values("Predicted_Demand", ascending=False)
+    error = forecaster_explanations("demo")["by_item"].set_index("Food")["Relative_MAE"]
+    cards = []
+    for row in plan.head(limit).itertuples() if limit else plan.itertuples():
+        note = (f"Buy {fmt_qty(row.Recommended_Purchase_Quantity, row.Quantity_Unit)} · usable stock "
+                f"{fmt_qty(row.Usable_Remaining_Stock)}")
+        if "likely to be wasted" in row.Alerts:
+            note += f" · waste risk {row.Waste_Risk:.0f}%, buy carefully"
+        cards.append(demand_card(row.Food, fmt_qty(row.Predicted_Demand), row.Quantity_Unit,
+                                 stamp=demand_stamp(row.Predicted_Demand, row.Historical_Average_Consumption),
+                                 what=f"predicted for {pd.Timestamp(row.Forecast_Date):%a %d %b} · usual "
+                                      f"{fmt_qty(row.Historical_Average_Consumption)}",
+                                 relative_error=error.get(row.Food), note=note))
+    demand_cards(cards)

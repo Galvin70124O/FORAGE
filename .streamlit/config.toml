@@ -1,50 +1,51 @@
-# FORAGE theme: neutral surfaces, one blue accent, Inter.
-# Chart colours are validated for colour-vision deficiency in both modes
-# (see ui/theme.py); keep chartCategoricalColors in the same order.
+# FORAGE "Fresh Shelf" theme: linen surfaces, herb-green brand, Fraunces for titles and DM Sans for text.
+# Everything Streamlit's theme cannot express (label cards, shelves, gauge) lives in ui/theme.py.
+# Keep chartCategoricalColors in the same order as PALETTE["series"] in ui/theme.py.
 
 [theme]
-font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, system-ui, sans-serif"
-headingFontWeights = [650, 600, 600, 600, 600, 600]
-headingFontSizes = ["1.75rem", "1.25rem", "1.05rem", "1rem", "0.95rem", "0.9rem"]
+font = "DM Sans:https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap, system-ui, sans-serif"
+headingFont = "Fraunces:https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap, Georgia, serif"
+headingFontWeights = [600, 600, 600, 600, 600, 600]
+headingFontSizes = ["2rem", "1.35rem", "1.1rem", "1rem", "0.95rem", "0.9rem"]
 baseFontSize = 15
-baseRadius = "6px"
+baseRadius = "10px"
 showSidebarBorder = true
 showWidgetBorder = true
 
 [theme.light]
-primaryColor = "#2368c4"
-backgroundColor = "#fbfbfa"
-secondaryBackgroundColor = "#f2f2ef"
-textColor = "#1b1b19"
-borderColor = "#e1e0d9"
-dataframeBorderColor = "#e1e0d9"
-dataframeHeaderBackgroundColor = "#f2f2ef"
-linkColor = "#1c5cab"
-chartCategoricalColors = ["#2a78d6", "#a3a29d", "#d9662b"]
-chartSequentialColors = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6", "#1c5cab", "#104281"]
+primaryColor = "#2E6B4F"
+backgroundColor = "#F6F3EA"
+secondaryBackgroundColor = "#EEEADF"
+textColor = "#1F2420"
+borderColor = "#E4DFD2"
+dataframeBorderColor = "#E4DFD2"
+dataframeHeaderBackgroundColor = "#F1EDE2"
+linkColor = "#2E6B4F"
+chartCategoricalColors = ["#2E6B4F", "#A7A296", "#B7791F"]
+chartSequentialColors = ["#E3EFE7", "#C9E0D1", "#ADD0BA", "#90BFA2", "#73AD8A", "#579B73", "#3F875F", "#2E6B4F", "#245840", "#1A4431"]
 
 [theme.light.sidebar]
-backgroundColor = "#f4f4f1"
-secondaryBackgroundColor = "#eaeae6"
+backgroundColor = "#F1EDE2"
+secondaryBackgroundColor = "#E8E3D6"
 
 [theme.dark]
-primaryColor = "#3987e5"
-backgroundColor = "#171716"
-secondaryBackgroundColor = "#222220"
-textColor = "#ecebe7"
-borderColor = "#33332f"
-dataframeBorderColor = "#33332f"
-dataframeHeaderBackgroundColor = "#222220"
-linkColor = "#86b6ef"
-chartCategoricalColors = ["#5598e7", "#6f6e69", "#e07a45"]
-chartSequentialColors = ["#104281", "#184f95", "#1c5cab", "#256abf", "#2a78d6", "#3987e5", "#5598e7", "#6da7ec", "#86b6ef", "#b7d3f6"]
+primaryColor = "#7CC29E"
+backgroundColor = "#161A17"
+secondaryBackgroundColor = "#1F2420"
+textColor = "#ECE8DD"
+borderColor = "#323A34"
+dataframeBorderColor = "#323A34"
+dataframeHeaderBackgroundColor = "#1F2420"
+linkColor = "#7CC29E"
+chartCategoricalColors = ["#7CC29E", "#6E6A61", "#D99A3A"]
+chartSequentialColors = ["#1A3326", "#1F4130", "#25503A", "#2C5F45", "#356F51", "#3F805E", "#4E926C", "#62A57D", "#7CC29E", "#A6D9BC"]
 
 [theme.dark.sidebar]
-backgroundColor = "#1d1d1b"
-secondaryBackgroundColor = "#272725"
+backgroundColor = "#1B1F1C"
+secondaryBackgroundColor = "#252B26"
 
 [client]
-toolbarMode = "viewer"
+toolbarMode = "minimal"
 
 [server]
 headless = true

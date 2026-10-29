@@ -60,6 +60,9 @@ STRINGS: dict[str, dict[str, str]] = {
                      "ta": "{food} நாளைக்குள் பயன்படுத்துங்கள்."},
     "use_in_days": {"en": "Use the {food} within {days} days.", "hi": "{food} {days} दिनों में इस्तेमाल करें।",
                     "ta": "{food} {days} நாட்களுக்குள் பயன்படுத்துங்கள்."},
+    "when_today": {"en": "Today", "hi": "आज", "ta": "இன்று"},
+    "when_tomorrow": {"en": "Tomorrow", "hi": "कल", "ta": "நாளை"},
+    "when_days": {"en": "{days} days", "hi": "{days} दिन", "ta": "{days} நாட்கள்"},
     "nothing_expiring": {"en": "Nothing needs using up in the next 3 days.",
                          "hi": "अगले 3 दिनों में कुछ भी खराब नहीं होने वाला।",
                          "ta": "அடுத்த 3 நாட்களில் கெடக்கூடியது எதுவும் இல்லை."},
@@ -74,6 +77,8 @@ STRINGS: dict[str, dict[str, str]] = {
     "shopping_head": {"en": "This week's shopping", "hi": "इस हफ़्ते की खरीदारी", "ta": "இந்த வார வாங்குதல்"},
     "to_buy_count": {"en": "{n} things to buy this week.", "hi": "इस हफ़्ते {n} चीज़ें खरीदनी हैं।",
                      "ta": "இந்த வாரம் {n} பொருட்கள் வாங்க வேண்டும்."},
+    "to_buy_count_one": {"en": "1 thing to buy this week.", "hi": "इस हफ़्ते 1 चीज़ खरीदनी है।",
+                         "ta": "இந்த வாரம் 1 பொருள் வாங்க வேண்டும்."},
     "to_buy_none": {"en": "You have enough of everything for this week.", "hi": "इस हफ़्ते के लिए सब कुछ पर्याप्त है।",
                     "ta": "இந்த வாரத்திற்குத் தேவையானவை எல்லாம் உள்ளன."},
     "enough_skip": {"en": "You have enough {food}, skip it this week.", "hi": "{food} काफ़ी है, इस हफ़्ते न खरीदें।",
@@ -160,13 +165,18 @@ STRINGS: dict[str, dict[str, str]] = {
                     "ta": "கடைசி வாங்குதலை மீண்டும் ({food}, {amount})"},
     "repeat_week": {"en": "Repeat last week ({n} items)", "hi": "पिछला हफ़्ता दोहराएँ ({n} चीज़ें)",
                     "ta": "கடந்த வாரத்தை மீண்டும் ({n} பொருட்கள்)"},
+    "repeat_week_one": {"en": "Repeat last week (1 item)", "hi": "पिछला हफ़्ता दोहराएँ (1 चीज़)",
+                        "ta": "கடந்த வாரத்தை மீண்டும் (1 பொருள்)"},
     "repeat_week_title": {"en": "Repeat last week's shopping", "hi": "पिछले हफ़्ते की खरीदारी दोहराएँ",
                           "ta": "கடந்த வார வாங்குதலை மீண்டும் செய்"},
     "repeat_week_body": {"en": "Add these {n} items again, dated today?", "hi": "ये {n} चीज़ें आज की तारीख से दोबारा जोड़ें?",
                          "ta": "இந்த {n} பொருட்களை இன்றைய தேதியில் மீண்டும் சேர்க்கவா?"},
+    "repeat_week_body_one": {"en": "Add this item again, dated today?", "hi": "यह चीज़ आज की तारीख से दोबारा जोड़ें?",
+                             "ta": "இந்தப் பொருளை இன்றைய தேதியில் மீண்டும் சேர்க்கவா?"},
     "add_them": {"en": "Add them", "hi": "जोड़ें", "ta": "சேர்"},
     "cancel": {"en": "Cancel", "hi": "रद्द करें", "ta": "ரத்து"},
     "saved_many": {"en": "Saved {n} purchases.", "hi": "{n} खरीदारी सेव हो गईं।", "ta": "{n} வாங்குதல்கள் சேமிக்கப்பட்டன."},
+    "saved_many_one": {"en": "Saved 1 purchase.", "hi": "1 खरीदारी सेव हो गई।", "ta": "1 வாங்குதல் சேமிக்கப்பட்டது."},
     "paste_bill": {"en": "Paste a shopping bill", "hi": "बिल पेस्ट करें", "ta": "கடை பில்லை ஒட்டவும்"},
     "bill_help": {"en": "One item per line, ending with the price, e.g. Milk 2 L 120. You check the rows before "
                         "anything is saved.",
@@ -180,6 +190,7 @@ STRINGS: dict[str, dict[str, str]] = {
     "nothing_recognised": {"en": "No items were recognised.", "hi": "कोई चीज़ पहचानी नहीं गई।",
                            "ta": "எந்தப் பொருளும் அடையாளம் காணப்படவில்லை."},
     "save_n": {"en": "Save {n} purchases", "hi": "{n} खरीदारी सेव करें", "ta": "{n} வாங்குதல்களைச் சேமி"},
+    "save_n_one": {"en": "Save 1 purchase", "hi": "1 खरीदारी सेव करें", "ta": "1 வாங்குதலைச் சேமி"},
     "recent": {"en": "Recently bought", "hi": "हाल में खरीदा", "ta": "சமீபத்தில் வாங்கியவை"},
     "today": {"en": "Today", "hi": "आज", "ta": "இன்று"},
     "yesterday": {"en": "Yesterday", "hi": "कल", "ta": "நேற்று"},
@@ -198,6 +209,8 @@ STRINGS: dict[str, dict[str, str]] = {
                               "ta": "முதலில் ஒரு வாங்குதலைப் பதிவு செய்யுங்கள்; வாங்கிய பொருட்கள் இங்கே தோன்றும்."},
     "check_everything": {"en": "Check everything ({n} foods)", "hi": "सब जाँचें ({n} चीज़ें)",
                          "ta": "எல்லாவற்றையும் சரிபார் ({n} பொருட்கள்)"},
+    "check_everything_one": {"en": "Check everything (1 food)", "hi": "सब जाँचें (1 चीज़)",
+                             "ta": "எல்லாவற்றையும் சரிபார் (1 பொருள்)"},
     "check_one": {"en": "Or check one food", "hi": "या एक चीज़ जाँचें", "ta": "அல்லது ஒரு பொருளைச் சரிபார்"},
     "other_food": {"en": "Another food", "hi": "कोई और चीज़", "ta": "வேறு பொருள்"},
     "progress": {"en": "{i} of {n}", "hi": "{n} में से {i}", "ta": "{n}-இல் {i}"},
@@ -223,6 +236,8 @@ STRINGS: dict[str, dict[str, str]] = {
                     "ta": "சேமிக்கப்பட்டது: {food}, {left} மீதம்."},
     "all_done": {"en": "All done: {n} foods checked.", "hi": "हो गया: {n} चीज़ें जाँची गईं।",
                  "ta": "முடிந்தது: {n} பொருட்கள் சரிபார்க்கப்பட்டன."},
+    "all_done_one": {"en": "All done: 1 food checked.", "hi": "हो गया: 1 चीज़ जाँची गई।",
+                     "ta": "முடிந்தது: 1 பொருள் சரிபார்க்கப்பட்டது."},
     "too_much": {"en": "{food}: {left} left + {wasted} thrown away is more than the {available} you had.",
                  "hi": "{food}: {left} बचा + {wasted} फेंका, यह आपके पास मौजूद {available} से ज़्यादा है।",
                  "ta": "{food}: {left} மீதம் + {wasted} வீணானது, உங்களிடம் இருந்த {available}-ஐ விட அதிகம்."},
@@ -270,10 +285,13 @@ STRINGS: dict[str, dict[str, str]] = {
     "foods": {"en": "Foods", "hi": "चीज़ें", "ta": "பொருட்கள்"},
     "files": {"en": "Download and upload", "hi": "डाउनलोड और अपलोड", "ta": "பதிவிறக்கம், பதிவேற்றம்"},
     "analyse_mine": {"en": "See charts of my data", "hi": "मेरे डेटा के चार्ट देखें", "ta": "என் தரவின் வரைபடங்களைப் பார்"},
-    "save_changes": {"en": "Save {n} change(s)", "hi": "{n} बदलाव सेव करें", "ta": "{n} மாற்றங்களைச் சேமி"},
+    "save_changes": {"en": "Save {n} changes", "hi": "{n} बदलाव सेव करें", "ta": "{n} மாற்றங்களைச் சேமி"},
+    "save_changes_one": {"en": "Save 1 change", "hi": "1 बदलाव सेव करें", "ta": "1 மாற்றத்தைச் சேமி"},
     "delete_selected": {"en": "Delete selected ({n})", "hi": "चुने हुए मिटाएँ ({n})", "ta": "தேர்ந்தவற்றை நீக்கு ({n})"},
     "delete_confirm": {"en": "Delete {n} entries? This cannot be undone.", "hi": "{n} एंट्री मिटाएँ? यह वापस नहीं होगा।",
                        "ta": "{n} பதிவுகளை நீக்கவா? இதைத் திரும்பப் பெற முடியாது."},
+    "delete_confirm_one": {"en": "Delete 1 entry? This cannot be undone.", "hi": "1 एंट्री मिटाएँ? यह वापस नहीं होगा।",
+                           "ta": "1 பதிவை நீக்கவா? இதைத் திரும்பப் பெற முடியாது."},
     "delete": {"en": "Delete", "hi": "मिटाएँ", "ta": "நீக்கு"},
     "no_entries": {"en": "Nothing here yet.", "hi": "अभी यहाँ कुछ नहीं है।", "ta": "இங்கே இன்னும் எதுவும் இல்லை."},
 
@@ -340,7 +358,9 @@ def placeholders(text: str) -> set[str]:
 
 
 def translate(key: str, lang: str = "en", **values) -> str:
-    """The text for `key` in `lang` (English if missing), with {placeholders} filled in."""
-    entry = STRINGS[key]
+    """The text for `key` in `lang` (English if missing), with {placeholders} filled in. With n=1 the
+    singular `<key>_one` is used when there is one ("Saved 1 purchase.", not "Saved 1 purchases.")."""
+    entry = STRINGS.get(f"{key}_one") if values.get("n") == 1 else None
+    entry = entry or STRINGS[key]
     text = entry.get(lang) or entry["en"]
     return text.format(**values) if values else text

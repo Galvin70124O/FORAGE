@@ -1,31 +1,60 @@
-"""Altair chart builders shared by every page, rendered with the registered FORAGE theme.
+"""Plotly chart builders shared by every page, drawn with the FORAGE template (ui.theme).
 
-Rules: one y-axis per chart; axis titles carry units; tooltips on every mark;
+Rules: one y-axis per chart; axis titles carry units; hover on every mark;
 ONE accent colour for the series or category that carries the finding and
-grey for context; values labelled directly where it helps; titles that state
-the finding when the caller supplies one; standard heights (ui.theme.HEIGHTS).
+stone grey for context; values labelled directly where it helps; titles that
+state the finding (rendered as text above the chart so they wrap on a phone);
+standard heights (ui.theme.HEIGHTS). Number formats are d3 formats (",.2f").
 """
 
 from __future__ import annotations
 
-import altair as alt
+from html import escape
+
+import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
 
-from ui.theme import HEIGHTS, altair_theme, colors
+from ui.theme import HEIGHTS, colors, plotly_template
+
+CONFIG = {"displayModeBar": False, "responsive": True, "scrollZoom": False}
 
 
-def _show(chart, height: int, title: str | None = None, subtitle: str | None = None) -> None:
-    if title:
-        chart = chart.properties(title=alt.Title(title, subtitle=subtitle or alt.Undefined))
-    with alt.theme.enable(altair_theme()):
-        st.altair_chart(chart.properties(height=height), width="stretch", theme=None)
+def tip(field: str, title: str, fmt: str | None = ".2f") -> dict:
+    """Hover entry: quantitative with a number format, or text when fmt is None."""
+    return {"field": field, "title": title, "fmt": fmt}
 
 
-def _highlight_scale(categories: list, highlight: list) -> alt.Scale:
-    palette = colors()
-    return alt.Scale(domain=list(categories),
-                     range=[palette["accent"] if c in highlight else palette["context"] for c in categories])
+def _tip_spec(entry) -> dict:
+    """Accept tip() dicts and Altair-style "Field:N" / "Field" strings."""
+    if isinstance(entry, dict):
+        return entry
+    field, _, kind = str(entry).partition(":")
+    return {"field": field, "title": field.replace("_", " "), "fmt": None if kind in ("N", "O", "") else ",.2f"}
+
+
+def _hover(specs: list[dict], first_index: int = 0) -> str:
+    """Hover lines for customdata columns starting at `first_index`."""
+    lines = []
+    for i, spec in enumerate(specs, start=first_index):
+        fmt = f":{spec['fmt']}" if spec.get("fmt") else ""
+        lines.append(f"{escape(spec['title'])}: %{{customdata[{i}]{fmt}}}")
+    return "<br>".join(lines)
+
+
+def _heading(title: str | None, subtitle: str | None) -> None:
+    if title or subtitle:
+        html = (f'<p class="fs-chart-title">{escape(title)}</p>' if title else "") + \
+               (f'<p class="fs-chart-sub">{escape(subtitle)}</p>' if subtitle else "")
+        st.html(html)
+
+
+def _show(fig: go.Figure, height: int, title: str | None = None, subtitle: str | None = None) -> None:
+    _heading(title, subtitle)
+    fig.update_layout(template=plotly_template(), height=height, paper_bgcolor="rgba(0,0,0,0)",
+                      plot_bgcolor="rgba(0,0,0,0)")
+    st.plotly_chart(fig, config=CONFIG, theme=None, width="stretch")
 
 
 def bar(data: pd.DataFrame, category: str, value: str, *, value_title: str, category_title: str | None = None,
@@ -37,6 +66,7 @@ def bar(data: pd.DataFrame, category: str, value: str, *, value_title: str, cate
     highlight: "top" (largest value), "all", None (all accent) or a list of categories.
     Bars carry their value as a direct label when there are at most 15 of them.
     """
+    palette = colors()
     data = data.copy()
     data[category] = data[category].astype(str)
     if highlight == "top":
@@ -45,108 +75,149 @@ def bar(data: pd.DataFrame, category: str, value: str, *, value_title: str, cate
         chosen = list(data[category])
     else:
         chosen = [str(c) for c in highlight]
-    color = alt.Color(f"{category}:N", scale=_highlight_scale(data[category].tolist(), chosen), legend=None)
-    tooltip = [alt.Tooltip(f"{category}:N", title=category_title or category.replace("_", " ")),
-               alt.Tooltip(f"{value}:Q", title=value_title, format=value_format), *(extra_tooltip or [])]
-    show_labels = labels if labels is not None else len(data) <= 15
-    # Resolve the sort to an explicit category order: layered marks then share one domain without conflicts.
     if isinstance(sort, str) and sort.lstrip("-") in ("x", "y"):
-        sort = data.sort_values(value, ascending=not sort.startswith("-"))[category].tolist()
+        order = data.sort_values(value, ascending=not sort.startswith("-"))[category].tolist()
     elif isinstance(sort, str):
-        sort = sorted(data[category].unique(), reverse=sort == "descending")
-    base = alt.Chart(data)
-    if horizontal:
-        # The category labels name themselves; a rotated axis title beside them only adds noise.
-        y = alt.Y(f"{category}:N", sort=sort, title=None, axis=alt.Axis(labelLimit=200, labelOverlap=False))
-        x = alt.X(f"{value}:Q", title=value_title, scale=alt.Scale(nice=True))
-        bars = base.mark_bar(height={"band": 0.7}).encode(y=y, x=x, color=color, tooltip=tooltip)
-        text = base.mark_text(align="left", dx=4).encode(y=y, x=x, text=alt.Text(f"{value}:Q", format=value_format))
-        height = height or max(HEIGHTS["small"], 24 * data[category].nunique() + 40)
+        order = sorted(data[category].unique(), reverse=sort == "descending")
     else:
-        x = alt.X(f"{category}:O", sort=sort, title=category_title, axis=alt.Axis(labelAngle=0, labelLimit=120))
-        y = alt.Y(f"{value}:Q", title=value_title)
-        bars = base.mark_bar(width={"band": 0.7}).encode(x=x, y=y, color=color, tooltip=tooltip)
-        text = base.mark_text(baseline="bottom", dy=-3).encode(x=x, y=y, text=alt.Text(f"{value}:Q", format=value_format))
+        order = [str(c) for c in sort]
+    data = data.set_index(category).loc[[c for c in order if c in set(data[category])]].reset_index()
+    bar_colors = [palette["accent"] if c in chosen else palette["context"] for c in data[category]]
+    show_labels = labels if labels is not None else len(data) <= 15
+    extras = [_tip_spec(e) for e in (extra_tooltip or [])]
+    custom = data[[e["field"] for e in extras]].to_numpy() if extras else None
+    name = escape(category_title or category.replace("_", " "))
+    values = data[value]
+    span = (values.max() - min(values.min(), 0)) if len(values) else 1
+    pad = (span or 1) * (0.16 if show_labels else 0.04)
+    value_range = [min(values.min(), 0) - (pad if values.min() < 0 else 0), max(values.max(), 0) + pad] if len(values) else None
+    common = {"marker": {"color": bar_colors, "line": {"width": 0}}, "customdata": custom, "cliponaxis": False,
+                  "texttemplate": f"%{{{'x' if horizontal else 'y'}:{value_format}}}" if show_labels else None,
+                  "textposition": "outside", "textfont": {"color": palette["muted"], "size": 11}}
+    if horizontal:
+        hover = f"<b>%{{y}}</b><br>{escape(value_title)}: %{{x:{value_format}}}"
+        fig = go.Figure(go.Bar(x=values, y=data[category], orientation="h", **common,
+                               hovertemplate=hover + ("<br>" + _hover(extras) if extras else "") + "<extra></extra>"))
+        fig.update_yaxes(categoryorder="array", categoryarray=list(reversed(data[category].tolist())), title=None,
+                         showgrid=False, ticksuffix="  ")
+        fig.update_xaxes(title=value_title, range=value_range, showgrid=True, gridcolor=palette["grid"], showline=False,
+                         tickformat=value_format.replace("+", ""))
+        height = height or max(HEIGHTS["small"], 26 * len(data) + 60)
+    else:
+        hover = f"<b>{name}: %{{x}}</b><br>{escape(value_title)}: %{{y:{value_format}}}"
+        fig = go.Figure(go.Bar(x=data[category], y=values, **common,
+                               hovertemplate=hover + ("<br>" + _hover(extras) if extras else "") + "<extra></extra>"))
+        fig.update_xaxes(type="category", categoryorder="array", categoryarray=data[category].tolist(),
+                         title=category_title)
+        fig.update_yaxes(title=value_title, range=value_range, tickformat=value_format.replace("+", ""))
         height = height or HEIGHTS["medium"]
-    _show(bars + text if show_labels else bars, height, title, subtitle)
+    fig.update_layout(showlegend=False, bargap=0.3)
+    _show(fig, height, title, subtitle)
+
+
+def _x_kind(x_type: str) -> str:
+    return {"T": "date", "O": "category", "Q": "linear"}.get(x_type, "-")
 
 
 def line(data: pd.DataFrame, x: str, y: str, *, y_title: str, x_title: str | None = None,
          series: str | None = None, order: list[str] | None = None, slot: int = 0, height: int | None = None,
          y_format: str = ",.2f", x_type: str = "T", dashed: list[str] | None = None,
-         zero: bool = True, x_format: str | None = None, highlight: str | None = None,
+         zero: bool = False, x_format: str | None = None, highlight: str | None = None,
          title: str | None = None, subtitle: str | None = None, label_last: bool = False) -> None:
     """Line chart. With `series`, `highlight` (default: the first in `order`) is drawn in the accent
-    colour and the others in grey; dashed series also differ in stroke, so colour is never the only cue."""
+    colour and the others in grey; dashed series also differ in stroke, so colour is never the only cue.
+
+    No area fill and, by default, no forced zero: the line uses the chart's height instead of hugging its top
+    (bars keep their zero). With a title or subtitle the y-axis title is left off, since the heading already
+    says what is measured; `y_title` still labels the hover."""
     palette = colors()
-    base = alt.Chart(data)
-    tooltip = [alt.Tooltip(f"{x}:{x_type}", title=x_title or x, **({"format": x_format} if x_format else {})),
-               alt.Tooltip(f"{y}:Q", title=y_title, format=y_format)]
-    x_axis = alt.Axis(format=x_format, labelOverlap=True) if x_format else alt.Axis(labelOverlap=True)
-    if x_type == "O":
-        x_axis = alt.Axis(labelAngle=0, labelOverlap=True)
-    encoding = dict(x=alt.X(f"{x}:{x_type}", title=x_title, axis=x_axis),
-                    y=alt.Y(f"{y}:Q", title=y_title, scale=alt.Scale(zero=zero, nice=True)))
-    legend = alt.Legend(orient="top", direction="horizontal", labelLimit=320, title=None)
+    x_hover = f"%{{x|{x_format}}}" if x_format and x_type == "T" else "%{x}"
+    fig = go.Figure()
     if series:
         domain = order or sorted(data[series].unique())
         focus = highlight or domain[0]
-        encoding["color"] = alt.Color(f"{series}:N", title=None, legend=legend, scale=alt.Scale(
-            domain=domain, range=[palette["accent"] if s == focus else palette["context"] for s in domain]))
-        if dashed:
-            # Same title/orient as the colour legend so Vega-Lite merges them into one legend showing the dash.
-            encoding["strokeDash"] = alt.StrokeDash(f"{series}:N", title=None, legend=legend, scale=alt.Scale(
-                domain=domain, range=[[5, 3] if s in dashed else [1, 0] for s in domain]))
-        tooltip.insert(1, alt.Tooltip(f"{series}:N", title="Series"))
-        chart = base.mark_line().encode(**encoding, tooltip=tooltip)
+        for name in domain:
+            part = data[data[series] == name].sort_values(x)
+            fig.add_trace(go.Scatter(
+                x=part[x], y=part[y], name=str(name), mode="lines",
+                line={"color": palette["accent"] if name == focus else palette["context"], "width": 2.2 if name == focus else 1.8,
+                          "dash": "dash" if name in (dashed or []) else "solid"},
+                hovertemplate=f"{escape(str(name))}: %{{y:{y_format}}}<extra></extra>"))
+        fig.update_layout(showlegend=True, hovermode="x unified")
     else:
-        chart = base.mark_line(color=palette["accent"]).encode(**encoding, tooltip=tooltip)
-    hover = alt.selection_point(fields=[x], nearest=True, on="pointerover", empty=False, clear="pointerout")
-    points = base.mark_point(size=60, filled=True, opacity=0).encode(
-        x=f"{x}:{x_type}", y=f"{y}:Q", tooltip=tooltip).add_params(hover)
-    rule = base.mark_rule(color=palette["muted"], strokeWidth=1).encode(
-        x=f"{x}:{x_type}", opacity=alt.condition(hover, alt.value(0.8), alt.value(0)))
-    layers = [chart, points, rule]
-    if label_last and not series and not data.empty:
-        last = data.sort_values(x).tail(1)
-        layers.append(alt.Chart(last).mark_text(align="left", dx=6, fontWeight=600, color=palette["text"]).encode(
-            x=f"{x}:{x_type}", y=f"{y}:Q", text=alt.Text(f"{y}:Q", format=y_format)))
-        layers.append(alt.Chart(last).mark_point(filled=True, size=50, color=palette["accent"]).encode(
-            x=f"{x}:{x_type}", y=f"{y}:Q"))
-    _show(alt.layer(*layers), height or HEIGHTS["medium"], title, subtitle)
+        part = data.sort_values(x)
+        fig.add_trace(go.Scatter(x=part[x], y=part[y], mode="lines+markers", line={"color": palette["accent"], "width": 2.4},
+                                 marker={"size": 5, "color": palette["accent"]},
+                                 hovertemplate=f"<b>{x_hover}</b><br>{escape(y_title)}: %{{y:{y_format}}}<extra></extra>"))
+        fig.update_layout(showlegend=False, hovermode="closest")
+        if label_last and not part.empty:
+            last = part.iloc[-1]
+            fig.add_annotation(x=last[x], y=last[y], text=f"<b>{_fmt(last[y], y_format)}</b>", showarrow=False,
+                               xanchor="left", xshift=8, font={"color": palette["text"], "size": 12})
+            fig.add_trace(go.Scatter(x=[last[x]], y=[last[y]], mode="markers", hoverinfo="skip",
+                                     marker={"size": 10, "color": palette["accent"], "line": {"width": 2, "color": palette["card"]}}))
+    fig.update_xaxes(title=x_title, type=_x_kind(x_type), tickformat=x_format if x_type == "T" else None)
+    if x_type == "T" and not data.empty:
+        start, end = pd.to_datetime(data[x]).min(), pd.to_datetime(data[x]).max()
+        pad = (end - start) * 0.03
+        fig.update_xaxes(range=[start - pad, end + pad])
+    fig.update_yaxes(title=None if (title or subtitle) else y_title, rangemode="tozero" if zero else "normal", tickformat=y_format.replace("+", ""))
+    if label_last and not series:
+        fig.update_layout(margin={"r": 56})
+    _show(fig, height or HEIGHTS["medium"], title, subtitle)
+
+
+def _fmt(value: float, d3: str) -> str:
+    """The few d3 number formats used here, in Python (for direct labels)."""
+    spec = d3.replace("~", "")
+    try:
+        return format(value, spec)
+    except ValueError:
+        return f"{value:,.2f}"
 
 
 def histogram(data: pd.DataFrame, value: str, *, value_title: str, bins: int = 30, slot: int = 0,
               height: int | None = None, title: str | None = None, subtitle: str | None = None,
               weight: str | None = None, count_title: str = "Records") -> None:
     """Histogram of raw values, or of pre-counted values when `weight` names the count column."""
-    count = alt.Y(f"sum({weight}):Q", title=count_title) if weight else alt.Y("count():Q", title=count_title)
-    count_tip = (alt.Tooltip(f"sum({weight}):Q", title=count_title, format=",") if weight
-                 else alt.Tooltip("count():Q", title=count_title, format=","))
-    chart = alt.Chart(data).mark_bar(color=colors()["accent"], cornerRadiusEnd=2, binSpacing=1).encode(
-        x=alt.X(f"{value}:Q", bin=alt.Bin(maxbins=bins), title=value_title),
-        y=count,
-        tooltip=[alt.Tooltip(f"{value}:Q", bin=alt.Bin(maxbins=bins), title=value_title), count_tip],
-    )
-    _show(chart, height or HEIGHTS["medium"], title, subtitle)
+    palette = colors()
+    trace = go.Histogram(x=data[value], y=data[weight] if weight else None, histfunc="sum" if weight else "count",
+                         nbinsx=bins, marker={"color": palette["accent"], "line": {"width": 1, "color": palette["bg"]}},
+                         hovertemplate=f"{escape(value_title)}: %{{x}}<br>{escape(count_title)}: %{{y:,}}<extra></extra>")
+    fig = go.Figure(trace)
+    fig.update_xaxes(title=value_title)
+    fig.update_yaxes(title=count_title)
+    fig.update_layout(showlegend=False, bargap=0.04)
+    _show(fig, height or HEIGHTS["medium"], title, subtitle)
 
 
 def scatter(data: pd.DataFrame, x: str, y: str, *, x_title: str, y_title: str, label: str,
             log_x: bool = False, height: int | None = None, tooltip: list | None = None, label_extremes: int = 3,
             title: str | None = None, subtitle: str | None = None) -> None:
-    """Scatter with direct labels only on the highest and lowest `label_extremes` points; hover shows the rest."""
+    """Scatter with direct labels only on the `label_extremes` highest points, on short leader lines clear of
+    the dots; hover names every point. A log x-axis gets readable day ticks (1, 3, 7, 14, 30 ...)."""
     palette = colors()
-    low, high = data[x].min(), data[x].max()
-    scale = (alt.Scale(type="log", domain=[low / 1.3, high * 1.5], nice=False) if log_x
-             else alt.Scale(zero=False))
-    ranked = data[y].rank(method="first")
-    labelled = data[(ranked <= label_extremes) | (ranked > len(data) - label_extremes)]
-    points = alt.Chart(data).mark_circle(size=80, color=palette["accent"], opacity=0.8).encode(
-        x=alt.X(f"{x}:Q", title=x_title, scale=scale), y=alt.Y(f"{y}:Q", title=y_title),
-        tooltip=tooltip or [label, x, y])
-    labels = alt.Chart(labelled).mark_text(align="left", dx=8).encode(
-        x=alt.X(f"{x}:Q", scale=scale), y=f"{y}:Q", text=f"{label}:N")
-    _show(points + labels, height or HEIGHTS["large"], title, subtitle)
+    specs = [_tip_spec(e) for e in (tooltip or [label, f"{x}:Q", f"{y}:Q"])]
+    custom = data[[s["field"] for s in specs]].to_numpy()
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data[x], y=data[y], mode="markers", customdata=custom,
+                             marker={"size": 11, "color": palette["accent"], "opacity": 0.85,
+                                     "line": {"width": 1, "color": palette["card"]}},
+                             hovertemplate=_hover(specs) + "<extra></extra>"))
+    top = data.nlargest(label_extremes, y).sort_values(x) if label_extremes else data.iloc[0:0]
+    for i, (px, py, name) in enumerate(zip(top[x], top[y], top[label])):
+        fig.add_annotation(x=np.log10(px) if log_x else px, y=py, text=str(name), showarrow=True, arrowhead=0,
+                           arrowwidth=1, arrowcolor=palette["axis"], standoff=7, ax=(-1) ** i * 34,
+                           ay=-26 - 12 * (i % 2), font={"color": palette["muted"], "size": 11})
+    fig.update_xaxes(title=x_title, type="log" if log_x else "linear", showgrid=True, gridcolor=palette["grid"])
+    if log_x and not data.empty:
+        low, high = data[x].min(), data[x].max()
+        ticks = [t for t in (1, 3, 7, 14, 30, 60, 90, 180, 365, 730) if low / 1.5 <= t <= high * 1.5]
+        fig.update_xaxes(tickvals=ticks, ticktext=[str(t) for t in ticks],
+                         range=[np.log10(low / 1.3), np.log10(high * 1.3)])
+    fig.update_yaxes(title=y_title)
+    fig.update_layout(showlegend=False, margin={"r": 64, "t": 48})
+    _show(fig, height or HEIGHTS["large"], title, subtitle)
 
 
 def _mix(start: str, end: str, share: float) -> str:
@@ -156,34 +227,29 @@ def _mix(start: str, end: str, share: float) -> str:
 
 
 def diverging_color(r: float) -> str:
-    """Neutral at r = 0, blue towards +1 and red towards -1, interpolated from the neutral midpoint."""
+    """Neutral at r = 0, herb green towards +1 and tomato towards -1, interpolated from the neutral midpoint."""
     negative, middle, positive = colors()["diverging"]
     return middle if pd.isna(r) else _mix(middle, positive if r >= 0 else negative, min(abs(r), 1.0))
 
 
 def correlation_heatmap(corr: pd.DataFrame, *, height: int | None = None, title: str | None = None) -> None:
-    """Diverging heatmap: blue = positive, red = negative, neutral grey at r = 0; every cell is labelled."""
+    """Diverging heatmap: green = positive, tomato = negative, neutral at r = 0; every cell is labelled."""
     palette = colors()
-    long = corr.rename_axis("Row").reset_index().melt("Row", var_name="Column", value_name="r")
-    long["Fill"] = long["r"].map(diverging_color)
+    negative, middle, positive = palette["diverging"]
     order = list(corr.columns)
-    base = alt.Chart(long).encode(
-        x=alt.X("Column:N", sort=order, title=None,
-                axis=alt.Axis(labelAngle=-35, labelLimit=170, labelOverlap=False, orient="bottom")),
-        y=alt.Y("Row:N", sort=order, title=None, axis=alt.Axis(labelLimit=170, labelOverlap=False)),
-    )
-    cells = base.mark_rect(stroke=palette["surface"], strokeWidth=1).encode(
-        color=alt.Color("Fill:N", scale=None),
-        tooltip=[alt.Tooltip("Row:N", title="Variable"), alt.Tooltip("Column:N", title="With"),
-                 alt.Tooltip("r:Q", format=".2f")],
-    )
-    text = base.mark_text(fontSize=11).encode(
-        text=alt.Text("r:Q", format=".2f"),
-        color=alt.condition("abs(datum.r) > 0.6", alt.value(palette["text_on_strong"]), alt.value(palette["text"])),
-    )
-    _show(cells + text, height or 380, title)
-
-
-def tip(field: str, title: str, fmt: str | None = ".2f") -> alt.Tooltip:
-    """Tooltip entry: quantitative with a number format, or nominal when fmt is None."""
-    return alt.Tooltip(f"{field}:N", title=title) if fmt is None else alt.Tooltip(f"{field}:Q", title=title, format=fmt)
+    z = corr.loc[order, order]
+    text = [[("" if pd.isna(v) else f"{v:.2f}") for v in row] for row in z.to_numpy()]
+    text_colors = [[palette["text_on_strong"] if (pd.notna(v) and abs(v) > 0.6) else palette["text"] for v in row]
+                   for row in z.to_numpy()]
+    fig = go.Figure(go.Heatmap(
+        z=z.to_numpy(), x=order, y=order, zmin=-1, zmax=1, xgap=2, ygap=2,
+        colorscale=[[0, negative], [0.5, middle], [1, positive]], showscale=False,
+        hovertemplate="%{y} with %{x}<br>r = %{z:.2f}<extra></extra>"))
+    for i, row in enumerate(order):
+        for j, column in enumerate(order):
+            if text[i][j]:
+                fig.add_annotation(x=column, y=row, text=text[i][j], showarrow=False,
+                                   font={"size": 11, "color": text_colors[i][j]})
+    fig.update_xaxes(showgrid=False, showline=False, tickangle=-35)
+    fig.update_yaxes(showgrid=False, autorange="reversed")
+    _show(fig, height or 380, title)
