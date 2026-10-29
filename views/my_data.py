@@ -45,7 +45,11 @@ def confirm_delete(kind: str, ids: list[int]) -> None:
             st.rerun()
 
 
-def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: dict) -> None:
+def save_label(n: int) -> str:
+    return t("save_change_one") if n == 1 else t("save_changes", n=n)
+
+
+def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: dict, order: list[str]) -> None:
     if frame.empty:
         st.write(t("no_entries"))
         return
@@ -55,12 +59,14 @@ def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: 
     view.insert(0, "Select", False)
     disabled = [c for c in view.columns if c not in editable + ["Select"]]
     edited = st.data_editor(view, hide_index=True, width="stretch", num_rows="fixed", key=f"edit_{kind}",
-                            disabled=disabled, column_config={"id": None, "Select": st.column_config.CheckboxColumn(
-                                "Select", width="small"), **config}, height=fit_height(len(view), VISIBLE_ROWS))
+                            disabled=disabled, column_order=["Select", *order],  # food and key number first
+                            column_config={"id": None, "Select": st.column_config.CheckboxColumn("Select", width="small"),
+                                           **config}, height=fit_height(len(view), VISIBLE_ROWS))
     selected = edited.loc[edited["Select"], "id"].astype(int).tolist()
     changed = edited.drop(columns="Select").compare(view.drop(columns="Select")).index
     with st.container(horizontal=True):
-        if st.button(t("save_changes", n=len(changed)), type="primary", disabled=len(changed) == 0, key=f"save_{kind}"):
+        # Only offered once something is edited: a disabled "Save 0 changes" was nearly invisible and said nothing.
+        if len(changed) and st.button(save_label(len(changed)), type="primary", key=f"save_{kind}"):
             try:
                 for index in changed:
                     row = edited.loc[index]
@@ -70,7 +76,7 @@ def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: 
                     else:
                         db.update_check(uid, int(row["id"]), date=row["date"], remaining=row["remaining"],
                                         wasted=row["wasted"])
-                queue_toast(f"Saved {len(changed)} change(s).")
+                queue_toast(f"Saved {len(changed)} change{'' if len(changed) == 1 else 's'}.")
                 st.rerun()
             except ValueError as error:
                 st.error(str(error))
@@ -84,12 +90,14 @@ date_column = st.column_config.DateColumn("Date", format="D MMM YYYY")
 with purchases_tab:
     editable_table(buys, "purchases", ["date", "quantity", "unit", "total_price"], {
         "date": date_column, "food": "Food", "category": "Category", "quantity": quantity("Quantity", min_value=0),
-        "unit": "Unit", "total_price": rupees("Total paid (₹)", min_value=0), "shelf_life_days": None})
+        "unit": "Unit", "total_price": rupees("Paid", min_value=0), "shelf_life_days": None},
+        order=["food", "total_price", "quantity", "unit", "date"])
 
 with checks_tab:
     editable_table(checks, "pantry checks", ["date", "remaining", "wasted"], {
         "date": date_column, "food": "Food", "category": None, "unit": "Unit", "remaining": quantity("Left", min_value=0),
-        "wasted": quantity("Thrown away", min_value=0), "shelf_life_days": None})
+        "wasted": quantity("Thrown away", min_value=0), "shelf_life_days": None},
+        order=["food", "remaining", "wasted", "unit", "date"])
 
 with foods_tab:
     if foods.empty:
@@ -100,12 +108,12 @@ with foods_tab:
                                     "id": None, "name": "Food", "category": "Category", "unit": "Default unit",
                                     "shelf_life_days": st.column_config.NumberColumn("Shelf life (days)", min_value=1, step=1)})
         changed = edited.compare(foods).index
-        if st.button(t("save_changes", n=len(changed)), type="primary", disabled=len(changed) == 0, key="save_foods"):
+        if len(changed) and st.button(save_label(len(changed)), type="primary", key="save_foods"):
             for index in changed:
                 row = edited.loc[index]
                 db.update_food(uid, int(row["id"]), name=row["name"], category=row["category"], unit=row["unit"],
                                shelf_life_days=None if pd.isna(row["shelf_life_days"]) else int(row["shelf_life_days"]))
-            queue_toast(f"Saved {len(changed)} food change(s).")
+            queue_toast(f"Saved {len(changed)} food change{'' if len(changed) == 1 else 's'}.")
             st.rerun()
 
 with files_tab:
