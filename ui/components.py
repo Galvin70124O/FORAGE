@@ -80,12 +80,16 @@ def label_card(name: str, value: str, *, compare: str | None = None, help: str |
     good, "inverse" when a fall is good (waste), "off" for neutral changes.
     """
     arrow, tone = _change(compare, delta_color)
-    size = " fs-small" if len(str(value)) > 11 else ""
+    # A food or category name is set smaller than a figure, so a tile with a word doesn't outshout the numbers
+    # and "Cooking Oil" fits on one line.
+    figure = re.match(r"\s*[₹+\-−]?\d", str(value))  # "₹21,923", "22.3%", "20 foods"; not "Basmati rice 5 kg"
+    size = " fs-text" if not figure else " fs-small" if len(str(value)) > 11 else ""
     line = f'<div class="fs-label-compare"><b class="{tone}">{arrow} {escape(compare)}</b></div>' if compare else ""
     title = f' title="{escape(help, quote=True)}"' if help else ""
+    full = f' title="{escape(str(value), quote=True)}"' if size == " fs-text" else ""  # a long name is cut at 2 lines
     return (f'<div class="fs-label" role="group" aria-label="{escape(name, quote=True)}"{title}>'
             f'<div class="fs-label-name">{escape(name)}</div>'
-            f'<div class="fs-label-value{size}">{escape(str(value))}</div>{line}</div>')
+            f'<div class="fs-label-value{size}"{full}>{escape(str(value))}</div>{line}</div>')
 
 
 def kpi_row(items: list[tuple]) -> None:

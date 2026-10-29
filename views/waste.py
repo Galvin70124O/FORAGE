@@ -80,8 +80,8 @@ elif df is not None:
          + (" Illustrative: the demo prices are synthetic." if illustrative else "")),
         ("Waste rate", fmt_pct(headline["rate"]), "Mean of the food-level rates (wasted ÷ purchased). "
          f"Pooled across all units: {fmt_pct(headline['pooled_rate'])}."),
-        ("Highest waste rate · food", f"{top['Food']}", f"{fmt_pct(top['Waste_Rate'])} of purchases wasted."),
-        ("Highest waste rate · category", categories.index[0], f"{fmt_pct(categories.iloc[0]['Waste_Rate'])} on average."),
+        ("Worst food", f"{top['Food']}", f"Highest waste rate: {fmt_pct(top['Waste_Rate'])} of purchases wasted."),
+        ("Worst category", categories.index[0], f"Highest waste rate: {fmt_pct(categories.iloc[0]['Waste_Rate'])} on average."),
         ("Expiring in 7 days", f"{len(soon_7)} foods", f"Foods with stock that expires by {fmt_date(as_of + pd.Timedelta(days=7))}."),
     ])
     formula("waste rate = wasted ÷ purchased × 100")

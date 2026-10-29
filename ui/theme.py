@@ -173,6 +173,8 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
 .fs-label-value { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 1.85rem; line-height: 1.15;
   margin-top: 4px; color: var(--fs-text); font-variant-numeric: tabular-nums lining-nums; overflow-wrap: anywhere; }
 .fs-label-value.fs-small { font-size: 1.3rem; }
+.fs-label-value.fs-text { font-family: DM Sans, system-ui, sans-serif; font-size: 1.15rem; line-height: 1.3; margin-top: 8px;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: break-word; }
 .fs-label-compare { font-size: 0.82rem; color: var(--fs-muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
 .fs-label-compare b { font-weight: 700; }
 .fs-good { color: var(--fs-fresh-text); } .fs-bad { color: var(--fs-gone-text); } .fs-flat { color: var(--fs-stone-text); }
@@ -281,7 +283,8 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
   h1 { font-size: 1.6rem !important; }
   .fs-labels { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .fs-label { padding: 12px 12px 10px; }
-  .fs-label-name { font-size: 0.85rem; }
+  .fs-label-name { font-size: 12px; white-space: normal; }
+  .fs-labels > .fs-label:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .fs-label-compare { font-size: 0.75rem; }
   .fs-demands { grid-template-columns: 1fr; }
   .fs-shelf-row { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
