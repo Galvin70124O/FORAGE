@@ -47,3 +47,24 @@ def test_table_formats_group_thousands_like_the_kpi_cards():
     assert components.rupees("₹ wasted")["type_config"]["format"] == "₹%,.0f"
     assert components.count("Rows")["type_config"]["format"] == "%,d"
     assert components.quantity("Left")["type_config"]["format"] == "%,.6g"
+
+
+# --- KPI change colours -------------------------------------------------------------------
+@pytest.mark.parametrize("delta, delta_color, tone", [
+    ("+₹623 vs last month", "off", "fs-flat"),          # Purchased / Consumed: neutral either way
+    ("-₹1,294 vs last month", "off", "fs-flat"),
+    ("+1.1 pts vs last month", "inverse", "fs-bad"),     # waste up is bad
+    ("-2.5 pts vs last month", "inverse", "fs-good"),
+    ("+0.0 pts vs last month", "inverse", "fs-flat"),    # no change is never coloured
+    ("+₹0 vs last month", "inverse", "fs-flat"),
+    ("+4.2 pts vs last month", "normal", "fs-good"),     # forecast accuracy up is good
+])
+def test_change_colour_follows_the_metric_not_the_direction(delta, delta_color, tone):
+    assert components._change(delta, delta_color)[1] == tone
+
+
+def test_pantry_labels_colour_spending_and_eating_neutral_and_waste_inverse():
+    from services.pantry_view import label_items
+    month = {"spent": 100.0, "eaten": 80.0, "lost": 20.0, "rate": 12.0, "rows": 3}
+    items = label_items({"now": month, "before": dict(month, eaten=50.0, rate=10.0)}, illustrative=False)
+    assert [item[4] for item in items] == ["off", "off", "inverse", "inverse"]

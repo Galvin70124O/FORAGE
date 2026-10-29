@@ -140,7 +140,8 @@ elif df is not None:
     elif source == "m5":
         from services.overview import m5_dashboard
         board = m5_dashboard()
-        kpi_row(board["kpis"])
+        # Units sold is a volume, neither good nor bad: grey change, as for Purchased and Consumed.
+        kpi_row([kpi[:4] + ("off",) if kpi[0].startswith("Units sold") else kpi for kpi in board["kpis"]])
         st.caption("M5 records retail unit sales only: no household consumption, stock, expiry or waste.")
         left, right = st.columns(2, gap="large")
         with left:

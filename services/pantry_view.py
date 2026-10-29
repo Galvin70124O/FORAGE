@@ -47,7 +47,11 @@ def pantry_labels(frame: pd.DataFrame, source: str, now: pd.Period) -> dict:
 
 
 def label_items(labels: dict, *, illustrative: bool) -> list[tuple]:
-    """kpi_row tuples (label, value, help, delta, delta_color) for the four pantry labels."""
+    """kpi_row tuples (label, value, help, delta, delta_color) for the four pantry labels.
+
+    Colour is semantic per metric, not per direction: buying or eating more is neither good nor bad (grey),
+    waste going up is bad (red) and down is good (green); a zero change is always grey.
+    """
     now, before = labels["now"], labels["before"]
     has_before = before["rows"] > 0
     note = " Illustrative (synthetic prices)." if illustrative else ""
@@ -58,7 +62,7 @@ def label_items(labels: dict, *, illustrative: bool) -> list[tuple]:
     return [
         ("Purchased", f"₹{now['spent']:,.0f}", "Total paid for food bought this month." + note, money("spent"), "off"),
         ("Consumed", f"₹{now['eaten']:,.0f}", "Food eaten this month × each food's median price per unit." + note,
-         money("eaten"), "normal"),
+         money("eaten"), "off"),
         ("Wasted", "–" if pd.isna(now["rate"]) else f"{now['rate']:.1f}%", "Share of food thrown away this month.",
          _delta(now["rate"], before["rate"], "{:+.1f} pts vs last month") if has_before else None, "inverse"),
         ("Money lost", f"₹{now['lost']:,.0f}", "Food thrown away × each food's median price per unit." + note,
