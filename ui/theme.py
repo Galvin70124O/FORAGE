@@ -255,6 +255,14 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
 .fs-empty-title { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 1.15rem; margin: 0; }
 .fs-empty-body { color: var(--fs-muted); margin: 4px auto 0; max-width: 34rem; line-height: 1.5; }
 
+/* ---------- 7. Loading placeholders: a grey bar inside the same paragraph / caption element as the text it
+   stands in for, so the line keeps its final height ---------- */
+.fs-skeleton { display: inline-block; height: 0.75em; border-radius: 6px; vertical-align: -0.05em;
+  background: linear-gradient(90deg, var(--fs-stone-tint) 30%, var(--fs-line) 50%, var(--fs-stone-tint) 70%);
+  background-size: 300% 100%; animation: fs-shimmer 1.6s ease-in-out infinite; }
+@keyframes fs-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .fs-skeleton { animation: none; } }
+
 /* ---------- Touch targets of at least 44 px ---------- */
 .stButton button, .stDownloadButton button, .stFormSubmitButton button, .stLinkButton a { min-height: 44px; }
 [data-testid="stPageLink"] a { min-height: 44px; display: flex; align-items: center; }

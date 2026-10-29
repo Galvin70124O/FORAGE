@@ -7,6 +7,7 @@ Signature pieces (styled in ui/theme.py):
     waste_gauge            semicircle gauge of this month's waste % against a target, with one sentence
     demand_card(s)         predicted quantity, confidence and a Buy less / same / more stamp
     empty_state            a kind, short message with an empty jar and the next step
+    placeholder_lines      grey loading lines at the final size of the text they stand in for
 """
 
 from __future__ import annotations
@@ -245,6 +246,21 @@ def section(title: str, note: str | None = None) -> None:
     st.subheader(title)
     if note:
         st.caption(note)
+
+
+def placeholder_lines(widths: list[int], *, caption_width: int | None = None) -> None:
+    """Grey placeholder lines while figures are computed: one paragraph per width (% of the column) and an
+    optional caption line, in the same elements (so the same height) as the st.write / st.caption lines that
+    replace them inside the same st.empty slot."""
+    for width in widths:
+        st.markdown(_bar(width), unsafe_allow_html=True)
+    if caption_width:
+        st.caption(_bar(caption_width), unsafe_allow_html=True)
+
+
+def _bar(width: int) -> str:
+    return (f'<span class="fs-skeleton" style="width:{int(width)}%;max-width:{width / 2.5:.0f}rem" '
+            'aria-hidden="true"></span>')
 
 
 KITCHEN_PAGES = {"views/home.py", "views/bought.py", "views/pantry.py", "views/shopping.py", "views/my_data.py"}

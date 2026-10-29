@@ -19,7 +19,7 @@ from pantry import (
 from services.personal import checks as personal_checks
 from services.personal import purchases as personal_purchases
 from services.personal import require_user
-from ui.components import empty_state, fmt_date, section
+from ui.components import empty_state, fmt_date, placeholder_lines, section
 from ui.kitchen import flash, message, page_title, t, walkthrough
 
 page_title("nav_home", "home_purpose")
@@ -81,22 +81,30 @@ else:
         if weeks > 0:
             st.caption(t("smarter_after", weeks=weeks, s="" if weeks == 1 else "s"))
 
-# This month
-section(t("this_month"))
+# This month: deriving the periods takes a few seconds on a long history, so placeholder lines hold the
+# section's final size while the figures are computed; the heading never stands alone and nothing jumps.
+show_waste = unlocked("waste", cover)[0]
+month_slot = st.empty()
+with month_slot.container():
+    section(t("this_month"))
+    placeholder_lines([62, 48] if show_waste else [48], caption_width=36)
+
 frame = analysis_frame(buys, checks)
 month = frame[frame["Date"] >= today.replace(day=1)] if not frame.empty else frame
 spent = buys.loc[buys["date"] >= today.replace(day=1), "total_price"].sum()
-if unlocked("waste", cover)[0]:
-    wasted = float(wasted_value(month).sum(min_count=1)) if not month.empty else 0.0
-    wasted = 0.0 if pd.isna(wasted) else wasted
-    st.write(t("wasted_month", amount=f"{round_rupees(wasted):,}") if wasted >= 5 else t("no_waste_month"))
-st.write(t("spent_month", amount=f"{spent:,.0f}"))
+wasted = float(wasted_value(month).sum(min_count=1)) if show_waste and not month.empty else 0.0
+wasted = 0.0 if pd.isna(wasted) else wasted
 
-if checks.empty:
-    st.caption(t("no_check_yet"))
-else:
-    last = checks["date"].max()
-    days = int((today - last).days)
-    st.caption(t("last_check", date=fmt_date(last)))
-    if days >= 8:
-        st.warning(t("check_due", days=days))
+with month_slot.container():
+    section(t("this_month"))
+    if show_waste:
+        st.write(t("wasted_month", amount=f"{round_rupees(wasted):,}") if wasted >= 5 else t("no_waste_month"))
+    st.write(t("spent_month", amount=f"{spent:,.0f}"))
+    if checks.empty:
+        st.caption(t("no_check_yet"))
+    else:
+        last = checks["date"].max()
+        days = int((today - last).days)
+        st.caption(t("last_check", date=fmt_date(last)))
+        if days >= 8:
+            st.warning(t("check_due", days=days))
