@@ -112,6 +112,18 @@ def test_translate_fills_placeholders_and_falls_back_to_english():
     assert translate("nav_home", "xx") == "Home"
 
 
+def test_counts_of_one_use_the_singular():
+    singulars = [k for k in STRINGS if k.endswith("_one") and k.removesuffix("_one") in STRINGS]  # not check_one
+    assert len(singulars) == 9
+    for key in singulars:
+        assert "n" in placeholders(STRINGS[key.removesuffix("_one")]["en"]), key  # pairs with a counted string
+    assert translate("saved_many", "en", n=1) == "Saved 1 purchase."
+    assert translate("saved_many", "en", n=2) == "Saved 2 purchases."
+    assert translate("repeat_week_body", "en", n=1) == "Add this item again, dated today?"
+    assert translate("delete_confirm", "ta", n=1).startswith("1 பதிவை")
+    assert translate("all_done", "hi", n=1) == "हो गया: 1 चीज़ जाँची गई।"
+
+
 def test_kitchen_text_has_no_jargon():
     banned = ("WAPE", "MAE", "RMSE", "p-value", "synthetic", "Random Forest", "Linear Regression", "classifier")
     for key, entry in STRINGS.items():

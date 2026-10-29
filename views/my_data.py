@@ -39,14 +39,15 @@ def confirm_delete(kind: str, ids: list[int]) -> None:
         if st.button(t("delete"), type="primary"):
             for entry in ids:
                 (db.delete_purchase if kind == "purchases" else db.delete_check)(uid, int(entry))
-            queue_toast(f"Deleted {len(ids)} {kind}.")
+            queue_toast(f"Deleted {counted(len(ids), kind)}.")
             st.rerun()
         if st.button(t("cancel")):
             st.rerun()
 
 
-def save_label(n: int) -> str:
-    return t("save_change_one") if n == 1 else t("save_changes", n=n)
+def counted(n: int, kind: str) -> str:
+    """"1 purchase", "3 pantry checks": `kind` is the plural name of the table."""
+    return f"{n:,} {kind[:-1] if n == 1 else kind}"
 
 
 def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: dict, order: list[str]) -> None:
@@ -66,7 +67,7 @@ def editable_table(frame: pd.DataFrame, kind: str, editable: list[str], config: 
     changed = edited.drop(columns="Select").compare(view.drop(columns="Select")).index
     with st.container(horizontal=True):
         # Only offered once something is edited: a disabled "Save 0 changes" was nearly invisible and said nothing.
-        if len(changed) and st.button(save_label(len(changed)), type="primary", key=f"save_{kind}"):
+        if len(changed) and st.button(t("save_changes", n=len(changed)), type="primary", key=f"save_{kind}"):
             try:
                 for index in changed:
                     row = edited.loc[index]
@@ -108,7 +109,7 @@ with foods_tab:
                                     "id": None, "name": "Food", "category": "Category", "unit": "Default unit",
                                     "shelf_life_days": st.column_config.NumberColumn("Shelf life (days)", min_value=1, step=1)})
         changed = edited.compare(foods).index
-        if len(changed) and st.button(save_label(len(changed)), type="primary", key="save_foods"):
+        if len(changed) and st.button(t("save_changes", n=len(changed)), type="primary", key="save_foods"):
             for index in changed:
                 row = edited.loc[index]
                 db.update_food(uid, int(row["id"]), name=row["name"], category=row["category"], unit=row["unit"],
@@ -153,5 +154,5 @@ with files_tab:
                     if st.button(f"Import {len(rows):,} rows", type="primary", disabled=rows.empty):
                         with st.spinner("Importing..."):
                             added, skipped = (db.import_checks if kind == "checks" else db.import_purchases)(uid, rows)
-                        queue_toast(f"Imported {added:,} {kind}; skipped {skipped:,} already present.")
+                        queue_toast(f"Imported {counted(added, kind)}; skipped {skipped:,} already present.")
                         st.rerun()
