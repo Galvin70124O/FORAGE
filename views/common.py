@@ -85,9 +85,9 @@ def not_available(source: str, what: str, reason: str, *, alternatives: list[str
 
 
 STAMP_BAND = 10  # % either side of usual use that still counts as "Buy same"
-STAMP_NOTE = ("Stamp: predicted demand against the food's usual daily use. Buy more / Buy less when demand is more "
-              "than 10% above / below usual, otherwise Buy same. The last line is the stock-adjusted amount to buy "
-              "(predicted demand − usable stock). Confidence comes from the model's typical error for that food "
+STAMP_NOTE = ("Tag: predicted demand against the food's usual daily use. Buy more / Buy less when demand is more "
+              "than 10% above / below usual; no tag means about the usual amount. The last line is the "
+              "stock-adjusted amount to buy (predicted demand − usable stock). Confidence comes from the model's typical error for that food "
               "(High under 25% of its average, Medium under 50%).")
 
 

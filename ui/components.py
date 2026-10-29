@@ -26,10 +26,9 @@ def page_header(title: str, purpose: str, *, pill: str | None = None, detail: st
     """Title and one-line purpose on the left; the data-source pill on the right; an optional detail line."""
     left, right = st.columns([5, 2], vertical_alignment="bottom")
     with left:
-        if greeting:
-            st.html(f'<p class="fs-greeting">{escape(greeting)}</p>')
         st.title(title, anchor=False)
-        st.markdown(f'<p class="fg-purpose">{escape(purpose)}</p>', unsafe_allow_html=True)
+        lead = f"{greeting}. " if greeting else ""  # in the subtitle, not as a spaced-out eyebrow over the title
+        st.markdown(f'<p class="fg-purpose">{escape(lead + purpose)}</p>', unsafe_allow_html=True)
     if pill:
         right.markdown(f'<div style="text-align:right"><span class="fg-pill">Source: <b>{escape(pill)}</b></span></div>',
                        unsafe_allow_html=True)
@@ -75,7 +74,7 @@ def _change(delta: str | None, delta_color: str) -> tuple[str, str]:
 
 def label_card(name: str, value: str, *, compare: str | None = None, help: str | None = None,
                delta_color: str = "normal") -> str:
-    """One pantry label: small-caps name, the value in Fraunces and a comparison with last period.
+    """One pantry label: a plain grey name, the value in Fraunces and a comparison with last period.
 
     The comparison carries an arrow and words as well as colour. delta_color: "normal" when a rise is
     good, "inverse" when a fall is good (waste), "off" for neutral changes.
@@ -224,7 +223,8 @@ def confidence_level(relative_error: float | None) -> str | None:
 
 def demand_card(name: str, value: str, unit: str, *, stamp: str, what: str = "predicted for tomorrow",
                 relative_error: float | None = None, note: str | None = None) -> str:
-    """One predicted item: the quantity in Fraunces, a confidence meter and a Buy less / same / more stamp."""
+    """One predicted item: the quantity in Fraunces, a confidence meter and a Buy more / Buy less tag
+    (none when demand is about usual)."""
     level = confidence_level(relative_error)
     confidence = ""
     if level:
@@ -232,7 +232,8 @@ def demand_card(name: str, value: str, unit: str, *, stamp: str, what: str = "pr
         confidence = (f'<div class="fs-confidence"><span class="fs-dots" aria-hidden="true">{dots}</span>'
                       f"{level} confidence (±{relative_error:.0f}%)</div>")
     return (f'<div class="fs-demand"><div class="fs-demand-top"><div class="fs-demand-name">{escape(name)}</div>'
-            f'<span class="fs-stamp fs-{stamp}">{STAMPS[stamp]}</span></div>'
+            # "Buy same" on every card said nothing, so only a change from the usual gets a tag.
+            + (f'<span class="fs-stamp fs-{stamp}">{STAMPS[stamp]}</span>' if stamp != "same" else "") + "</div>"
             f'<div class="fs-demand-value">{escape(value)} <span>{escape(unit)}</span></div>'
             f'<div class="fs-demand-what">{escape(what)}</div>{confidence}'
             + (f'<div class="fs-demand-note">{escape(note)}</div>' if note else "") + "</div>")

@@ -141,8 +141,6 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
 .fg-footer { font-size: 0.75rem; color: var(--fs-muted); line-height: 1.6; }
 
 /* ---------- Page header ---------- */
-.fs-greeting { font-size: 0.9rem; font-weight: 600; color: var(--fs-brand); margin: 0 0 0.25rem 0;
-  font-variant: all-small-caps; letter-spacing: 0.1em; }
 .fg-purpose { margin: 0.25rem 0 0 0; font-size: 0.97rem; color: var(--fs-muted); max-width: 48rem; line-height: 1.5; }
 .fg-detail { font-size: 0.8rem; color: var(--fs-muted); margin-top: 0.25rem; }
 .fg-pill { display: inline-block; float: right; margin-top: 0.5rem; padding: 0.25rem 0.75rem; border-radius: 999px;
@@ -160,18 +158,18 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
 .fg-action:last-child { border-bottom: none; }
 .fg-action-title { font-weight: 600; }
 .fg-action-why { font-size: 0.85rem; color: var(--fs-muted); }
-.fg-tag { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; padding: 0.05rem 0.5rem;
-  border-radius: 6px; border: 1.5px solid currentColor; margin-right: 0.5rem; vertical-align: 1px;
-  font-variant: all-small-caps; color: var(--fs-stone-text); }
-.fg-tag.fs-gone { color: var(--fs-gone-text); } .fg-tag.fs-soon { color: var(--fs-soon-text); }
-.fg-tag.fs-fresh { color: var(--fs-fresh-text); }
+.fg-tag { display: inline-block; font-size: 0.78rem; font-weight: 600; padding: 0.1rem 0.6rem; border-radius: 999px;
+  margin-right: 0.5rem; vertical-align: 1px; white-space: nowrap; background: var(--fs-stone-tint); color: var(--fs-stone-text); }
+.fg-tag.fs-gone { background: var(--fs-gone-tint); color: var(--fs-gone-text); }
+.fg-tag.fs-soon { background: var(--fs-soon-tint); color: var(--fs-soon-text); }
+.fg-tag.fs-fresh { background: var(--fs-fresh-tint); color: var(--fs-fresh-text); }
 
 /* ---------- 1. Pantry-label KPI cards ---------- */
 .fs-labels { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
 .fs-label { position: relative; background: var(--fs-card); border: 1px solid var(--fs-line-strong); border-radius: 16px;
   padding: 14px 18px 14px; box-shadow: inset 0 0 0 4px var(--fs-card), inset 0 0 0 5px var(--fs-line); min-width: 0; }
-.fs-label-name { font-variant: all-small-caps; letter-spacing: 0.09em; font-weight: 600; font-size: 0.95rem;
-  color: var(--fs-muted); line-height: 1.2; }
+.fs-label-name { font-weight: 500; font-size: 13px; color: var(--fs-muted); line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fs-label-value { font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 1.85rem; line-height: 1.15;
   margin-top: 4px; color: var(--fs-text); font-variant-numeric: tabular-nums lining-nums; overflow-wrap: anywhere; }
 .fs-label-value.fs-small { font-size: 1.3rem; }
@@ -222,8 +220,7 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
 .fs-gauge { background: var(--fs-card); border: 1px solid var(--fs-line); border-radius: 16px; padding: 16px 18px;
   text-align: center; height: 100%; }
 .fs-gauge svg { width: 100%; max-width: 260px; height: auto; display: block; margin: 4px auto 0; }
-.fs-gauge-name { font-variant: all-small-caps; letter-spacing: 0.09em; font-weight: 600; font-size: 0.95rem;
-  color: var(--fs-muted); text-align: left; }
+.fs-gauge-name { font-weight: 500; font-size: 13px; color: var(--fs-muted); text-align: left; }
 .fs-gauge-sentence { font-size: 0.95rem; margin: 6px 0 0 0; line-height: 1.4; }
 .fs-gauge-note { font-size: 0.78rem; color: var(--fs-muted); margin-top: 4px; }
 
@@ -243,11 +240,10 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
 .fs-dots i.on { background: var(--fs-brand); border-color: var(--fs-brand); }
 .fs-demand-note { font-size: 0.8rem; color: var(--fs-muted); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--fs-line);
   line-height: 1.4; }
-.fs-stamp { display: inline-block; flex: none; border: 2px solid currentColor; border-radius: 6px; padding: 1px 8px 2px;
-  font-variant: all-small-caps; letter-spacing: 0.1em; font-weight: 700; font-size: 0.9rem; line-height: 1.3;
-  transform: rotate(-3deg); box-shadow: inset 0 0 0 2px var(--fs-card), inset 0 0 0 3px currentColor; white-space: nowrap; }
-.fs-stamp.fs-more { color: var(--fs-fresh-text); } .fs-stamp.fs-less { color: var(--fs-gone-text); }
-.fs-stamp.fs-same { color: var(--fs-stone-text); }
+.fs-stamp { display: inline-block; flex: none; border-radius: 999px; padding: 0.1rem 0.6rem; font-weight: 600;
+  font-size: 0.78rem; line-height: 1.4; white-space: nowrap; }
+.fs-stamp.fs-more { background: var(--fs-fresh-tint); color: var(--fs-fresh-text); }
+.fs-stamp.fs-less { background: var(--fs-gone-tint); color: var(--fs-gone-text); }
 
 /* ---------- 6. Empty states ---------- */
 [class*="st-key-fs-empty"] { text-align: center; align-items: center; border-style: dashed !important; }
