@@ -101,7 +101,7 @@ def pantry_dashboard(source: str, df: pd.DataFrame, board: dict, now: pd.Period,
                         "month has a pantry check.")
         else:
             waste_gauge(labels["now"]["rate"], labels["target"], previous=labels["before"]["rate"],
-                        note=f"Target {labels['target']:.1f}%: half of {labels['first'].to_timestamp():%b %Y}'s "
+                        note=f"The tick marks the target, {labels['target']:.1f}%: half of {labels['first'].to_timestamp():%b %Y}'s "
                              f"{labels['first_rate']:.1f}% (SDG 12.3: halve food waste).")
     with trend:
         waste_trend(board["monthly"], note)

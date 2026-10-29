@@ -184,8 +184,7 @@ def waste_gauge(rate: float, target: float, *, previous: float | None = None, na
         angle = math.pi * (1 - min(value / top, 1))
         return 110 + radius * math.cos(angle), 112 - radius * math.sin(angle)
 
-    (x1, y1), (x2, y2), (lx, ly) = point(target, 76), point(target, 104), point(target, 116)
-    anchor = "end" if target / top < 0.4 else "start" if target / top > 0.6 else "middle"
+    (x1, y1), (x2, y2) = point(target, 76), point(target, 104)
     arc = "M20 112 A90 90 0 0 1 200 112"
     svg = (f'<svg viewBox="0 0 220 140" role="img" aria-label="Waste {rate:.1f}% against a target of {target:.1f}%">'
            f'<path d="{arc}" pathLength="100" fill="none" style="stroke:var(--fs-stone-tint)" stroke-width="18" '
@@ -194,8 +193,6 @@ def waste_gauge(rate: float, target: float, *, previous: float | None = None, na
            f'stroke-linecap="round" stroke-dasharray="{min(rate / top, 1) * 100:.1f} 100"/>'
            f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" style="stroke:var(--fs-text)" '
            'stroke-width="2.5" stroke-linecap="round"/>'
-           f'<text x="{lx:.1f}" y="{ly:.1f}" text-anchor="{anchor}" style="fill:var(--fs-muted);font-size:10px;'
-           f'font-weight:600">target {target:.0f}%</text>'
            '<text x="110" y="100" text-anchor="middle" style="fill:var(--fs-text);font-family:Fraunces,Georgia,serif;'
            f'font-size:32px;font-weight:600">{rate:.1f}%</text>'
            '<text x="110" y="122" text-anchor="middle" style="fill:var(--fs-muted);font-size:11px">of food wasted</text>'
