@@ -269,6 +269,15 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
 [data-baseweb="input"], [data-baseweb="select"] > div { min-height: 44px; }
 [data-testid="stCheckbox"] label { min-height: 44px; align-items: center; }
 
+/* ---------- Touch screens: text fields at 16 px, the size below which iPhone Safari zooms in on focus
+   (with baseFontSize 15 Streamlit draws them at 13 px). Covers Streamlit's inputs, selects and text areas and the data
+   editor's cell editors (glide-data-grid overlay). Zoom itself is never disabled. ---------- */
+@media (pointer: coarse) {
+  input, textarea, select, [data-baseweb="input"] input, [data-baseweb="textarea"] textarea,
+  [data-baseweb="select"] > div, .gdg-growing-entry textarea, .gdg-input, .gdg-clip-region input,
+  .gdg-clip-region textarea { font-size: 16px !important; }
+}
+
 /* ---------- Phone width: one column, no sideways scrolling ---------- */
 @media (max-width: 640px) {
   .block-container { padding-left: 1rem; padding-right: 1rem; padding-top: 3.5rem; }
