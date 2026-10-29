@@ -306,6 +306,13 @@ KITCHEN_CSS = """
 [data-testid="stButtonGroup"] button { min-height: 44px; padding: 0 1rem; font-size: 1rem; }
 .fg-message { padding: 0.75rem 1rem; border: 1px solid var(--fs-line); background: var(--fs-card); border-radius: 12px; margin: 0; }
 .fg-message b { font-weight: 600; }
+.fg-messages { list-style: none; margin: 0; padding: 0 1rem; border: 1px solid var(--fs-line); background: var(--fs-card);
+  border-radius: 12px; }
+.fg-messages li { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.7rem 0;
+  border-bottom: 1px solid var(--fs-line); margin: 0; }
+.fg-messages li:last-child { border-bottom: none; }
+.fg-messages b { font-weight: 600; }
+.fg-message-aside { flex: none; color: var(--fs-muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; text-align: right; }
 .fg-list { margin: 0; padding-left: 1.2rem; }
 .fg-list li { padding: 0.2rem 0; }
 @media (max-width: 640px) {

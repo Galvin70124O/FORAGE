@@ -95,6 +95,21 @@ def install_help() -> None:
         st.caption(t("install_after"))
 
 
+def message_list(rows: list[tuple[str, str | None, str | None]]) -> None:
+    """Several messages as one card with dividers: (sentence, food to bold, short note on the right such as
+    "Tomorrow"). Replaces a stack of separately bordered boxes."""
+    from html import escape
+    items = []
+    for text, food, aside in rows:
+        body = escape(text)
+        if food:
+            body = body.replace(escape(food), f"<b>{escape(food)}</b>", 1)
+        note = f'<span class="fg-message-aside">{escape(aside)}</span>' if aside else ""
+        items.append(f"<li><span>{body}</span>{note}</li>")
+    if items:
+        st.markdown(f'<ul class="fg-messages">{"".join(items)}</ul>', unsafe_allow_html=True)
+
+
 def message(text: str) -> None:
     """A plain bordered message line (no colour coding, readable on a phone)."""
     from html import escape

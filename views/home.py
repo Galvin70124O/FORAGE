@@ -20,7 +20,7 @@ from services.personal import checks as personal_checks
 from services.personal import purchases as personal_purchases
 from services.personal import require_user
 from ui.components import empty_state, fmt_date, placeholder_lines, section
-from ui.kitchen import flash, message, page_title, t, walkthrough
+from ui.kitchen import flash, message_list, page_title, t, walkthrough
 
 page_title("nav_home", "home_purpose")
 db, uid = require_user()
@@ -46,6 +46,7 @@ batches = stock_batches(buys, stock)
 # Use first: what expires soon, then what will not be finished in time at the usual pace.
 section(t("use_first"))
 soon = expiring_soon(batches, today, 3)
+use_first: list[tuple[str, str, str | None]] = []  # one list with dividers: sentence, food (bold), when
 if soon.empty:
     st.write(t("nothing_expiring"))
 else:
@@ -53,7 +54,8 @@ else:
     for row in soon.itertuples():
         days = int(max(row.Days_Left, 0))
         key = "use_today" if days == 0 else "use_tomorrow" if days == 1 else "use_in_days"
-        message(t(key, food=row.Food, days=days))
+        when = t("when_today") if days == 0 else t("when_tomorrow") if days == 1 else t("when_days", days=days)
+        use_first.append((t(key, food=row.Food, days=days), row.Food, when))
 if unlocked("buy_list", cover)[0]:
     risk = likely_wasted(batches, today)
     if not risk.empty:
@@ -61,7 +63,9 @@ if unlocked("buy_list", cover)[0]:
         risk = risk.groupby("Food", as_index=False)["Value"].sum()
         for row in risk[~risk["Food"].isin(already)].itertuples():
             value = round_rupees(row.Value) if pd.notna(row.Value) and row.Value > 0 else 0
-            message(t("at_risk", food=row.Food, amount=f"{value:,}") if value else t("at_risk_plain", food=row.Food))
+            use_first.append((t("at_risk", food=row.Food, amount=f"{value:,}") if value
+                              else t("at_risk_plain", food=row.Food), row.Food, None))
+message_list(use_first)
 
 # This week's shopping
 section(t("shopping_head"))
@@ -72,8 +76,7 @@ if not shown:
 else:
     items, enough = shopping_items(buy_list(stock, batches, today, 7))
     st.write(t("to_buy_count", n=len(items)) if items else t("to_buy_none"))
-    for food in enough[:3]:
-        message(t("enough_skip", food=food))
+    message_list([(t("enough_skip", food=food), food, None) for food in enough[:3]])
     if items:
         st.page_link("views/shopping.py", label=t("open_list"), icon=":material/list_alt:")
     if not reliable:
