@@ -10,6 +10,7 @@ mlxtend==0.25.0
 matplotlib==3.11.2
 # Google sign-in (st.login) and the Postgres/SQLite store
 Authlib==1.9.1
+httpx==0.28.1  # needed by Authlib for Google sign-in (st.login) on Streamlit's Starlette server
 SQLAlchemy==2.1.5
 psycopg[binary]==3.3.6
 # Tests
