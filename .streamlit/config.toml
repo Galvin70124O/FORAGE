@@ -48,6 +48,9 @@ secondaryBackgroundColor = "#252B26"
 toolbarMode = "minimal"
 showErrorDetails = "none"  # a generic message only; false still shows the traceback and source line
 
+[browser]
+gatherUsageStats = false  # the Privacy page says nothing else is collected
+
 [server]
 headless = true
 maxUploadSize = 2  # MB; a year of purchases as CSV is well under this

@@ -7,6 +7,8 @@ FORAGE is a household food app and a data-science project in one.
 
 It is framed by UN SDG target 12.3: halve per-capita food waste by 2030. Fundamentals of Data Science project.
 
+Live app: <https://forage-pantry.streamlit.app> · [Privacy](https://forage-pantry.streamlit.app/privacy) · [Terms](https://forage-pantry.streamlit.app/terms) (both open without signing in).
+
 ## Features
 
 FORAGE has two modes, switched at the bottom of the sidebar. The choice is remembered for the session.

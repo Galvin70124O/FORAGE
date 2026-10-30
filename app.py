@@ -27,6 +27,14 @@ from ui.kitchen import install_help, language_picker, t  # noqa: E402
 from ui.theme import VERSION, apply_styles  # noqa: E402
 
 
+def legal_pages() -> list:
+    """Privacy and Terms: in both modes so they open without signing in, linked from the sidebar footer only."""
+    return [
+        st.Page("views/privacy.py", title=t("nav_privacy"), url_path="privacy", visibility="hidden"),
+        st.Page("views/terms.py", title=t("nav_terms"), url_path="terms", visibility="hidden"),
+    ]
+
+
 def kitchen_pages() -> list:
     return [
         st.Page("views/home.py", title=t("nav_home"), icon=":material/home:", default=True),
@@ -34,7 +42,7 @@ def kitchen_pages() -> list:
         st.Page("views/pantry.py", title=t("nav_pantry"), icon=":material/kitchen:"),
         st.Page("views/shopping.py", title=t("nav_shopping"), icon=":material/list_alt:"),
         st.Page("views/my_data.py", title=t("nav_my_data"), icon=":material/table_rows:"),
-    ]
+    ] + legal_pages()
 
 
 def insights_pages() -> list:
@@ -45,7 +53,7 @@ def insights_pages() -> list:
         st.Page("views/waste.py", title="Waste & Expiry", icon=":material/delete_sweep:"),
         st.Page("views/forecasting.py", title="Forecasting", icon=":material/trending_up:"),
         st.Page("views/recommendations.py", title="Recommendations", icon=":material/checklist:"),
-    ]
+    ] + legal_pages()
 
 
 def current_mode(signed_in: bool) -> str:
@@ -78,6 +86,9 @@ def account_block(text: str) -> None:
     with st.container(key="fs-account"):
         render_account()
         st.markdown(f'<div class="fg-footer">{text}<br>FORAGE {VERSION} · Fresh Shelf</div>', unsafe_allow_html=True)
+        with st.container(horizontal=True, key="fg-legal"):
+            st.page_link("views/privacy.py", label=t("nav_privacy"))
+            st.page_link("views/terms.py", label=t("nav_terms"))
 
 
 def render_kitchen_sidebar(signed_in: bool) -> None:

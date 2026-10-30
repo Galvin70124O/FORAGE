@@ -277,3 +277,16 @@ def test_mode_switch_is_remembered(local_app):
     assert local_app.session_state["app_mode"] == "insights"
     _button(local_app, "Back to Kitchen").click().run()
     assert local_app.session_state["app_mode"] == "kitchen"
+
+
+@pytest.mark.parametrize("page, heading", [("views/privacy.py", "What is stored, and why"),
+                                           ("views/terms.py", "Not food-safety advice")])
+def test_privacy_and_terms_open_for_a_visitor_who_has_not_signed_in(local_app, page, heading):
+    local_app.secrets["auth"] = {"redirect_uri": "x", "cookie_secret": "c",
+                                 "google": {"client_id": "x", "client_secret": "y", "server_metadata_url": "m"}}
+    local_app.run()
+    assert local_app.session_state["app_mode"] == "insights"  # a visitor, not signed in
+    local_app.switch_page(page).run()
+    assert not local_app.exception
+    assert any(heading in m.value for m in local_app.markdown)
+    assert "galvin.g.godsberry@gmail.com" in " ".join(m.value for m in local_app.markdown)
