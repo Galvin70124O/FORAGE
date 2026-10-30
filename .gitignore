@@ -30,3 +30,7 @@ Thumbs.db
 
 # Graphify map output
 graphify-out/
+
+# UI review screenshots and Impeccable local config
+docs/ui-review/after/
+.impeccable/

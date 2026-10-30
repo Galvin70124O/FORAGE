@@ -24,6 +24,8 @@ import re
 import numpy as np
 import pandas as pd
 
+from kitchen import guess
+
 TOLERANCE = 0.011
 PERIOD_COLUMNS = ["Food", "Category", "Unit", "Period_Start", "Date", "Days", "Opening_Stock", "Purchased",
                   "Spent", "Wasted", "Remaining", "Consumed", "Shelf_Life_Days", "Impossible"]
@@ -163,8 +165,9 @@ def expected_stock(purchases: pd.DataFrame, checks: pd.DataFrame, as_of) -> pd.D
 def stock_batches(purchases: pd.DataFrame, stock: pd.DataFrame) -> pd.DataFrame:
     """Split each food's expected stock into purchase batches, newest first (FIFO use leaves the newest).
 
-    Each batch expires `shelf_life_days` after it was bought. Stock not covered
-    by logged purchases has no known expiry and is left out.
+    Each batch expires `shelf_life_days` after it was bought (the food's usual shelf
+    life from `kitchen.guess` when none is stored). Stock not covered by logged
+    purchases has no known expiry and is left out.
     """
     rows = []
     for item in stock.itertuples():
@@ -175,7 +178,8 @@ def stock_batches(purchases: pd.DataFrame, stock: pd.DataFrame) -> pd.DataFrame:
         for buy in buys.itertuples():
             take = min(left, float(buy.quantity))
             shelf = buy.shelf_life_days if pd.notna(buy.shelf_life_days) else item.Shelf_Life_Days
-            expiry = buy.date + pd.Timedelta(days=int(shelf)) if pd.notna(shelf) else pd.NaT
+            shelf = shelf if pd.notna(shelf) else guess(item.Food)[2]
+            expiry = buy.date + pd.Timedelta(days=int(shelf))
             rows.append({"Food": item.Food, "Unit": item.Unit, "Quantity": take, "Bought": buy.date,
                          "Expiry": expiry, "Daily_Rate": item.Daily_Rate,
                          "Unit_Price": buy.total_price / buy.quantity if pd.notna(buy.total_price) else np.nan})
@@ -187,6 +191,7 @@ def stock_batches(purchases: pd.DataFrame, stock: pd.DataFrame) -> pd.DataFrame:
 
 def expiring_soon(batches: pd.DataFrame, as_of, within_days: int = 3) -> pd.DataFrame:
     as_of = pd.Timestamp(as_of).normalize()
+    batches = batches.dropna(subset=["Expiry"])  # a blank expiry broke the filter below (all-NaN rows)
     days_left = (batches["Expiry"] - as_of).dt.days
     soon = batches[days_left.between(0, within_days)].assign(Days_Left=days_left)
     return soon.sort_values(["Days_Left", "Quantity"], ascending=[True, False]).reset_index(drop=True)

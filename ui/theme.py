@@ -111,7 +111,7 @@ h1 { letter-spacing: -0.01em; margin: 0 !important; padding: 0 !important; line-
 h2 { padding-top: 0.5rem !important; }
 h3 { padding-bottom: 0 !important; }
 hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
-[data-testid="stCaptionContainer"], .stCaption { color: var(--fs-muted); }
+[data-testid="stCaptionContainer"], .stCaption { color: var(--fs-muted); opacity: 1; }  /* Streamlit's 0.6 fails contrast on dark */
 
 /* ---------- Surfaces: 16 px cards, 1 px warm borders, almost no shadow ---------- */
 [data-testid="stVerticalBlockBorderWrapper"], [data-testid="stVerticalBlock"][class*="border"] { border-radius: 16px; }
@@ -128,7 +128,8 @@ hr { margin: 0.5rem 0 !important; border-color: var(--fs-line) !important; }
 [data-testid="stAlertContentError"], [data-testid="stAlertContentError"] * { color: var(--fs-gone-text) !important; }
 [data-testid="stDataFrame"], [data-testid="stTable"] { font-variant-numeric: tabular-nums; }
 [data-testid="stTabs"] [data-baseweb="tab"] p { font-weight: 600; }
-[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"] p { color: var(--fs-on-brand) !important; }
+[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"] p,
+[data-testid="stBaseLinkButton-primary"], [data-testid="stBaseLinkButton-primary"] * { color: var(--fs-on-brand) !important; }
 [data-testid="stPlotlyChart"] { margin-top: -0.5rem; }
 
 /* ---------- Sidebar: brand, navigation, signed-in user ---------- */

@@ -92,6 +92,23 @@ def test_batches_expiry_and_likely_waste():
     assert risk.loc[0, "At_Risk"] == pytest.approx(0.5) and risk.loc[0, "Value"] == pytest.approx(32.5)
 
 
+def test_a_food_without_shelf_life_gets_a_default_and_the_overview_loads():
+    from services.overview import personal_dashboard
+    today = pd.Timestamp.today().normalize()
+    day = lambda n: (today - pd.Timedelta(days=n)).strftime("%Y-%m-%d")  # noqa: E731
+    buys = purchases([(day(9), "Milk", 2, 120, 5), (day(9), "Paneer", 2, 90, None),
+                      (day(3), "Milk", 2, 120, 5), (day(2), "Paneer", 2, 90, None)])
+    done = checks([(day(5), "Milk", 1.0, 0), (day(5), "Paneer", 1.0, 0)]).assign(
+        shelf_life_days=lambda f: f["shelf_life_days"].where(f["food"] != "Paneer"))
+    batches = stock_batches(buys, expected_stock(buys, done, today))
+    assert batches.set_index("Food").loc["Paneer", "Expiry"] == today + pd.Timedelta(days=3)  # usual 5 days
+    # one blank expiry used to turn every row into NaN (the My data Overview crash)
+    blank = pd.DataFrame({"Food": ["Eggs", "Oats", "Paneer"], "Quantity": [2.0, 1.0, 200.0],
+                          "Expiry": [today + pd.Timedelta(days=6), today - pd.Timedelta(days=3), pd.NaT]})
+    assert expiring_soon(blank, today, 7)["Food"].tolist() == ["Eggs"]
+    assert "kpis" in personal_dashboard(buys, done)
+
+
 def test_likely_waste_eats_oldest_batches_first():
     buys = purchases([("2026-03-01", "Rice", 3, 300, 10), ("2026-03-05", "Rice", 3, 300, 20)])
     stock = pd.DataFrame([{"Food": "Rice", "Unit": "kg", "Expected": 6.0, "Daily_Rate": 0.5,

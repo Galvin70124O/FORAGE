@@ -122,6 +122,7 @@ selected = st.session_state.get("k_check_food")
 tapped = tiles(ordered[:12], "check", selected=selected)
 if tapped:
     st.session_state["k_check_food"] = None if tapped == selected else tapped
+    st.session_state.pop("k_check_other", None)  # a tile tap wins over an earlier "Other food" choice
     st.rerun()
 if len(ordered) > 12:
     other = st.selectbox(t("other_food"), ordered[12:], index=None, key="k_check_other")
