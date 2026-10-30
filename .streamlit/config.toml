@@ -46,7 +46,7 @@ secondaryBackgroundColor = "#252B26"
 
 [client]
 toolbarMode = "minimal"
-showErrorDetails = false  # no tracebacks in the browser; they still go to the server log
+showErrorDetails = "none"  # a generic message only; false still shows the traceback and source line
 
 [server]
 headless = true
